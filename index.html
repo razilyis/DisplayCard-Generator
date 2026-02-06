@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AroundForty Product Card Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --card-width: 91mm;
+            --card-height: 55mm;
+            --accent-color: #E61B23;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            padding: 2rem;
+        }
+
+        #captureArea {
+            padding: 0;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: var(--card-width);
+            height: var(--card-height);
+            background-color: #ffffff;
+            color: #111111;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 7mm;
+            box-sizing: border-box;
+            border: 1px solid #eeeeee;
+            -webkit-font-smoothing: antialiased;
+            transform: translateZ(0);
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .label-text {
+            font-size: 5.5pt;
+            letter-spacing: 0.1em;
+            color: #888888;
+            text-transform: uppercase;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .value-text {
+            font-size: 8.5pt;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-text { color: var(--accent-color) !important; }
+        .accent-grey { background-color: #4b5563; }
+
+        .editor-panel {
+            margin-top: 1.5rem;
+            width: var(--card-width);
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .color-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .color-dot:hover { transform: scale(1.2); }
+        .color-dot.active { border-color: #000; }
+
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        textarea {
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="captureArea">
+        <!-- カード本体 -->
+        <div class="card" id="productCard">
+            <!-- 左端アクセントバー -->
+            <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
+
+            <!-- 背景文字 (Watermark) -->
+            <div class="absolute" style="top: 15%; right: 5%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.8;">
+                <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block">AF</span>
+            </div>
+
+            <!-- 上段: ブランドとCodeName -->
+            <div class="z-10 flex justify-between items-start mb-2">
+                <div>
+                    <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
+                        AroundForty<span class="dynamic-text">.</span>
+                    </h1>
+                </div>
+                
+                <div class="text-right flex flex-col items-end">
+                    <!-- スプリットアイコン -->
+                    <div class="flex gap-1 opacity-90 mb-2">
+                        <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
+                            <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                        </div>
+                        <div class="w-6 h-3.5 border border-black flex items-end justify-between p-0.5">
+                            <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                            <div class="w-[5px] h-[5px] accent-grey"></div>
+                        </div>
+                    </div>
+                    <!-- Code Name -->
+                    <div class="flex flex-col">
+                        <span class="label-text">Code Name</span>
+                        <span class="value-text" id="displayCodeName">AroundFortyRB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中段: Slogan (十分なスペースを確保) -->
+            <div class="flex-grow flex flex-col justify-center relative z-10">
+                <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
+                <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
+                    17mm狭ピッチ、オーソリニア、42キー、左右分割トラックボール搭載キーボード。20mmのPTFE球とベアリング搭載トラックボールケースは脱着が可能。ケースはねじを使わず、フォームを使ったガスケットライクな打鍵感が特徴。
+                </div>
+            </div>
+
+            <!-- 下段: 製造コード -->
+            <div class="z-10 flex justify-end">
+                <div class="flex flex-col text-right">
+                    <span class="label-text">Manufacturing code</span>
+                    <span class="value-text mono text-[8.5pt] uppercase" id="displayMfgCode">02AFRB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作パネル -->
+    <div class="editor-panel">
+        <h2 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">🎨 Customize & Edit</h2>
+        
+        <div class="space-y-4">
+            <!-- カラー選択 -->
+            <div>
+                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Theme Color</label>
+                <div class="flex items-center gap-3">
+                    <div onclick="updateThemeColor('#E61B23', this)" class="color-dot active" style="background-color: #E61B23;"></div>
+                    <div onclick="updateThemeColor('#0047AB', this)" class="color-dot" style="background-color: #0047AB;"></div>
+                    <div onclick="updateThemeColor('#2D5A27', this)" class="color-dot" style="background-color: #2D5A27;"></div>
+                    <div onclick="updateThemeColor('#111111', this)" class="color-dot" style="background-color: #111111;"></div>
+                    <div class="h-5 w-px bg-gray-200 mx-1"></div>
+                    <input type="color" oninput="updateThemeColor(this.value)" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer">
+                </div>
+            </div>
+
+            <!-- 各種入力 -->
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
+                    <textarea id="sloganInput" oninput="updateSlogan(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-20">17mm狭ピッチ、オーソリニア、42キー、左右分割トラックボール搭載キーボード。20mmのPTFE球とベアリング搭載トラックボールケースは脱着が可能。ケースはねじを使わず、フォームを使ったガスケットライクな打鍵感が特徴。</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Background Text (Watermark)</label>
+                    <input type="text" id="bgTextInput" value="AF" oninput="updateBgText(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Code Name</label>
+                        <input type="text" id="codeNameInput" value="AroundFortyRB" oninput="updateCodeName(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Manufacturing Code</label>
+                        <input type="text" id="mfgCodeInput" value="02AFRB" oninput="updateMfgCode(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-6 border-t border-gray-100 mt-6">
+            <button onclick="exportAsImage()" id="btnExport" class="w-full py-3 px-4 bg-black text-white text-xs font-bold rounded hover:opacity-80 transition flex items-center justify-center gap-2 shadow-sm">
+                <span>📸 高画質画像として保存 (PNG)</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function updateThemeColor(hex, el) {
+            document.documentElement.style.setProperty('--accent-color', hex);
+            if (el) {
+                document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
+                el.classList.add('active');
+            }
+        }
+
+        function updateSlogan(val) { document.getElementById('displaySlogan').innerText = val; }
+        function updateBgText(val) { document.getElementById('displayBgText').innerText = val; }
+        function updateCodeName(val) { document.getElementById('displayCodeName').innerText = val; }
+        function updateMfgCode(val) { document.getElementById('displayMfgCode').innerText = val; }
+
+        async function exportAsImage() {
+            const btn = document.getElementById('btnExport');
+            const card = document.getElementById('productCard');
+            btn.disabled = true;
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span> 生成中...';
+
+            try {
+                // html2canvasの設定最適化
+                await document.fonts.ready;
+                const options = {
+                    scale: 4, // 印刷に耐えうる高解像度
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                    logging: false,
+                    width: card.getBoundingClientRect().width,
+                    height: card.getBoundingClientRect().height,
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
+                    onclone: (clonedDoc) => {
+                        const clonedCard = clonedDoc.getElementById('productCard');
+                        clonedCard.style.boxShadow = 'none';
+                        clonedCard.style.border = 'none';
+                    }
+                };
+                const canvas = await html2canvas(card, options);
+                const link = document.createElement('a');
+                link.download = `AroundForty_Card_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+            } catch (err) {
+                console.error("Export failed:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnText;
+            }
+        }
+    </script>
+</body>
+</html>
