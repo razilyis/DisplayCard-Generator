@@ -140,7 +140,7 @@
             <div class="z-10 flex justify-between items-start mb-2">
                 <div>
                     <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
-                        AroundForty<span class="dynamic-text">.</span>
+                        <span id="displayBrandName">AroundForty</span><span class="dynamic-text">.</span>
                     </h1>
                 </div>
                 
@@ -203,6 +203,12 @@
 
             <!-- Input Fields -->
             <div class="space-y-3">
+                <!-- Brand Name Input -->
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
+                    <input type="text" id="brandNameInput" value="AroundForty" oninput="updateBrandName(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
+                </div>
+
                 <div>
                     <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
                     <textarea id="sloganInput" oninput="updateSlogan(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-20">17mm狭ピッチ、オーソリニア、42キー、左右分割トラックボール搭載キーボード。20mmのPTFE球とベアリング搭載トラックボールケースは脱着が可能。ケースはねじを使わず、フォームを使ったガスケットライクな打鍵感が特徴。</textarea>
@@ -250,6 +256,7 @@
         }
 
         // Live text update functions
+        function updateBrandName(val) { document.getElementById('displayBrandName').innerText = val; }
         function updateSlogan(val) { document.getElementById('displaySlogan').innerText = val; }
         function updateBgText(val) { document.getElementById('displayBgText').innerText = val; }
         function updateCodeName(val) { document.getElementById('displayCodeName').innerText = val; }
