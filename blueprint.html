@@ -8,7 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 多様なフォントを一括ロード -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&family=Inconsolata:wght@400;700&family=Orbitron:wght@400;700&family=VT323&family=Anonymous+Pro:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Space+Mono:wght@400;700&family=Courier+Prime:wght@400;700&family=Press+Start+2P&family=Special+Elite&family=Architects+Daughter&display=swap" rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
@@ -17,6 +18,7 @@
             --paper-color: #003366; /* Classic Blueprint Blue */
             --ink-color: #FFFFFF;
             --grid-line: rgba(255, 255, 255, 0.15);
+            --main-font: 'Share Tech Mono', monospace; /* Default Font Variable */
         }
         
         body {
@@ -61,10 +63,10 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 8mm;
+            padding: 8mm; /* Slightly reduced padding to fit more content */
             box-sizing: border-box;
             border: 2px solid white; /* Outer Border */
-            font-family: 'Share Tech Mono', monospace;
+            font-family: var(--main-font); /* Use Variable */
             -webkit-font-smoothing: antialiased;
             transform: translateZ(0);
             
@@ -76,7 +78,7 @@
         }
 
         /* Technical Fonts */
-        .font-tech { font-family: 'Share Tech Mono', monospace; }
+        .font-tech { font-family: var(--main-font); }
 
         /* Dimension Lines */
         .dim-line {
@@ -102,7 +104,7 @@
         .dim-v::before { top: 0; left: -1.5px; }
         .dim-v::after { bottom: 0; left: -1.5px; }
 
-        /* Drawing Block (Title Box) - 修正箇所 */
+        /* Drawing Block (Title Box) */
         .title-block {
             border: 1px solid var(--ink-color);
             display: flex;
@@ -115,13 +117,12 @@
         }
         .tb-row:last-child { border-bottom: none; }
         .tb-cell {
-            padding: 3px 5px; /* 上下パディングを増やして高さを確保 */
+            padding: 3px 5px;
             border-right: 1px solid var(--grid-line);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            /* overflow: hidden;  <- これが見切れの原因になる場合があるため削除 */
-            min-height: 24px; /* 最小高さを確保 */
+            min-height: 24px;
         }
         .tb-cell:last-child { border-right: none; }
         
@@ -137,9 +138,9 @@
             font-size: 6pt; 
             font-weight: bold; 
             text-transform: uppercase; 
-            line-height: 1.4; /* 行間を広げて文字の上下欠けを防止 */
+            line-height: 1.4; 
             white-space: nowrap; 
-            overflow: visible; /* 書き出し時に見えるように */
+            overflow: visible; 
         }
 
         /* Dynamic Colors */
@@ -157,14 +158,14 @@
         }
 
         /* Inputs */
-        input[type="text"], textarea {
+        input[type="text"], textarea, select {
             background-color: #f0f4f8;
             border: 1px solid #cbd5e0;
             color: #333;
-            font-family: 'Share Tech Mono', monospace;
+            font-family: 'Share Tech Mono', monospace; /* Editor font stays constant */
             font-size: 11px;
         }
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus, textarea:focus, select:focus {
             border-color: #003366;
             outline: none;
             background-color: #fff;
@@ -375,6 +376,31 @@ PRECISION ENGINEERED.</div>
             </div>
             
             <div class="space-y-5">
+                <!-- Font Selection -->
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">TYPEFACE</label>
+                    <select id="fontSelect" class="w-full text-xs p-2 border border-gray-300 bg-white font-mono h-8 cursor-pointer">
+                        <optgroup label="Technical / Code">
+                            <option value="'Share Tech Mono', monospace">SHARE TECH MONO (DEFAULT)</option>
+                            <option value="'Roboto Mono', monospace">ROBOTO MONO</option>
+                            <option value="'Source Code Pro', monospace">SOURCE CODE PRO</option>
+                            <option value="'Inconsolata', monospace">INCONSOLATA</option>
+                            <option value="'Anonymous Pro', monospace">ANONYMOUS PRO</option>
+                        </optgroup>
+                        <optgroup label="Sci-Fi / Retro">
+                            <option value="'Orbitron', sans-serif">ORBITRON (SCI-FI)</option>
+                            <option value="'Space Mono', monospace">SPACE MONO (GEO)</option>
+                            <option value="'VT323', monospace">VT323 (PIXEL)</option>
+                            <option value="'Press Start 2P', cursive">PRESS START 2P (8-BIT)</option>
+                        </optgroup>
+                        <optgroup label="Analog / Draft">
+                            <option value="'Courier Prime', monospace">COURIER PRIME (TYPEWRITER)</option>
+                            <option value="'Special Elite', cursive">SPECIAL ELITE (GRUNGE)</option>
+                            <option value="'Architects Daughter', cursive">ARCHITECTS DAUGHTER (HAND)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
                 <!-- Colors -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -497,6 +523,7 @@ PRECISION ENGINEERED.</textarea>
             xValue: document.getElementById('displayXValue'),
             
             // Inputs
+            fontSelect: document.getElementById('fontSelect'),
             brandNameInput: document.getElementById('brandNameInput'),
             sloganInput: document.getElementById('sloganInput'),
             sloganSizeInput: document.getElementById('sloganSizeInput'),
@@ -565,6 +592,11 @@ PRECISION ENGINEERED.</textarea>
             if(els.xValue) els.xValue.innerText = els.xValueInput.value;
         };
 
+        // Font Change Listener
+        els.fontSelect.onchange = (e) => {
+            document.documentElement.style.setProperty('--main-font', e.target.value);
+        };
+
         [
             els.brandNameInput, els.sloganInput, els.sloganSizeInput, els.bgTextInput, els.bgTextSizeInput,
             els.codeNameLabelInput, els.codeNameInput, 
@@ -620,6 +652,7 @@ PRECISION ENGINEERED.</textarea>
                 keySwitchLabel: els.keySwitchLabelInput.value, keySwitch: els.keySwitchInput.value,
                 keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
                 xLabel: els.xLabelInput.value, xValue: els.xValueInput.value,
+                font: els.fontSelect.value,
                 accentColor: currentAccentColor, exportedAt: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
@@ -672,6 +705,12 @@ PRECISION ENGINEERED.</textarea>
             if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
             if (data.xLabel) els.xLabelInput.value = data.xLabel;
             if (data.xValue) els.xValueInput.value = data.xValue;
+            
+            if (data.font) {
+                els.fontSelect.value = data.font;
+                document.documentElement.style.setProperty('--main-font', data.font);
+            }
+            
             if (data.accentColor) updateTheme(data.accentColor);
             
             syncUI();
