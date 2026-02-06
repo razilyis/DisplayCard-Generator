@@ -244,8 +244,9 @@
                 <div class="absolute top-6 right-6 w-16 h-1 dynamic-bg"></div>
                 
                 <!-- Background Watermark -->
-                <div id="displayBgTextContainer" class="absolute flex items-center justify-center pointer-events-none select-none overflow-visible" 
-                     style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; opacity: 0.05; z-index: 0;">
+                <!-- 見切れ対策: コンテナ拡大 & bottom基準 -->
+                <div id="displayBgTextContainer" class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible" 
+                     style="bottom: -15%; right: -5%; width: 120%; height: 120%; opacity: 0.05; z-index: 0;">
                     <span id="displayBgText" class="text-[120pt] font-mono font-bold tracking-widest uppercase inline-block leading-none whitespace-nowrap text-white" 
                           style="padding: 0.5em; border: 2px solid white;">AF</span>
                 </div>
@@ -263,7 +264,7 @@
                             <div class="w-2 h-2 rounded-full bg-gray-700"></div>
                             <div class="w-2 h-2 rounded-full dynamic-bg animate-pulse"></div>
                         </div>
-                        <p class="text-[10px] font-mono text-gray-400 tracking-wider" id="displayCodeName">AroundFortyRB</p>
+                        <p class="text-[10px] font-mono text-gray-400 tracking-wider uppercase" id="displayCodeName">AROUNDFORTYRB</p>
                     </div>
                 </div>
 
@@ -294,7 +295,8 @@
 
                     <div class="flex flex-col text-right">
                         <span class="text-[5px] font-mono text-gray-500 tracking-widest mb-0.5 uppercase" id="displayMfgCodeLabel">MFG. CODE</span>
-                        <span class="text-[10px] font-mono font-bold text-white tracking-widest bg-[#222] px-2 py-0.5 border border-[#444] inline-block whitespace-nowrap leading-none" id="displayMfgCode">02AFRB</span>
+                        <!-- Fixed: Padding adjusted, uppercase forced, inline-block to extend bg -->
+                        <span class="text-[10px] font-mono font-bold text-white tracking-widest bg-[#222] px-2 py-1 border border-[#444] inline-block whitespace-nowrap leading-none uppercase" id="displayMfgCode">02AFRB</span>
                     </div>
                 </div>
             </div>
@@ -326,7 +328,6 @@
                         <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">DESCRIPTION</label>
                         <textarea id="sloganInput" class="w-full text-xs p-2 font-mono h-16 mb-2">DESIGNED FOR THE MATURE MIND. PRECISION ENGINEERED.</textarea>
                         
-                        <!-- Description Font Size Slider -->
                         <div class="flex justify-between items-center mb-1 px-1">
                             <label class="text-[7px] font-bold text-gray-500 uppercase tracking-widest font-mono">FONT_SIZE</label>
                             <span id="sloganSizeDisplay" class="text-[8px] font-mono dynamic-text">8pt</span>
@@ -434,9 +435,11 @@
             if(els.bgTextSizeDisplay) els.bgTextSizeDisplay.innerText = `${bgSize}pt`;
 
             if(els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if(els.codeName) els.codeName.innerText = els.codeNameInput.value;
+            
+            // Force Uppercase in Logic
+            if(els.codeName) els.codeName.innerText = els.codeNameInput.value.toUpperCase();
             if(els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if(els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value;
+            if(els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
         };
 
         [els.brandNameInput, els.sloganInput, els.sloganSizeInput, els.bgTextInput, els.bgTextSizeInput, 
@@ -480,13 +483,11 @@
 
         els.exportJsonBtn.onclick = () => {
             const data = {
-                brandName: els.brandNameInput.value, slogan: els.sloganInput.value,
-                sloganSize: els.sloganSizeInput.value,
+                brandName: els.brandNameInput.value, slogan: els.sloganInput.value, sloganSize: els.sloganSizeInput.value,
                 bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
                 codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
                 mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                accentColor: currentAccentColor, colorLabel: els.cmykValueDisplay.innerText,
-                exportedAt: new Date().toISOString()
+                accentColor: currentAccentColor, colorLabel: els.cmykValueDisplay.innerText, exportedAt: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
             const url = URL.createObjectURL(blob);
@@ -539,36 +540,20 @@
                 const cardRect = els.card.getBoundingClientRect();
                 
                 const options = {
-                    scale: 3,
-                    useCORS: true,
-                    backgroundColor: "#0F0F11", // Dark background for PNG
-                    width: cardRect.width,
-                    height: cardRect.height,
-                    scrollX: 0,
-                    scrollY: -window.scrollY,
+                    scale: 3, useCORS: true, backgroundColor: "#0F0F11",
+                    width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
                         const c = clonedDoc.getElementById('productCard');
                         const bgContainer = clonedDoc.getElementById('displayBgTextContainer');
-                        const bgText = clonedDoc.getElementById('displayBgText'); // Get the text element itself
+                        const bgText = clonedDoc.getElementById('displayBgText'); 
                         
                         if (c) {
-                            c.style.boxShadow = 'none';
-                            c.style.border = 'none';
-                            c.style.overflow = 'visible'; // Allow overflow for capture
+                            c.style.boxShadow = 'none'; c.style.border = 'none'; c.style.overflow = 'visible';
                         }
-                        
-                        // Robust clipping fix
                         if (bgContainer && bgText) {
-                            // Expand container significantly
-                            bgContainer.style.width = '200%';
-                            bgContainer.style.height = '200%';
-                            
-                            // Force block display and line-height for correct bounding box calculation
-                            bgText.style.display = 'inline-block';
-                            bgText.style.lineHeight = '1.2'; 
-                            // Add massive padding to ensure the glyph isn't cut by bbox
-                            bgText.style.padding = '1em'; 
-                            bgText.style.margin = '0';
+                            bgContainer.style.width = '200%'; bgContainer.style.height = '200%';
+                            bgText.style.display = 'inline-block'; bgText.style.lineHeight = '1.2';
+                            bgText.style.padding = '1em'; bgText.style.margin = '0';
                         }
                     }
                 };
