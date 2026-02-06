@@ -15,23 +15,26 @@
         :root {
             --card-width: 91mm;
             --card-height: 55mm;
-            --accent-color: #E60012; /* C:0 M:100 Y:100 K:0 */
-        }　
+            --accent-color: #E60012; /* Default CMYK Red equivalent */
+        }
         body {
             background-color: #f3f4f6;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
             font-family: 'Inter', sans-serif;
-            padding: 2rem;
+            padding: 4rem 2rem;
         }
         
-        /* 共通の幅を持つコンテナ */
+        /* Width-constrained container for centering */
         .tool-container {
             width: var(--card-width);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #captureArea {
@@ -41,6 +44,7 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 1.5rem;
+            width: 100%;
         }
 
         .card {
@@ -86,6 +90,7 @@
             padding: 1.5rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             border: 1px solid #e5e7eb;
+            width: 100%;
         }
 
         .color-dot {
@@ -144,29 +149,30 @@
 </head>
 <body>
 
-    <h1 class="text-2xl font-black text-gray-900 mb-6 tracking-tighter uppercase">DisplayCard Generator</h1>
+    <h1 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter uppercase text-center">DisplayCard Generator</h1>
 
-    <!-- プレビュー上のツールエリア -->
+    <!-- Tool Area -->
     <div class="tool-container space-y-4">
         
-        <!-- ファイル保存セクション -->
-        <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4">
+        <!-- File Save Section (Above Preview) -->
+        <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm w-full">
             <label class="block text-[9px] font-bold text-green-600 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
             <div class="grid grid-cols-2 gap-2">
-                <button id="exportJsonBtn" class="bg-white border border-green-500 text-green-600 text-[10px] py-2 rounded font-bold hover:bg-green-50 transition flex items-center justify-center gap-1">
+                <button id="exportJsonBtn" class="bg-white border border-green-500 text-green-600 text-[10px] py-2 rounded font-bold hover:bg-green-50 transition flex items-center justify-center gap-1 shadow-sm">
                     <span>📥 設定をJSONで保存</span>
                 </button>
-                <button id="importJsonBtn" class="bg-white border border-blue-500 text-blue-600 text-[10px] py-2 rounded font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1">
+                <button id="importJsonBtn" class="bg-white border border-blue-500 text-blue-600 text-[10px] py-2 rounded font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1 shadow-sm">
                     <span>📤 設定を読み込む</span>
                 </button>
                 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
             </div>
         </div>
 
-        <!-- カードプレビューエリア -->
+        <!-- Card Preview Area -->
         <div id="captureArea">
             <div class="card" id="productCard">
                 <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
+                <!-- Watermark (Right-Bottom Based) -->
                 <div id="displayBgTextContainer" class="absolute flex items-end justify-end" style="bottom: -5%; right: 2%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.7;">
                     <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block leading-none">AF</span>
                 </div>
@@ -179,6 +185,7 @@
                     </div>
                     
                     <div class="text-right flex flex-col items-end">
+                        <!-- Symbolic Icon -->
                         <div class="flex gap-1 opacity-90 mb-2">
                             <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
                                 <div class="w-[5px] h-[5px] dynamic-bg"></div>
@@ -211,14 +218,14 @@
             </div>
         </div>
 
-        <!-- 編集パネル -->
+        <!-- Editor Panel -->
         <div class="editor-panel">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
             </div>
             
             <div class="space-y-4">
-                <!-- テーマカラー選択 (CMYKベース) -->
+                <!-- Theme Color (CMYK Based) -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">Theme Color (CMYK Based)</label>
@@ -329,11 +336,13 @@
             els.mfgCode.innerText = els.mfgCodeInput.value;
         };
 
+        // Input sync event listeners
         [els.brandNameInput, els.sloganInput, els.bgTextInput, els.bgTextSizeInput, 
          els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
             el.addEventListener('input', syncUI);
         });
 
+        // Color theme control
         let currentAccentColor = "#E60012";
         const updateThemeColor = (hex, cmykLabel = "Custom") => {
             currentAccentColor = hex;
@@ -360,7 +369,7 @@
             return "#" + r + g + b;
         }
 
-        // CMYK Swatches
+        // CMYK Swatch Buttons
         document.getElementById('cmykRed').onclick = (e) => updateThemeColor("#E60012", e.target.dataset.cmyk);
         document.getElementById('cmykCyan').onclick = (e) => updateThemeColor("#00AEEF", e.target.dataset.cmyk);
         document.getElementById('cmykMagenta').onclick = (e) => updateThemeColor("#EC008C", e.target.dataset.cmyk);
@@ -369,6 +378,7 @@
         
         document.getElementById('customColorPicker').oninput = (e) => updateThemeColor(e.target.value, "Custom HEX");
 
+        // JSON File Persistence
         els.exportJsonBtn.onclick = () => {
             const data = {
                 brandName: els.brandNameInput.value,
@@ -424,6 +434,7 @@
             syncUI();
         }
 
+        // Image Export Logic
         els.btnExport.onclick = async () => {
             if (typeof html2canvas === 'undefined') return showStatus("ライブラリを読み込み中です...");
             els.btnExport.disabled = true;
@@ -469,6 +480,7 @@
             }
         };
 
+        // Initial render
         syncUI();
     </script>
 </body>
