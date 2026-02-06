@@ -8,16 +8,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- コーディング用フォント -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Inconsolata:wght@400;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
             --card-height: 55mm;
-            --accent-color: #61AFEF; /* Editor Blue */
-            --keyword: #C678DD; /* Purple */
-            --string: #98C379; /* Green */
-            --comment: #5C6370; /* Grey */
-            --bg-color: #282C34; /* Editor BG */
+            --accent-color: #61AFEF;
+            --keyword: #C678DD;
+            --string: #98C379;
+            --comment: #5C6370;
+            --bg-color: #282C34;
+            --main-font: 'Fira Code', monospace;
         }
         
         body {
@@ -33,205 +35,63 @@
             padding: 4rem 2rem;
         }
         
-        .tool-container {
-            width: var(--card-width);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #captureArea {
-            padding: 0;
-            background-color: transparent;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            width: 100%;
-        }
+        .tool-container { width: var(--card-width); display: flex; flex-direction: column; align-items: center; }
+        #captureArea { padding: 0; background-color: transparent; display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem; width: 100%; }
 
         /* Mac Window Style Card */
         .card {
-            width: var(--card-width);
-            height: var(--card-height);
-            background-color: var(--bg-color);
-            color: #abb2bf;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            border-radius: 6px;
-            border: 1px solid #181A1F;
-            font-family: 'Fira Code', monospace;
-            -webkit-font-smoothing: antialiased;
-            transform: translateZ(0);
+            width: var(--card-width); height: var(--card-height); background-color: var(--bg-color); color: #abb2bf;
+            position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; box-sizing: border-box;
+            border-radius: 6px; border: 1px solid #181A1F;
+            font-family: var(--main-font); /* フォント変数適用 */
+            -webkit-font-smoothing: antialiased; transform: translateZ(0);
         }
 
-        /* Window Title Bar */
-        .title-bar {
-            height: 12px;
-            background-color: #21252B;
-            display: flex;
-            align-items: center;
-            padding-left: 8px;
-            border-bottom: 1px solid #181A1F;
-            flex-shrink: 0;
-        }
-        .window-dots {
-            display: flex;
-            gap: 4px;
-        }
+        .title-bar { height: 12px; background-color: #21252B; display: flex; align-items: center; padding-left: 8px; border-bottom: 1px solid #181A1F; flex-shrink: 0; }
+        .window-dots { display: flex; gap: 4px; }
         .dot { width: 6px; height: 6px; border-radius: 50%; }
         .dot-red { background-color: #FF5F56; }
         .dot-yellow { background-color: #FFBD2E; }
         .dot-green { background-color: #27C93F; }
 
-        /* Editor Content */
         .editor-content {
-            padding: 6px 12px;
-            font-size: 6.5pt;
-            line-height: 1.4;
-            flex-grow: 1;
-            position: relative;
-            z-index: 10;
-            
-            /* 改行設定の修正 */
-            white-space: pre-wrap; /* 自動折り返しを有効化 */
-            word-break: break-word; /* 長い単語も折り返す */
-            overflow: hidden;
+            padding: 6px 12px; font-size: 6.5pt; line-height: 1.4; flex-grow: 1; position: relative; z-index: 10;
+            white-space: pre-wrap; word-break: break-word; overflow: hidden;
         }
 
-        /* 行ごとのレイアウト */
-        .code-line {
-            display: flex;
-            align-items: flex-start; /* 行番号を上揃えに */
-        }
-
-        .line-num {
-            color: #4b5263;
-            margin-right: 8px;
-            user-select: none;
-            text-align: right;
-            display: inline-block;
-            width: 12px;
-            flex-shrink: 0; /* 行番号の幅を固定 */
-        }
-
-        /* Syntax Highlighting Classes */
-        .kw { color: var(--keyword); } /* Keyword */
-        .fn { color: var(--accent-color); } /* Function/Class/Property */
-        .str { color: var(--string); } /* String */
-        .cmt { color: var(--comment); font-style: italic; } /* Comment */
-        .punc { color: #abb2bf; } /* Punctuation */
+        .code-line { display: flex; align-items: flex-start; }
+        .line-num { color: #4b5263; margin-right: 8px; user-select: none; text-align: right; display: inline-block; width: 12px; flex-shrink: 0; }
+        .kw { color: var(--keyword); } .fn { color: var(--accent-color); } .str { color: var(--string); } .cmt { color: var(--comment); font-style: italic; } .punc { color: #abb2bf; }
         
         .dynamic-text { color: var(--accent-color) !important; }
 
-        /* Background Text */
-        #displayBgTextContainer {
-            position: absolute;
-            bottom: -5%;
-            right: -5%;
-            opacity: 0.05;
-            z-index: 0;
-            pointer-events: none;
-        }
+        /* Editor Panel */
+        .editor-panel { background: #252526; border-radius: 4px; padding: 1.5rem; border: 1px solid #333; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-        /* Editor Panel (UI) */
-        .editor-panel {
-            background: #252526;
-            border-radius: 4px;
-            padding: 1.5rem;
-            border: 1px solid #333;
-            width: 100%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        input[type="text"], textarea, select {
+            background-color: #1e1e1e; border: 1px solid #3e3e42; color: #d4d4d4;
+            font-family: 'Fira Code', monospace; font-size: 10px;
         }
-
-        /* Inputs */
-        input[type="text"], textarea {
-            background-color: #1e1e1e;
-            border: 1px solid #3e3e42;
-            color: #d4d4d4;
-            font-family: 'Fira Code', monospace;
-            font-size: 10px;
-        }
-        input[type="text"]:focus, textarea:focus {
-            border-color: var(--accent-color);
-            outline: none;
-        }
+        input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent-color); outline: none; }
         
-        label {
-            font-family: 'Fira Code', monospace;
-        }
-
         /* Buttons */
-        .btn-dark {
-            background-color: #333333;
-            border: 1px solid #444;
-            color: #eee;
-            transition: all 0.2s;
-        }
-        .btn-dark:hover {
-            background-color: #444;
-        }
-        .btn-accent {
-            background-color: #007ACC;
-            color: white;
-            font-weight: 600;
-            border: none;
-        }
-        .btn-accent:hover {
-            background-color: #0062A3;
-        }
+        .btn-dark { background-color: #333333; border: 1px solid #444; color: #eee; transition: all 0.2s; }
+        .btn-dark:hover { background-color: #444; }
+        .btn-accent { background-color: #007ACC; color: white; font-weight: 600; border: none; }
+        .btn-accent:hover { background-color: #0062A3; }
 
-        /* Color Swatches */
-        .color-swatch-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 6px;
-        }
-        .color-dot {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border-radius: 2px;
-            cursor: pointer;
-            border: 1px solid #3e3e42;
-        }
+        .color-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .color-dot { width: 100%; aspect-ratio: 1 / 1; border-radius: 2px; cursor: pointer; border: 1px solid #3e3e42; }
         .color-dot:hover { transform: scale(1.1); z-index: 10; border-color: #fff; }
         .color-dot.active { border: 2px solid #fff; }
 
-        .loader {
-            border: 2px solid #333;
-            border-top: 2px solid #fff;
-            border-radius: 50%;
-            width: 14px;
-            height: 14px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
+        .loader { border: 2px solid #333; border-top: 2px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        #exportStatus {
-            position: fixed;
-            bottom: 20px;
-            background: #252526;
-            color: #fff;
-            padding: 8px 16px;
-            border: 1px solid #007ACC;
-            font-family: 'Fira Code', monospace;
-            font-size: 11px;
-            display: none;
-            z-index: 1000;
-        }
-        
-        /* Slider */
-        input[type="range"] {
-            -webkit-appearance: none; width: 100%; height: 4px; background: #3e3e42; border-radius: 0; outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 10px; height: 10px; background: #007ACC; border-radius: 0; cursor: pointer;
-        }
+        #exportStatus { position: fixed; bottom: 20px; background: #252526; color: #fff; padding: 8px 16px; border: 1px solid #007ACC; font-family: 'Fira Code', monospace; font-size: 11px; display: none; z-index: 1000; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #3e3e42; border-radius: 0; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #007ACC; border-radius: 0; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -244,41 +104,28 @@
 
     <div class="tool-container space-y-4">
         
-        <!-- File Save Section -->
         <div class="bg-[#252526] p-3 border border-[#333] w-full">
-            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">
-                // FILE_SYSTEM
-            </label>
+            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">// FILE_SYSTEM</label>
             <div class="grid grid-cols-2 gap-2">
-                <button id="exportJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1">
-                    <span>save(json)</span>
-                </button>
-                <button id="importJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1">
-                    <span>load(json)</span>
-                </button>
+                <button id="exportJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>save(json)</span></button>
+                <button id="importJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>load(json)</span></button>
                 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
             </div>
         </div>
 
-        <!-- Card Preview Area -->
         <div id="captureArea">
             <div class="card" id="productCard">
-                <!-- Mac Window Title Bar -->
                 <div class="title-bar">
                     <div class="window-dots">
-                        <div class="dot dot-red"></div>
-                        <div class="dot dot-yellow"></div>
-                        <div class="dot dot-green"></div>
+                        <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
                     </div>
                     <div class="flex-grow text-center text-[5px] text-gray-500 tracking-wider" id="displayTitleLabel">PRODUCT_INFO.JS</div>
                 </div>
 
-                <!-- Code Editor Content (Generated by JS) -->
                 <div class="editor-content" id="codeEditorContainer">
-                    <!-- Dynamic Content Will Be Here -->
+                    <!-- Dynamic Content -->
                 </div>
 
-                <!-- Background Watermark -->
                 <div id="displayBgTextContainer" class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible" 
                      style="bottom: -10%; right: -5%; width: 120%; height: 120%; opacity: 0.05; z-index: 0;">
                     <span id="displayBgText" class="text-[100pt] font-bold tracking-tight uppercase inline-block leading-none whitespace-nowrap text-white" 
@@ -287,13 +134,24 @@
             </div>
         </div>
 
-        <!-- Editor Panel -->
         <div class="editor-panel">
             <div class="flex justify-between items-center mb-6 border-b border-[#333] pb-4">
                 <h2 class="text-xs font-mono font-bold text-gray-400 flex items-center gap-2">>> CONFIGURATION</h2>
             </div>
             
             <div class="space-y-5">
+                <!-- Font Selection -->
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">TYPEFACE</label>
+                    <select id="fontSelect" class="w-full text-xs p-2 border border-[#3e3e42] bg-[#1e1e1e] text-gray-300 font-mono h-8 cursor-pointer">
+                        <option value="'Fira Code', monospace">FIRA CODE (LIGATURES)</option>
+                        <option value="'JetBrains Mono', monospace">JETBRAINS MONO</option>
+                        <option value="'Source Code Pro', monospace">SOURCE CODE PRO</option>
+                        <option value="'Inconsolata', monospace">INCONSOLATA</option>
+                        <option value="'Ubuntu Mono', monospace">UBUNTU MONO</option>
+                    </select>
+                </div>
+
                 <!-- Syntax Colors -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -324,7 +182,6 @@ PRECISION ENGINEERED.</textarea>
                         <input type="range" id="opacityInput" min="0" max="0.2" step="0.01" value="0.05" class="w-full">
                     </div>
 
-                    <!-- Config Keys Section -->
                     <div class="grid grid-cols-2 gap-3">
                         <!-- Model -->
                         <div>
@@ -351,7 +208,6 @@ PRECISION ENGINEERED.</textarea>
                             <input type="text" id="ownerInput" value="@User" class="w-full text-xs p-2">
                         </div>
                     </div>
-                    <!-- Filename Label -->
                     <div>
                         <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">WINDOW_TITLE</label>
                         <input type="text" id="titleLabelInput" value="PRODUCT_INFO.JS" class="w-full text-xs p-2 uppercase">
@@ -388,6 +244,7 @@ PRECISION ENGINEERED.</textarea>
             container: document.getElementById('codeEditorContainer'),
             
             // Inputs
+            fontSelect: document.getElementById('fontSelect'),
             brandNameInput: document.getElementById('brandNameInput'),
             sloganInput: document.getElementById('sloganInput'),
             bgTextInput: document.getElementById('bgTextInput'),
@@ -487,6 +344,11 @@ PRECISION ENGINEERED.</textarea>
             if(els.titleLabel) els.titleLabel.innerText = els.titleLabelInput.value;
         };
 
+        // Font Change Listener
+        els.fontSelect.onchange = (e) => {
+            document.documentElement.style.setProperty('--main-font', e.target.value);
+        };
+
         // Attach listeners to all inputs
         [
             els.brandNameInput, els.sloganInput, els.opacityInput, els.bgTextInput, els.titleLabelInput,
@@ -541,6 +403,7 @@ PRECISION ENGINEERED.</textarea>
                 keySwitchLabel: els.keySwitchLabelInput.value, keySwitch: els.keySwitchInput.value,
                 keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
                 ownerLabel: els.ownerLabelInput.value, owner: els.ownerInput.value,
+                font: els.fontSelect.value,
                 themeLabel: currentTheme.label, exportedAt: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
@@ -591,6 +454,11 @@ PRECISION ENGINEERED.</textarea>
             if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
             if (data.owner) els.ownerInput.value = data.owner;
             
+            if (data.font) {
+                els.fontSelect.value = data.font;
+                document.documentElement.style.setProperty('--main-font', data.font);
+            }
+            
             if (data.themeLabel) {
                 const theme = syntaxThemes.find(t => t.label === data.themeLabel);
                 if (theme) updateTheme(theme);
@@ -616,7 +484,7 @@ PRECISION ENGINEERED.</textarea>
                         const bgText = clonedDoc.getElementById('displayBgText');
                         if (c) {
                             c.style.boxShadow = 'none'; c.style.transform = 'none';
-                            c.style.overflow = 'visible';
+                            c.style.overflow = 'visible'; // Allow full render
                         }
                         if (bgContainer && bgText) {
                             bgContainer.style.width = '200%'; bgContainer.style.height = '200%';
