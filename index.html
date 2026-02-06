@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DisplayCard Generator</title>
-    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- html2canvas for high-quality PNG export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +15,6 @@
             --card-height: 55mm;
             --accent-color: #E61B23;
         }
-        
         body {
             background-color: #f3f4f6;
             display: flex;
@@ -29,7 +26,6 @@
             font-family: 'Inter', sans-serif;
             padding: 2rem;
         }
-
         #captureArea {
             padding: 0;
             background-color: transparent;
@@ -37,8 +33,6 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* 名刺サイズ 91x55mm */
         .card {
             width: var(--card-width);
             height: var(--card-height);
@@ -56,9 +50,7 @@
             -webkit-font-smoothing: antialiased;
             transform: translateZ(0);
         }
-
         .mono { font-family: 'JetBrains Mono', monospace; }
-
         .label-text {
             font-size: 5.5pt;
             letter-spacing: 0.1em;
@@ -67,18 +59,15 @@
             font-weight: 700;
             line-height: 1.2;
         }
-
         .value-text {
             font-size: 8.5pt;
             font-weight: 700;
             letter-spacing: -0.01em;
             line-height: 1.2;
         }
-
         .dynamic-bg { background-color: var(--accent-color) !important; }
         .dynamic-text { color: var(--accent-color) !important; }
         .accent-grey { background-color: #4b5563; }
-
         .editor-panel {
             margin-top: 1.5rem;
             width: var(--card-width);
@@ -88,7 +77,6 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             border: 1px solid #e5e7eb;
         }
-
         .color-dot {
             width: 22px;
             height: 22px;
@@ -99,7 +87,6 @@
         }
         .color-dot:hover { transform: scale(1.2); }
         .color-dot.active { border-color: #000; }
-
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #3498db;
@@ -109,15 +96,11 @@
             animation: spin 1s linear infinite;
             display: inline-block;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         textarea { resize: none; }
-        .save-list-item:hover .delete-btn { opacity: 1; }
-
         #exportStatus {
             position: fixed;
             bottom: 20px;
@@ -129,7 +112,6 @@
             display: none;
             z-index: 1000;
         }
-
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -154,15 +136,11 @@
 
     <div id="captureArea">
         <div class="card" id="productCard">
-            <!-- Accent Bar -->
             <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
-            
-            <!-- Watermark (Right-Bottom Based) -->
             <div id="displayBgTextContainer" class="absolute flex items-end justify-end" style="bottom: -5%; right: 2%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.7;">
                 <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block leading-none">AF</span>
             </div>
 
-            <!-- Header -->
             <div class="z-10 flex justify-between items-start mb-2">
                 <div>
                     <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
@@ -187,7 +165,6 @@
                 </div>
             </div>
 
-            <!-- Slogan Area -->
             <div class="flex-grow flex flex-col justify-center relative z-10">
                 <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
                 <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
@@ -195,7 +172,6 @@
                 </div>
             </div>
 
-            <!-- Footer Area -->
             <div class="z-10 flex justify-end">
                 <div class="flex flex-col text-right">
                     <span class="label-text" id="displayMfgCodeLabel">Manufacturing code</span>
@@ -205,26 +181,24 @@
         </div>
     </div>
 
-    <!-- UI Panel -->
     <div class="editor-panel">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
             <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
         </div>
         
         <div class="space-y-4">
-            <!-- Cloud Save Section -->
-            <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-6">
+            <!-- クラウド保存 (Firebaseが有効な時のみ表示) -->
+            <div id="cloudSection" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-100 mb-6">
                 <label class="block text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-2">💾 クラウド保存機能</label>
                 <div class="flex gap-2 mb-3">
                     <input type="text" id="saveNameInput" placeholder="保存名を入力..." class="flex-grow text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-blue-400">
                     <button id="saveBtn" class="bg-blue-500 text-white text-[10px] px-3 rounded font-bold hover:bg-blue-600 transition">保存</button>
                 </div>
                 <div id="savedListContainer" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                    <p id="listStatus" class="text-[9px] text-gray-400 text-center py-2">読み込み中...</p>
+                    <p class="text-[9px] text-gray-400 text-center py-2">リストを読み込み中...</p>
                 </div>
             </div>
 
-            <!-- Colors -->
             <div>
                 <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Theme Color</label>
                 <div class="flex items-center gap-3">
@@ -232,12 +206,11 @@
                     <div id="swBlue" class="color-dot" style="background-color: #0047AB;" title="Midnight Blue"></div>
                     <div id="swGreen" class="color-dot" style="background-color: #2D5A27;" title="Forest Green"></div>
                     <div id="swBlack" class="color-dot" style="background-color: #111111;" title="Pure Black"></div>
-                    <div class="h-5 w-px bg-gray-100 mx-1"></div>
+                    <div class="h-5 w-px bg-gray-200 mx-1"></div>
                     <input type="color" id="customColorPicker" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" title="Custom Picker">
                 </div>
             </div>
 
-            <!-- Main Inputs -->
             <div class="space-y-3">
                 <div>
                     <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
@@ -245,7 +218,7 @@
                 </div>
                 <div>
                     <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
-                    <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-20">DESIGNED FOR THE MATURE MIND</textarea>
+                    <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-16">DESIGNED FOR THE MATURE MIND</textarea>
                 </div>
                 
                 <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -259,7 +232,6 @@
                     <input type="range" id="bgTextSizeInput" min="40" max="250" value="120" class="w-full">
                 </div>
 
-                <!-- Labels & Values -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper Label</label>
@@ -287,21 +259,22 @@
     <div id="exportStatus"></div>
 
     <script type="module">
+        // Firebase関連モジュールの読み込み
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Environment variables with fallback to prevent crash
-        let firebaseConfig = {};
+        // --- 設定の安全な読み込み ---
+        let firebaseConfig = null;
         try {
-            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        } catch (e) {
-            console.error("Firebase config parsing error");
-        }
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'displaycard-gen';
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+            }
+        } catch (e) { console.warn("Firebase config not found or invalid."); }
 
-        // DOM elements
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'displaycard-gen-local';
+
+        // --- DOM要素の取得 ---
         const els = {
             card: document.getElementById('productCard'),
             brandName: document.getElementById('displayBrandName'),
@@ -324,8 +297,8 @@
             saveBtn: document.getElementById('saveBtn'),
             saveNameInput: document.getElementById('saveNameInput'),
             savedListContainer: document.getElementById('savedListContainer'),
-            listStatus: document.getElementById('listStatus'),
-            status: document.getElementById('exportStatus')
+            status: document.getElementById('exportStatus'),
+            cloudSection: document.getElementById('cloudSection')
         };
 
         const showStatus = (msg, duration = 3000) => {
@@ -334,48 +307,27 @@
             setTimeout(() => els.status.style.display = 'none', duration);
         };
 
-        // Firebase Initialization
-        let db, auth, currentUser = null;
-        if (firebaseConfig.apiKey) {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) { console.error("Auth failed:", error); }
-            };
-            initAuth();
-
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                if (user) loadSavedList();
-                else els.listStatus.innerText = "認証待ち...";
-            });
-        } else {
-            els.listStatus.innerText = "Firebase未設定";
-        }
-
-        // Real-time Updates
-        els.brandNameInput.oninput = (e) => els.brandName.innerText = e.target.value;
-        els.sloganInput.oninput = (e) => els.slogan.innerText = e.target.value;
-        els.bgTextInput.oninput = (e) => els.bgText.innerText = e.target.value;
-        els.bgTextSizeInput.oninput = (e) => {
-            const size = e.target.value;
+        // --- リアルタイム反映ロジック ---
+        const syncUI = () => {
+            els.brandName.innerText = els.brandNameInput.value;
+            els.slogan.innerText = els.sloganInput.value;
+            els.bgText.innerText = els.bgTextInput.value;
+            const size = els.bgTextSizeInput.value;
             els.bgText.style.fontSize = `${size}pt`;
             els.bgTextSizeDisplay.innerText = `${size}pt`;
+            els.codeNameLabel.innerText = els.codeNameLabelInput.value;
+            els.codeName.innerText = els.codeNameInput.value;
+            els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
+            els.mfgCode.innerText = els.mfgCodeInput.value;
         };
-        els.codeNameLabelInput.oninput = (e) => els.codeNameLabel.innerText = e.target.value;
-        els.codeNameInput.oninput = (e) => els.codeName.innerText = e.target.value;
-        els.mfgCodeLabelInput.oninput = (e) => els.mfgCodeLabel.innerText = e.target.value;
-        els.mfgCodeInput.oninput = (e) => els.mfgCode.innerText = e.target.value;
 
-        // Theme Updates
+        // 各入力にイベント登録
+        [els.brandNameInput, els.sloganInput, els.bgTextInput, els.bgTextSizeInput, 
+         els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
+            el.addEventListener('input', syncUI);
+        });
+
+        // --- テーマ変更 ---
         let currentAccentColor = "#E61B23";
         const updateThemeColor = (hex) => {
             currentAccentColor = hex;
@@ -391,84 +343,76 @@
         document.getElementById('swBlack').onclick = () => updateThemeColor("#111111");
         document.getElementById('customColorPicker').oninput = (e) => updateThemeColor(e.target.value);
 
-        // Firestore Actions
-        els.saveBtn.onclick = async () => {
-            if (!currentUser || !db) return;
-            const name = els.saveNameInput.value.trim();
-            if (!name) { showStatus("保存名を入力してください"); return; }
-            const data = {
-                name, brandName: els.brandNameInput.value, slogan: els.sloganInput.value,
-                bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
-                codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
-                mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                accentColor: currentAccentColor, updatedAt: serverTimestamp()
+        // --- Firebase/Cloud 連携 (存在する場合のみ) ---
+        if (firebaseConfig && firebaseConfig.apiKey) {
+            els.cloudSection.classList.remove('hidden');
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            let currentUser = null;
+
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else { await signInAnonymously(auth); }
+                } catch (e) { console.error("Auth error", e); }
             };
-            try {
+            initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    const collectionRef = collection(db, 'artifacts', appId, 'users', user.uid, 'savedCards');
+                    onSnapshot(collectionRef, (snapshot) => {
+                        els.savedListContainer.innerHTML = "";
+                        if (snapshot.empty) {
+                            els.savedListContainer.innerHTML = '<p class="text-[9px] text-gray-400 text-center py-2">保存データなし</p>';
+                            return;
+                        }
+                        snapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            const item = document.createElement('div');
+                            item.className = "save-list-item flex justify-between items-center bg-white p-2 rounded border border-gray-100 shadow-sm text-[10px] mb-1 cursor-pointer";
+                            item.innerHTML = `<span class="truncate flex-grow font-medium">${data.name}</span><button class="delete-btn opacity-0 text-red-400 hover:text-red-600 px-1 font-bold">×</button>`;
+                            item.onclick = () => {
+                                Object.keys(data).forEach(key => {
+                                    if (els[key + 'Input']) els[key + 'Input'].value = data[key];
+                                });
+                                if (data.accentColor) updateThemeColor(data.accentColor);
+                                syncUI();
+                                showStatus("読み込み完了");
+                            };
+                            item.querySelector('.delete-btn').onclick = async (e) => {
+                                e.stopPropagation();
+                                if(confirm("削除しますか？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'savedCards', docSnap.id));
+                            };
+                            els.savedListContainer.appendChild(item);
+                        });
+                    });
+                }
+            });
+
+            els.saveBtn.onclick = async () => {
+                if (!currentUser) return;
+                const name = els.saveNameInput.value.trim();
+                if (!name) return showStatus("名前を入力してください");
+                const data = {
+                    name, brandName: els.brandNameInput.value, slogan: els.sloganInput.value,
+                    bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
+                    codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
+                    mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
+                    accentColor: currentAccentColor, updatedAt: serverTimestamp()
+                };
                 await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards', name), data);
                 els.saveNameInput.value = "";
                 showStatus("保存しました");
-            } catch (err) { console.error(err); }
-        };
-
-        function loadSavedList() {
-            if (!db || !currentUser) return;
-            const collectionRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards');
-            onSnapshot(collectionRef, (snapshot) => {
-                els.savedListContainer.innerHTML = "";
-                if (snapshot.empty) {
-                    els.savedListContainer.innerHTML = '<p class="text-[9px] text-gray-400 text-center py-2">保存データはありません</p>';
-                    return;
-                }
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const item = document.createElement('div');
-                    item.className = "save-list-item flex justify-between items-center bg-white p-2 rounded border border-gray-100 shadow-sm text-[10px] mb-1";
-                    const textWrap = document.createElement('div');
-                    textWrap.className = "cursor-pointer flex-grow truncate font-medium text-gray-700";
-                    textWrap.innerText = data.name;
-                    textWrap.onclick = () => applySavedData(data);
-                    const del = document.createElement('button');
-                    del.className = "delete-btn opacity-0 text-red-400 hover:text-red-600 px-1 transition";
-                    del.innerText = "×";
-                    del.onclick = async (e) => {
-                        e.stopPropagation();
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards', docSnap.id));
-                    };
-                    item.append(textWrap, del);
-                    els.savedListContainer.append(item);
-                });
-            }, (err) => console.error(err));
+            };
         }
 
-        function applySavedData(data) {
-            els.brandNameInput.value = data.brandName || "";
-            els.sloganInput.value = data.slogan || "";
-            els.bgTextInput.value = data.bgText || "";
-            els.bgTextSizeInput.value = data.bgTextSize || "120";
-            els.codeNameLabelInput.value = data.codeNameLabel || "";
-            els.codeNameInput.value = data.codeName || "";
-            els.mfgCodeLabelInput.value = data.mfgCodeLabel || "";
-            els.mfgCodeInput.value = data.mfgCode || "";
-            // UI Sync
-            els.brandName.innerText = els.brandNameInput.value;
-            els.slogan.innerText = els.sloganInput.value;
-            els.bgText.innerText = els.bgTextInput.value;
-            els.bgText.style.fontSize = `${els.bgTextSizeInput.value}pt`;
-            els.bgTextSizeDisplay.innerText = `${els.bgTextSizeInput.value}pt`;
-            els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            els.codeName.innerText = els.codeNameInput.value;
-            els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            els.mfgCode.innerText = els.mfgCodeInput.value;
-            if (data.accentColor) updateThemeColor(data.accentColor);
-            showStatus(`"${data.name}" を読み込みました`);
-        }
-
-        // Export Logic
+        // --- 画像書き出し ---
         els.btnExport.onclick = async () => {
-            if (typeof html2canvas === 'undefined') {
-                showStatus("エラー: ライブラリを読み込み中です...");
-                return;
-            }
+            if (typeof html2canvas === 'undefined') return showStatus("ライブラリ準備中...");
             els.btnExport.disabled = true;
             const originalText = els.btnExport.innerHTML;
             els.btnExport.innerHTML = '<span class="loader"></span> 生成中...';
@@ -490,21 +434,23 @@
                         c.style.border = 'none';
                     }
                 };
-
                 const canvas = await html2canvas(els.card, options);
                 const link = document.createElement('a');
                 link.download = `DisplayCard_${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
-                showStatus("保存しました");
+                showStatus("保存完了");
             } catch (err) {
                 console.error(err);
-                showStatus("保存に失敗しました");
+                showStatus("失敗しました");
             } finally {
                 els.btnExport.disabled = false;
                 els.btnExport.innerHTML = originalText;
             }
         };
+
+        // 初回反映
+        syncUI();
     </script>
 </body>
 </html>
