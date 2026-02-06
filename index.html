@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DisplayCard Generator</title>
+    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas for high-quality PNG export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,8 +15,8 @@
         :root {
             --card-width: 91mm;
             --card-height: 55mm;
-            --accent-color: #E61B23;
-        }
+            --accent-color: #E60012; /* C:0 M:100 Y:100 K:0 */
+        }　
         body {
             background-color: #f3f4f6;
             display: flex;
@@ -26,13 +28,21 @@
             font-family: 'Inter', sans-serif;
             padding: 2rem;
         }
+        
+        /* 共通の幅を持つコンテナ */
+        .tool-container {
+            width: var(--card-width);
+        }
+
         #captureArea {
             padding: 0;
             background-color: transparent;
             display: flex;
             justify-content: center;
             align-items: center;
+            margin-bottom: 1.5rem;
         }
+
         .card {
             width: var(--card-width);
             height: var(--card-height);
@@ -50,6 +60,7 @@
             -webkit-font-smoothing: antialiased;
             transform: translateZ(0);
         }
+
         .mono { font-family: 'JetBrains Mono', monospace; }
         .label-text {
             font-size: 5.5pt;
@@ -68,15 +79,15 @@
         .dynamic-bg { background-color: var(--accent-color) !important; }
         .dynamic-text { color: var(--accent-color) !important; }
         .accent-grey { background-color: #4b5563; }
+
         .editor-panel {
-            margin-top: 1.5rem;
-            width: var(--card-width);
             background: #fff;
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             border: 1px solid #e5e7eb;
         }
+
         .color-dot {
             width: 22px;
             height: 22px;
@@ -87,6 +98,7 @@
         }
         .color-dot:hover { transform: scale(1.2); }
         .color-dot.active { border-color: #000; }
+
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #3498db;
@@ -132,149 +144,146 @@
 </head>
 <body>
 
-    <h1 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter uppercase">DisplayCard Generator</h1>
+    <h1 class="text-2xl font-black text-gray-900 mb-6 tracking-tighter uppercase">DisplayCard Generator</h1>
 
-    <div id="captureArea">
-        <div class="card" id="productCard">
-            <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
-            <div id="displayBgTextContainer" class="absolute flex items-end justify-end" style="bottom: -5%; right: 2%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.7;">
-                <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block leading-none">AF</span>
-            </div>
-
-            <div class="z-10 flex justify-between items-start mb-2">
-                <div>
-                    <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
-                        <span id="displayBrandName">AroundForty</span><span class="dynamic-text">.</span>
-                    </h1>
-                </div>
-                
-                <div class="text-right flex flex-col items-end">
-                    <div class="flex gap-1 opacity-90 mb-2">
-                        <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
-                            <div class="w-[5px] h-[5px] dynamic-bg"></div>
-                        </div>
-                        <div class="w-6 h-3.5 border border-black flex items-end justify-between p-0.5">
-                            <div class="w-[5px] h-[5px] dynamic-bg"></div>
-                            <div class="w-[5px] h-[5px] accent-grey"></div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="label-text" id="displayCodeNameLabel">Code Name</span>
-                        <span class="value-text" id="displayCodeName">AroundFortyRB</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-grow flex flex-col justify-center relative z-10">
-                <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
-                <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
-                    DESIGNED FOR THE MATURE MIND
-                </div>
-            </div>
-
-            <div class="z-10 flex justify-end">
-                <div class="flex flex-col text-right">
-                    <span class="label-text" id="displayMfgCodeLabel">Manufacturing code</span>
-                    <span class="value-text mono text-[8.5pt] uppercase" id="displayMfgCode">02AFRB</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="editor-panel">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
-        </div>
+    <!-- プレビュー上のツールエリア -->
+    <div class="tool-container space-y-4">
         
-        <div class="space-y-4">
-            <!-- クラウド保存 (Firebaseが有効な時のみ表示) -->
-            <div id="cloudSection" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-100 mb-6">
-                <label class="block text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-2">💾 クラウド保存機能</label>
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="saveNameInput" placeholder="保存名を入力..." class="flex-grow text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-blue-400">
-                    <button id="saveBtn" class="bg-blue-500 text-white text-[10px] px-3 rounded font-bold hover:bg-blue-600 transition">保存</button>
-                </div>
-                <div id="savedListContainer" class="space-y-1 max-h-32 overflow-y-auto pr-1">
-                    <p class="text-[9px] text-gray-400 text-center py-2">リストを読み込み中...</p>
-                </div>
+        <!-- ファイル保存セクション -->
+        <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4">
+            <label class="block text-[9px] font-bold text-green-600 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="bg-white border border-green-500 text-green-600 text-[10px] py-2 rounded font-bold hover:bg-green-50 transition flex items-center justify-center gap-1">
+                    <span>📥 設定をJSONで保存</span>
+                </button>
+                <button id="importJsonBtn" class="bg-white border border-blue-500 text-blue-600 text-[10px] py-2 rounded font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1">
+                    <span>📤 設定を読み込む</span>
+                </button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
             </div>
+        </div>
 
-            <div>
-                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Theme Color</label>
-                <div class="flex items-center gap-3">
-                    <div id="swRed" class="color-dot active" style="background-color: #E61B23;" title="Swiss Red"></div>
-                    <div id="swBlue" class="color-dot" style="background-color: #0047AB;" title="Midnight Blue"></div>
-                    <div id="swGreen" class="color-dot" style="background-color: #2D5A27;" title="Forest Green"></div>
-                    <div id="swBlack" class="color-dot" style="background-color: #111111;" title="Pure Black"></div>
-                    <div class="h-5 w-px bg-gray-200 mx-1"></div>
-                    <input type="color" id="customColorPicker" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" title="Custom Picker">
+        <!-- カードプレビューエリア -->
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
+                <div id="displayBgTextContainer" class="absolute flex items-end justify-end" style="bottom: -5%; right: 2%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.7;">
+                    <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block leading-none">AF</span>
                 </div>
-            </div>
 
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
-                    <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
-                </div>
-                <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
-                    <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-16">DESIGNED FOR THE MATURE MIND</textarea>
-                </div>
-                
-                <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Background Text (Watermark)</label>
-                    <input type="text" id="bgTextInput" value="AF" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase mb-3">
+                <div class="z-10 flex justify-between items-start mb-2">
+                    <div>
+                        <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
+                            <span id="displayBrandName">AroundForty</span><span class="dynamic-text">.</span>
+                        </h1>
+                    </div>
                     
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Text Size</label>
-                        <span id="bgTextSizeDisplay" class="text-[9px] font-bold text-blue-500">120pt</span>
+                    <div class="text-right flex flex-col items-end">
+                        <div class="flex gap-1 opacity-90 mb-2">
+                            <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
+                                <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                            </div>
+                            <div class="w-6 h-3.5 border border-black flex items-end justify-between p-0.5">
+                                <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                                <div class="w-[5px] h-[5px] accent-grey"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="label-text" id="displayCodeNameLabel">Code Name</span>
+                            <span class="value-text" id="displayCodeName">AroundFortyRB</span>
+                        </div>
                     </div>
-                    <input type="range" id="bgTextSizeInput" min="40" max="250" value="120" class="w-full">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper Label</label>
-                        <input type="text" id="codeNameLabelInput" value="Code Name" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Upper Value</label>
-                        <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                <div class="flex-grow flex flex-col justify-center relative z-10">
+                    <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
+                    <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
+                        DESIGNED FOR THE MATURE MIND
                     </div>
-                    <div>
-                        <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Lower Label</label>
-                        <input type="text" id="mfgCodeLabelInput" value="Manufacturing code" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lower Value</label>
-                        <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
+                </div>
+
+                <div class="z-10 flex justify-end">
+                    <div class="flex flex-col text-right">
+                        <span class="label-text" id="displayMfgCodeLabel">Manufacturing code</span>
+                        <span class="value-text mono text-[8.5pt] uppercase" id="displayMfgCode">02AFRB</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="pt-6 border-t border-gray-100 mt-6">
-            <button id="btnExport" class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
-                <span>📸 高画質画像として保存 (PNG)</span>
-            </button>
+        <!-- 編集パネル -->
+        <div class="editor-panel">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- テーマカラー選択 (CMYKベース) -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">Theme Color (CMYK Based)</label>
+                        <span id="cmykValueDisplay" class="text-[8px] font-mono text-gray-400">C:0 M:100 Y:100 K:0</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="cmykRed" class="color-dot active" style="background-color: #E60012;" data-cmyk="C:0 M:100 Y:100 K:0" title="Process Red"></div>
+                        <div id="cmykCyan" class="color-dot" style="background-color: #00AEEF;" data-cmyk="C:100 M:0 Y:0 K:0" title="Process Cyan"></div>
+                        <div id="cmykMagenta" class="color-dot" style="background-color: #EC008C;" data-cmyk="C:0 M:100 Y:0 K:0" title="Process Magenta"></div>
+                        <div id="cmykYellow" class="color-dot" style="background-color: #FFF200;" data-cmyk="C:0 M:0 Y:100 K:0" title="Process Yellow"></div>
+                        <div id="cmykBlack" class="color-dot" style="background-color: #231815;" data-cmyk="C:0 M:0 Y:0 K:100" title="Process Black"></div>
+                        <div class="h-5 w-px bg-gray-100 mx-1"></div>
+                        <input type="color" id="customColorPicker" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" title="Custom Picker">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
+                        <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
+                        <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-16">DESIGNED FOR THE MATURE MIND</textarea>
+                    </div>
+                    
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Background Text (Watermark)</label>
+                        <input type="text" id="bgTextInput" value="AF" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase mb-3">
+                        
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Text Size</label>
+                            <span id="bgTextSizeDisplay" class="text-[9px] font-bold text-blue-500">120pt</span>
+                        </div>
+                        <input type="range" id="bgTextSizeInput" min="40" max="250" value="120" class="w-full">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper Label</label>
+                            <input type="text" id="codeNameLabelInput" value="Code Name" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Upper Value</label>
+                            <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Lower Label</label>
+                            <input type="text" id="mfgCodeLabelInput" value="Manufacturing code" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lower Value</label>
+                            <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 mt-6">
+                <button id="btnExport" class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+                    <span>📸 高画質画像として保存 (PNG)</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="exportStatus"></div>
 
-    <script type="module">
-        // Firebase関連モジュールの読み込み
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- 設定の安全な読み込み ---
-        let firebaseConfig = null;
-        try {
-            if (typeof __firebase_config !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-            }
-        } catch (e) { console.warn("Firebase config not found or invalid."); }
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'displaycard-gen-local';
-
-        // --- DOM要素の取得 ---
+    <script type="text/javascript">
         const els = {
             card: document.getElementById('productCard'),
             brandName: document.getElementById('displayBrandName'),
@@ -294,11 +303,11 @@
             mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
             mfgCodeInput: document.getElementById('mfgCodeInput'),
             btnExport: document.getElementById('btnExport'),
-            saveBtn: document.getElementById('saveBtn'),
-            saveNameInput: document.getElementById('saveNameInput'),
-            savedListContainer: document.getElementById('savedListContainer'),
             status: document.getElementById('exportStatus'),
-            cloudSection: document.getElementById('cloudSection')
+            exportJsonBtn: document.getElementById('exportJsonBtn'),
+            importJsonBtn: document.getElementById('importJsonBtn'),
+            jsonFileInput: document.getElementById('jsonFileInput'),
+            cmykValueDisplay: document.getElementById('cmykValueDisplay')
         };
 
         const showStatus = (msg, duration = 3000) => {
@@ -307,7 +316,6 @@
             setTimeout(() => els.status.style.display = 'none', duration);
         };
 
-        // --- リアルタイム反映ロジック ---
         const syncUI = () => {
             els.brandName.innerText = els.brandNameInput.value;
             els.slogan.innerText = els.sloganInput.value;
@@ -321,104 +329,111 @@
             els.mfgCode.innerText = els.mfgCodeInput.value;
         };
 
-        // 各入力にイベント登録
         [els.brandNameInput, els.sloganInput, els.bgTextInput, els.bgTextSizeInput, 
          els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
             el.addEventListener('input', syncUI);
         });
 
-        // --- テーマ変更 ---
-        let currentAccentColor = "#E61B23";
-        const updateThemeColor = (hex) => {
+        let currentAccentColor = "#E60012";
+        const updateThemeColor = (hex, cmykLabel = "Custom") => {
             currentAccentColor = hex;
             document.documentElement.style.setProperty('--accent-color', hex);
+            els.cmykValueDisplay.innerText = cmykLabel;
+            
             document.querySelectorAll('.color-dot').forEach(dot => {
-                dot.classList.toggle('active', dot.style.backgroundColor === hex || dot.dataset.hex === hex);
+                const dotColor = RGBToHex(dot.style.backgroundColor);
+                dot.classList.toggle('active', dotColor.toLowerCase() === hex.toLowerCase());
             });
         };
 
-        document.getElementById('swRed').onclick = () => updateThemeColor("#E61B23");
-        document.getElementById('swBlue').onclick = () => updateThemeColor("#0047AB");
-        document.getElementById('swGreen').onclick = () => updateThemeColor("#2D5A27");
-        document.getElementById('swBlack').onclick = () => updateThemeColor("#111111");
-        document.getElementById('customColorPicker').oninput = (e) => updateThemeColor(e.target.value);
-
-        // --- Firebase/Cloud 連携 (存在する場合のみ) ---
-        if (firebaseConfig && firebaseConfig.apiKey) {
-            els.cloudSection.classList.remove('hidden');
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-            let currentUser = null;
-
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else { await signInAnonymously(auth); }
-                } catch (e) { console.error("Auth error", e); }
-            };
-            initAuth();
-
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                if (user) {
-                    const collectionRef = collection(db, 'artifacts', appId, 'users', user.uid, 'savedCards');
-                    onSnapshot(collectionRef, (snapshot) => {
-                        els.savedListContainer.innerHTML = "";
-                        if (snapshot.empty) {
-                            els.savedListContainer.innerHTML = '<p class="text-[9px] text-gray-400 text-center py-2">保存データなし</p>';
-                            return;
-                        }
-                        snapshot.forEach((docSnap) => {
-                            const data = docSnap.data();
-                            const item = document.createElement('div');
-                            item.className = "save-list-item flex justify-between items-center bg-white p-2 rounded border border-gray-100 shadow-sm text-[10px] mb-1 cursor-pointer";
-                            item.innerHTML = `<span class="truncate flex-grow font-medium">${data.name}</span><button class="delete-btn opacity-0 text-red-400 hover:text-red-600 px-1 font-bold">×</button>`;
-                            item.onclick = () => {
-                                Object.keys(data).forEach(key => {
-                                    if (els[key + 'Input']) els[key + 'Input'].value = data[key];
-                                });
-                                if (data.accentColor) updateThemeColor(data.accentColor);
-                                syncUI();
-                                showStatus("読み込み完了");
-                            };
-                            item.querySelector('.delete-btn').onclick = async (e) => {
-                                e.stopPropagation();
-                                if(confirm("削除しますか？")) await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'savedCards', docSnap.id));
-                            };
-                            els.savedListContainer.appendChild(item);
-                        });
-                    });
-                }
-            });
-
-            els.saveBtn.onclick = async () => {
-                if (!currentUser) return;
-                const name = els.saveNameInput.value.trim();
-                if (!name) return showStatus("名前を入力してください");
-                const data = {
-                    name, brandName: els.brandNameInput.value, slogan: els.sloganInput.value,
-                    bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
-                    codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
-                    mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                    accentColor: currentAccentColor, updatedAt: serverTimestamp()
-                };
-                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards', name), data);
-                els.saveNameInput.value = "";
-                showStatus("保存しました");
-            };
+        function RGBToHex(rgb) {
+            if (!rgb) return "";
+            if (rgb.startsWith('#')) return rgb;
+            let sep = rgb.indexOf(",") > -1 ? "," : " ";
+            rgb = rgb.substr(4).split(")")[0].split(sep);
+            let r = (+rgb[0]).toString(16),
+                g = (+rgb[1]).toString(16),
+                b = (+rgb[2]).toString(16);
+            if (r.length == 1) r = "0" + r;
+            if (g.length == 1) g = "0" + g;
+            if (b.length == 1) b = "0" + b;
+            return "#" + r + g + b;
         }
 
-        // --- 画像書き出し ---
+        // CMYK Swatches
+        document.getElementById('cmykRed').onclick = (e) => updateThemeColor("#E60012", e.target.dataset.cmyk);
+        document.getElementById('cmykCyan').onclick = (e) => updateThemeColor("#00AEEF", e.target.dataset.cmyk);
+        document.getElementById('cmykMagenta').onclick = (e) => updateThemeColor("#EC008C", e.target.dataset.cmyk);
+        document.getElementById('cmykYellow').onclick = (e) => updateThemeColor("#FFF200", e.target.dataset.cmyk);
+        document.getElementById('cmykBlack').onclick = (e) => updateThemeColor("#231815", e.target.dataset.cmyk);
+        
+        document.getElementById('customColorPicker').oninput = (e) => updateThemeColor(e.target.value, "Custom HEX");
+
+        els.exportJsonBtn.onclick = () => {
+            const data = {
+                brandName: els.brandNameInput.value,
+                slogan: els.sloganInput.value,
+                bgText: els.bgTextInput.value,
+                bgTextSize: els.bgTextSizeInput.value,
+                codeNameLabel: els.codeNameLabelInput.value,
+                codeName: els.codeNameInput.value,
+                mfgCodeLabel: els.mfgCodeLabelInput.value,
+                mfgCode: els.mfgCodeInput.value,
+                accentColor: currentAccentColor,
+                exportedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `card_config_${els.brandNameInput.value || 'data'}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showStatus("設定ファイルを保存しました");
+        };
+
+        els.importJsonBtn.onclick = () => els.jsonFileInput.click();
+
+        els.jsonFileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    applyData(data);
+                    showStatus("設定を読み込みました");
+                } catch (err) {
+                    showStatus("ファイルの読み込みに失敗しました");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        function applyData(data) {
+            if (data.brandName !== undefined) els.brandNameInput.value = data.brandName;
+            if (data.slogan !== undefined) els.sloganInput.value = data.slogan;
+            if (data.bgText !== undefined) els.bgTextInput.value = data.bgText;
+            if (data.bgTextSize !== undefined) els.bgTextSizeInput.value = data.bgTextSize;
+            if (data.codeNameLabel !== undefined) els.codeNameLabelInput.value = data.codeNameLabel;
+            if (data.codeName !== undefined) els.codeNameInput.value = data.codeName;
+            if (data.mfgCodeLabel !== undefined) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
+            if (data.mfgCode !== undefined) els.mfgCodeInput.value = data.mfgCode;
+            if (data.accentColor) updateThemeColor(data.accentColor);
+            syncUI();
+        }
+
         els.btnExport.onclick = async () => {
-            if (typeof html2canvas === 'undefined') return showStatus("ライブラリ準備中...");
+            if (typeof html2canvas === 'undefined') return showStatus("ライブラリを読み込み中です...");
             els.btnExport.disabled = true;
             const originalText = els.btnExport.innerHTML;
             els.btnExport.innerHTML = '<span class="loader"></span> 生成中...';
 
             try {
-                await document.fonts.ready;
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
                 const cardRect = els.card.getBoundingClientRect();
                 const options = {
                     scale: 3,
@@ -430,26 +445,30 @@
                     scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
                         const c = clonedDoc.getElementById('productCard');
-                        c.style.boxShadow = 'none';
-                        c.style.border = 'none';
+                        if (c) {
+                            c.style.boxShadow = 'none';
+                            c.style.border = 'none';
+                        }
                     }
                 };
                 const canvas = await html2canvas(els.card, options);
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
                 const link = document.createElement('a');
                 link.download = `DisplayCard_${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.href = dataUrl;
+                document.body.appendChild(link);
                 link.click();
-                showStatus("保存完了");
+                document.body.removeChild(link);
+                showStatus("保存完了しました");
             } catch (err) {
-                console.error(err);
-                showStatus("失敗しました");
+                console.error("Export failed:", err);
+                showStatus("保存に失敗しました");
             } finally {
                 els.btnExport.disabled = false;
                 els.btnExport.innerHTML = originalText;
             }
         };
 
-        // 初回反映
         syncUI();
     </script>
 </body>
