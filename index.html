@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body class="bg-zinc-100 flex items-center justify-center min-h-screen font-['Inter'] p-4">
+
+    <div class="max-w-4xl w-full">
+        <h1 class="text-3xl md:text-4xl font-black text-center mb-2 text-zinc-900 tracking-tighter uppercase">
+            DisplayCard Generator
+        </h1>
+        <p class="text-center text-zinc-500 mb-12 text-sm">Select your design style / デザインを選択してください</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Light / Swiss Style -->
+            <a href="light.html" class="group relative block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-zinc-200">
+                <div class="h-48 bg-zinc-50 flex items-center justify-center p-8 group-hover:bg-white transition">
+                    <!-- Preview CSS Art -->
+                    <div class="w-48 h-28 bg-white border border-zinc-200 shadow-md relative overflow-hidden flex flex-col justify-between p-3">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#E61B23]"></div>
+                        <div class="text-[8px] font-black text-zinc-900">AROUNDFORTY.</div>
+                        <div class="text-[100px] absolute -right-2 -bottom-6 opacity-[0.05] font-black italic leading-none">AF</div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-zinc-900 mb-1 group-hover:text-[#E61B23] transition">Swiss Style</h2>
+                    <p class="text-xs text-zinc-500">Minimalist, clean, and rational design.<br>ミニマルで洗練された白ベースのデザイン。</p>
+                </div>
+            </a>
+
+            <!-- Dark / Industrial Style -->
+            <a href="dark.html" class="group relative block bg-[#0F0F11] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-zinc-800">
+                <div class="h-48 bg-[#1a1a1a] flex items-center justify-center p-8 relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <!-- Preview CSS Art -->
+                    <div class="w-48 h-28 bg-[#0F0F11] border border-zinc-700 shadow-2xl relative overflow-hidden flex flex-col justify-between p-3">
+                        <div class="absolute top-2 right-2 w-8 h-0.5 bg-[#00E5FF]"></div>
+                        <div class="text-[8px] font-black text-white font-mono">GENERATOR_<span class="text-[#00E5FF]">DARK</span></div>
+                        <div class="text-[100px] absolute right-0 bottom-[-10px] opacity-[0.1] font-black font-mono text-white leading-none border border-white">AF</div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-white mb-1 font-mono group-hover:text-[#00E5FF] transition">Industrial Dark</h2>
+                    <p class="text-xs text-zinc-400">Cyberpunk, technical, and mechanical aesthetics.<br>サイバーパンク風の黒ベースのデザイン。</p>
+                </div>
+            </a>
+
+        </div>
+        
+        <div class="mt-12 text-center">
+            <a href="https://github.com/" target="_blank" class="text-[10px] text-zinc-400 hover:text-zinc-600 border-b border-transparent hover:border-zinc-400 transition">
+                Hosted on GitHub Pages
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
