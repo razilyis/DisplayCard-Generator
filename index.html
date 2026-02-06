@@ -30,7 +30,6 @@
             padding: 2rem;
         }
 
-        /* Essential for capturing layout correctly */
         #captureArea {
             padding: 0;
             background-color: transparent;
@@ -39,14 +38,13 @@
             align-items: center;
         }
 
-        /* Business card dimensions 91x55mm */
         .card {
             width: var(--card-width);
             height: var(--card-height);
             background-color: #ffffff;
             color: #111111;
             position: relative;
-            overflow: hidden; /* Clips the background watermark */
+            overflow: hidden;
             box-shadow: 0 15px 35px rgba(0,0,0,0.12);
             display: flex;
             flex-direction: column;
@@ -55,7 +53,7 @@
             box-sizing: border-box;
             border: 1px solid #eeeeee;
             -webkit-font-smoothing: antialiased;
-            transform: translateZ(0); /* Hardware acceleration for cleaner rendering */
+            transform: translateZ(0);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -76,7 +74,6 @@
             line-height: 1.2;
         }
 
-        /* Custom Dynamic Styles */
         .dynamic-bg { background-color: var(--accent-color) !important; }
         .dynamic-text { color: var(--accent-color) !important; }
         .accent-grey { background-color: #4b5563; }
@@ -102,7 +99,6 @@
         .color-dot:hover { transform: scale(1.2); }
         .color-dot.active { border-color: #000; }
 
-        /* Spinner for export loading state */
         .loader {
             border: 2px solid #f3f3f3;
             border-top: 2px solid #3498db;
@@ -119,6 +115,37 @@
         }
 
         textarea { resize: none; }
+        .save-list-item:hover .delete-btn { opacity: 1; }
+
+        #exportStatus {
+            position: fixed;
+            bottom: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+        }
+
+        /* スライダーの見た目調整 */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -126,17 +153,16 @@
     <h1 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter uppercase">DisplayCard Generator</h1>
 
     <div id="captureArea">
-        <!-- The Card Target -->
         <div class="card" id="productCard">
-            <!-- Accent Vertical Bar -->
+            <!-- アクセントバー -->
             <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
-
-            <!-- Background Watermark -->
-            <div class="absolute" style="top: 15%; right: 5%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.8;">
-                <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block">AF</span>
+            
+            <!-- 背景透かし文字 (右下基準) -->
+            <div id="displayBgTextContainer" class="absolute flex items-end justify-end" style="bottom: -5%; right: 2%; opacity: 0.08; pointer-events: none; z-index: 0; line-height: 0.7;">
+                <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase select-none inline-block leading-none">AF</span>
             </div>
 
-            <!-- Header: Logo and Code Name -->
+            <!-- 上段: ブランドとCodeName -->
             <div class="z-10 flex justify-between items-start mb-2">
                 <div>
                     <h1 class="text-[20pt] font-[900] tracking-tighter leading-none uppercase whitespace-nowrap">
@@ -145,7 +171,6 @@
                 </div>
                 
                 <div class="text-right flex flex-col items-end">
-                    <!-- Split Keyboard Symbolic Icon -->
                     <div class="flex gap-1 opacity-90 mb-2">
                         <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
                             <div class="w-[5px] h-[5px] dynamic-bg"></div>
@@ -155,7 +180,6 @@
                             <div class="w-[5px] h-[5px] accent-grey"></div>
                         </div>
                     </div>
-                    <!-- Code Name Display -->
                     <div class="flex flex-col">
                         <span class="label-text" id="displayCodeNameLabel">Code Name</span>
                         <span class="value-text" id="displayCodeName">AroundFortyRB</span>
@@ -163,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- Content: Slogan Area -->
+            <!-- 中段: スローガン -->
             <div class="flex-grow flex flex-col justify-center relative z-10">
                 <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
                 <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
@@ -171,7 +195,7 @@
                 </div>
             </div>
 
-            <!-- Footer: Manufacturing Code -->
+            <!-- 下段: 製造コード -->
             <div class="z-10 flex justify-end">
                 <div class="flex flex-col text-right">
                     <span class="label-text" id="displayMfgCodeLabel">Manufacturing code</span>
@@ -181,137 +205,303 @@
         </div>
     </div>
 
-    <!-- Editor Control Panel -->
     <div class="editor-panel">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
         </div>
         
         <div class="space-y-4">
-            <!-- Theme Color Selection -->
-            <div>
-                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Theme Color</label>
-                <div class="flex items-center gap-3">
-                    <div onclick="updateThemeColor('#E61B23', this)" class="color-dot active" style="background-color: #E61B23;" title="Swiss Red"></div>
-                    <div onclick="updateThemeColor('#0047AB', this)" class="color-dot" style="background-color: #0047AB;" title="Midnight Blue"></div>
-                    <div onclick="updateThemeColor('#2D5A27', this)" class="color-dot" style="background-color: #2D5A27;" title="Forest Green"></div>
-                    <div onclick="updateThemeColor('#111111', this)" class="color-dot" style="background-color: #111111;" title="Pure Black"></div>
-                    <div class="h-5 w-px bg-gray-100 mx-1"></div>
-                    <input type="color" oninput="updateThemeColor(this.value)" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" title="Custom Picker">
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-6">
+                <label class="block text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-2">💾 クラウド保存機能</label>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="saveNameInput" placeholder="保存名を入力..." class="flex-grow text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-blue-400">
+                    <button id="saveBtn" class="bg-blue-500 text-white text-[10px] px-3 rounded font-bold hover:bg-blue-600 transition">保存</button>
+                </div>
+                <div id="savedListContainer" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                    <p class="text-[9px] text-gray-400 text-center py-2">読み込み中...</p>
                 </div>
             </div>
 
-            <!-- Input Fields -->
+            <div>
+                <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Theme Color</label>
+                <div class="flex items-center gap-3">
+                    <div id="swRed" class="color-dot active" style="background-color: #E61B23;" title="Swiss Red"></div>
+                    <div id="swBlue" class="color-dot" style="background-color: #0047AB;" title="Midnight Blue"></div>
+                    <div id="swGreen" class="color-dot" style="background-color: #2D5A27;" title="Forest Green"></div>
+                    <div id="swBlack" class="color-dot" style="background-color: #111111;" title="Pure Black"></div>
+                    <div class="h-5 w-px bg-gray-100 mx-1"></div>
+                    <input type="color" id="customColorPicker" class="w-6 h-6 p-0 border-0 bg-transparent cursor-pointer" title="Custom Picker">
+                </div>
+            </div>
+
             <div class="space-y-3">
-                <!-- Brand Name Input -->
                 <div>
                     <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
-                    <input type="text" id="brandNameInput" value="AroundForty" oninput="updateBrandName(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
+                    <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
                 </div>
-
                 <div>
                     <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
-                    <textarea id="sloganInput" oninput="updateSlogan(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-20">17mm狭ピッチ、オーソリニア、42キー、左右分割トラックボール搭載キーボード。20mmのPTFE球とベアリング搭載トラックボールケースは脱着が可能。ケースはねじを使わず、フォームを使ったガスケットライクな打鍵感が特徴。</textarea>
+                    <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-20">17mm狭ピッチ、オーソリニア、42キー、左右分割トラックボール搭載キーボード。20mmのPTFE球とベアリング搭載トラックボールケースは脱着が可能。ケースはねじを使わず、フォームを使ったガスケットライクな打鍵感が特徴。</textarea>
+                </div>
+                
+                <!-- Background Text & Size Section -->
+                <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Background Text (Watermark)</label>
+                    <input type="text" id="bgTextInput" value="AF" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase mb-3">
+                    
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Text Size</label>
+                        <span id="bgTextSizeDisplay" class="text-[9px] font-bold text-blue-500">120pt</span>
+                    </div>
+                    <input type="range" id="bgTextSizeInput" min="40" max="250" value="120" class="w-full">
                 </div>
 
-                <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Background Text (Watermark)</label>
-                    <input type="text" id="bgTextInput" value="AF" oninput="updateBgText(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
-                </div>
-
-                <!-- Upper info row -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper Label</label>
-                        <input type="text" id="codeNameLabelInput" value="Code Name" oninput="updateCodeNameLabel(this.value)" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                        <input type="text" id="codeNameLabelInput" value="Code Name" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
                         <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Upper Value</label>
-                        <input type="text" id="codeNameInput" value="AroundFortyRB" oninput="updateCodeName(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                        <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
                     </div>
                     <div>
                         <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Lower Label</label>
-                        <input type="text" id="mfgCodeLabelInput" value="Manufacturing code" oninput="updateMfgCodeLabel(this.value)" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                        <input type="text" id="mfgCodeLabelInput" value="Manufacturing code" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
                         <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lower Value</label>
-                        <input type="text" id="mfgCodeInput" value="02AFRB" oninput="updateMfgCode(this.value)" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
+                        <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Export Action -->
         <div class="pt-6 border-t border-gray-100 mt-6">
-            <button onclick="exportAsImage()" id="btnExport" class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+            <button id="btnExport" class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
                 <span>📸 高画質画像として保存 (PNG)</span>
             </button>
         </div>
     </div>
 
-    <script>
-        // Update CSS variable for the theme color
-        function updateThemeColor(hex, el) {
+    <div id="exportStatus"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'displaycard-gen';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let accentColor = "#E61B23";
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) { console.error("Auth failed:", error); }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) loadSavedList();
+        });
+
+        const els = {
+            card: document.getElementById('productCard'),
+            brandName: document.getElementById('displayBrandName'),
+            slogan: document.getElementById('displaySlogan'),
+            bgText: document.getElementById('displayBgText'),
+            codeNameLabel: document.getElementById('displayCodeNameLabel'),
+            codeName: document.getElementById('displayCodeName'),
+            mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
+            mfgCode: document.getElementById('displayMfgCode'),
+            
+            brandNameInput: document.getElementById('brandNameInput'),
+            sloganInput: document.getElementById('sloganInput'),
+            bgTextInput: document.getElementById('bgTextInput'),
+            bgTextSizeInput: document.getElementById('bgTextSizeInput'),
+            bgTextSizeDisplay: document.getElementById('bgTextSizeDisplay'),
+            
+            codeNameLabelInput: document.getElementById('codeNameLabelInput'),
+            codeNameInput: document.getElementById('codeNameInput'),
+            mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
+            mfgCodeInput: document.getElementById('mfgCodeInput'),
+            
+            btnExport: document.getElementById('btnExport'),
+            saveBtn: document.getElementById('saveBtn'),
+            saveNameInput: document.getElementById('saveNameInput'),
+            savedListContainer: document.getElementById('savedListContainer'),
+            status: document.getElementById('exportStatus')
+        };
+
+        const showStatus = (msg, duration = 3000) => {
+            els.status.innerText = msg;
+            els.status.style.display = 'block';
+            setTimeout(() => els.status.style.display = 'none', duration);
+        };
+
+        // UIへの反映ロジック
+        els.brandNameInput.oninput = (e) => els.brandName.innerText = e.target.value;
+        els.sloganInput.oninput = (e) => els.slogan.innerText = e.target.value;
+        els.bgTextInput.oninput = (e) => els.bgText.innerText = e.target.value;
+        els.bgTextSizeInput.oninput = (e) => {
+            const size = e.target.value;
+            els.bgText.style.fontSize = `${size}pt`;
+            els.bgTextSizeDisplay.innerText = `${size}pt`;
+        };
+        
+        els.codeNameLabelInput.oninput = (e) => els.codeNameLabel.innerText = e.target.value;
+        els.codeNameInput.oninput = (e) => els.codeName.innerText = e.target.value;
+        els.mfgCodeLabelInput.oninput = (e) => els.mfgCodeLabel.innerText = e.target.value;
+        els.mfgCodeInput.oninput = (e) => els.mfgCode.innerText = e.target.value;
+
+        const updateThemeColor = (hex) => {
+            accentColor = hex;
             document.documentElement.style.setProperty('--accent-color', hex);
-            if (el) {
-                document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
-                el.classList.add('active');
-            }
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.toggle('active', dot.style.backgroundColor === hex || dot.dataset.hex === hex);
+            });
+        };
+
+        document.getElementById('swRed').onclick = () => updateThemeColor("#E61B23");
+        document.getElementById('swBlue').onclick = () => updateThemeColor("#0047AB");
+        document.getElementById('swGreen').onclick = () => updateThemeColor("#2D5A27");
+        document.getElementById('swBlack').onclick = () => updateThemeColor("#111111");
+        document.getElementById('customColorPicker').oninput = (e) => updateThemeColor(e.target.value);
+
+        els.saveBtn.onclick = async () => {
+            if (!currentUser) return;
+            const name = els.saveNameInput.value.trim();
+            if (!name) { showStatus("保存名を入力してください"); return; }
+            const data = {
+                name, 
+                brandName: els.brandNameInput.value, 
+                slogan: els.sloganInput.value,
+                bgText: els.bgTextInput.value, 
+                bgTextSize: els.bgTextSizeInput.value,
+                codeNameLabel: els.codeNameLabelInput.value,
+                codeName: els.codeNameInput.value, 
+                mfgCodeLabel: els.mfgCodeLabelInput.value,
+                mfgCode: els.mfgCodeInput.value, 
+                accentColor, 
+                updatedAt: serverTimestamp()
+            };
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards', name), data);
+                els.saveNameInput.value = "";
+                showStatus("保存しました");
+            } catch (err) { console.error(err); }
+        };
+
+        function loadSavedList() {
+            const collectionRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards');
+            onSnapshot(collectionRef, (snapshot) => {
+                els.savedListContainer.innerHTML = "";
+                if (snapshot.empty) {
+                    els.savedListContainer.innerHTML = '<p class="text-[9px] text-gray-400 text-center py-2">保存データはありません</p>';
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const item = document.createElement('div');
+                    item.className = "save-list-item flex justify-between items-center bg-white p-2 rounded border border-gray-100 shadow-sm text-[10px] mb-1";
+                    const textWrap = document.createElement('div');
+                    textWrap.className = "cursor-pointer flex-grow truncate font-medium text-gray-700";
+                    textWrap.innerText = data.name;
+                    textWrap.onclick = () => applySavedData(data);
+                    const del = document.createElement('button');
+                    del.className = "delete-btn opacity-0 text-red-400 hover:text-red-600 px-1 transition";
+                    del.innerText = "×";
+                    del.onclick = async (e) => {
+                        e.stopPropagation();
+                        if(confirm(`"${data.name}" を削除しますか？`)) {
+                            await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'savedCards', docSnap.id));
+                        }
+                    };
+                    item.append(textWrap, del);
+                    els.savedListContainer.append(item);
+                });
+            }, (err) => console.error(err));
         }
 
-        // Live text update functions
-        function updateBrandName(val) { document.getElementById('displayBrandName').innerText = val; }
-        function updateSlogan(val) { document.getElementById('displaySlogan').innerText = val; }
-        function updateBgText(val) { document.getElementById('displayBgText').innerText = val; }
-        function updateCodeName(val) { document.getElementById('displayCodeName').innerText = val; }
-        function updateMfgCode(val) { document.getElementById('displayMfgCode').innerText = val; }
-        
-        // Label update functions
-        function updateCodeNameLabel(val) { document.getElementById('displayCodeNameLabel').innerText = val; }
-        function updateMfgCodeLabel(val) { document.getElementById('displayMfgCodeLabel').innerText = val; }
-
-        // Function to capture the card element and download as PNG
-        async function exportAsImage() {
-            const btn = document.getElementById('btnExport');
-            const card = document.getElementById('productCard');
+        function applySavedData(data) {
+            els.brandNameInput.value = data.brandName || "";
+            els.sloganInput.value = data.slogan || "";
+            els.bgTextInput.value = data.bgText || "";
+            els.bgTextSizeInput.value = data.bgTextSize || "120";
+            els.codeNameLabelInput.value = data.codeNameLabel || "";
+            els.codeNameInput.value = data.codeName || "";
+            els.mfgCodeLabelInput.value = data.mfgCodeLabel || "";
+            els.mfgCodeInput.value = data.mfgCode || "";
             
-            // UI feedback
-            btn.disabled = true;
-            const originalBtnText = btn.innerHTML;
-            btn.innerHTML = '<span class="loader"></span> 生成中...';
+            // 画面表示への反映
+            els.brandName.innerText = els.brandNameInput.value;
+            els.slogan.innerText = els.sloganInput.value;
+            els.bgText.innerText = els.bgTextInput.value;
+            els.bgText.style.fontSize = `${els.bgTextSizeInput.value}pt`;
+            els.bgTextSizeDisplay.innerText = `${els.bgTextSizeInput.value}pt`;
+            
+            els.codeNameLabel.innerText = els.codeNameLabelInput.value;
+            els.codeName.innerText = els.codeNameInput.value;
+            els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
+            els.mfgCode.innerText = els.mfgCodeInput.value;
+            
+            if (data.accentColor) updateThemeColor(data.accentColor);
+            showStatus(`"${data.name}" を読み込みました`);
+        }
+
+        els.btnExport.onclick = async () => {
+            if (typeof html2canvas === 'undefined') {
+                showStatus("ライブラリが読み込まれていません。ページを再読み込みしてください。");
+                return;
+            }
+            els.btnExport.disabled = true;
+            const originalText = els.btnExport.innerHTML;
+            els.btnExport.innerHTML = '<span class="loader"></span> 生成中...';
+            showStatus("画像を生成しています...");
 
             try {
-                // Ensure fonts are loaded before capturing
                 await document.fonts.ready;
-
+                const cardRect = els.card.getBoundingClientRect();
                 const options = {
-                    scale: 4, // Higher scale for print quality
+                    scale: 3,
                     useCORS: true,
+                    allowTaint: true,
                     backgroundColor: "#ffffff",
-                    logging: false,
-                    // Fix bounds precisely
-                    width: card.getBoundingClientRect().width,
-                    height: card.getBoundingClientRect().height,
+                    width: cardRect.width,
+                    height: cardRect.height,
                     scrollX: 0,
                     scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
-                        const clonedCard = clonedDoc.getElementById('productCard');
-                        clonedCard.style.boxShadow = 'none';
-                        clonedCard.style.border = 'none';
+                        const c = clonedDoc.getElementById('productCard');
+                        c.style.boxShadow = 'none';
+                        c.style.border = 'none';
                     }
                 };
 
-                const canvas = await html2canvas(card, options);
-                
-                // Trigger download
+                const canvas = await html2canvas(els.card, options);
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
                 const link = document.createElement('a');
-                link.download = `AroundForty_Card_${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.download = `DisplayCard_${Date.now()}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
+                showStatus("保存が完了しました");
             } catch (err) {
                 console.error("Export failed:", err);
-                alert("画像の書き出しに失敗しました。PCまたはスマホの標準ブラウザでお試しください。");
+                showStatus("保存に失敗しました。");
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalBtnText;
+                els.btnExport.disabled = false;
+                els.btnExport.innerHTML = originalText;
             }
-        }
+        };
     </script>
 </body>
 </html>
