@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - DQ Pixel Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- ドット絵フォント -->
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --card-width: 91mm;
+            --card-height: 55mm;
+            --text-color: #FFFFFF;
+            --bg-color: #000000;
+            --window-border: #FFFFFF;
+        }
+        
+        body {
+            background-color: #202020;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'DotGothic16', sans-serif;
+            padding: 4rem 2rem;
+        }
+        
+        .tool-container {
+            width: var(--card-width);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #captureArea {
+            padding: 0;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        /* RPG Status Screen Style */
+        .card {
+            width: var(--card-width);
+            height: var(--card-height);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            padding: 3mm;
+            box-sizing: border-box;
+            border: 4px double white;
+            border-radius: 6px;
+            font-family: 'DotGothic16', sans-serif;
+            -webkit-font-smoothing: none;
+            image-rendering: pixelated;
+            transform: translateZ(0);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        /* ステータスヘッダー */
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1mm;
+            border-bottom: 2px solid white;
+            padding-bottom: 1mm;
+            flex-shrink: 0;
+        }
+
+        /* ステータスコンテンツ（左右分割） */
+        .status-content {
+            display: flex;
+            flex-grow: 0;
+            gap: 2mm;
+            margin-bottom: 1mm;
+        }
+
+        .status-body {
+            flex: 2; /* 左側のテキストエリアを広めに */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.5mm;
+            font-size: 10px;
+        }
+
+        /* 画像エリア */
+        .status-image-area {
+            flex: 1;
+            border: 2px solid #666;
+            background-color: #111;
+            position: relative;
+            overflow: hidden;
+            min-width: 18mm;
+            height: 22mm; /* 高さを固定してレイアウト崩れを防ぐ */
+            border-radius: 2px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .label { 
+            color: #3bf6ff;
+            margin-right: 0.5em; 
+            min-width: 5em;
+            text-align: justify;
+            text-align-last: justify;
+            line-height: 1.4;
+        }
+        
+        .equip-mark {
+            color: #ffcc00;
+            margin-right: 0.2em;
+            font-weight: bold;
+        }
+
+        .value { 
+            color: #fff; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            line-height: 1.4;
+            padding-bottom: 1px;
+        }
+
+        /* Description Window */
+        .msg-window {
+            border: 2px solid white;
+            border-radius: 4px;
+            padding: 1.5mm 2mm;
+            flex-grow: 1; /* 残りのスペースを埋める */
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #displaySlogan {
+            line-height: 1.5;
+        }
+
+        /* Cursor Animation */
+        .cursor {
+            display: inline-block;
+            width: 0; height: 0; 
+            border-top: 3px solid transparent;
+            border-bottom: 3px solid transparent;
+            border-left: 5px solid white;
+            margin-right: 4px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Editor Panel */
+        .editor-panel {
+            background: #2d2d2d;
+            border-radius: 4px;
+            padding: 1.5rem;
+            border: 1px solid #444;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Inputs */
+        input[type="text"], textarea {
+            background-color: #000;
+            border: 1px solid #fff;
+            color: #fff;
+            font-family: 'DotGothic16', sans-serif;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: #3bf6ff;
+            outline: none;
+        }
+
+        /* Image Upload Area */
+        .image-upload-zone {
+            border: 2px dashed #666;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #111;
+            color: #888;
+            font-size: 10px;
+        }
+        .image-upload-zone:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+        
+        /* Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #3bf6ff;
+            border-radius: 0;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+
+        /* Buttons */
+        .btn-retro {
+            background-color: #000;
+            border: 2px solid #fff;
+            color: #fff;
+            font-family: 'DotGothic16', sans-serif;
+            border-radius: 4px;
+            transition: all 0.1s;
+        }
+        .btn-retro:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        
+        #exportStatus {
+            position: fixed;
+            bottom: 20px;
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            font-family: 'DotGothic16', sans-serif;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-3xl flex justify-between items-center mb-8 px-4 font-mono">
+        <a href="index.html" class="text-xs font-bold text-gray-500 hover:text-white transition">&lt; メニューニ モドル</a>
+        <h1 class="text-xl font-bold text-white tracking-wider">つよさ ヲ みる</h1>
+        <div class="w-16"></div>
+    </div>
+
+    <div class="tool-container space-y-4">
+        
+        <!-- File Save Section -->
+        <div class="bg-[#2d2d2d] p-3 border border-[#444] w-full rounded">
+            <label class="block text-[10px] font-bold text-gray-400 mb-2">
+                キロク コマンド
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="btn-retro text-xs py-2 flex items-center justify-center gap-1">
+                    <span>セーブ(JSON)</span>
+                </button>
+                <button id="importJsonBtn" class="btn-retro text-xs py-2 flex items-center justify-center gap-1">
+                    <span>ロード(JSON)</span>
+                </button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <!-- Card Preview Area -->
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                
+                <!-- Status Header -->
+                <div class="status-header">
+                    <div class="flex items-center">
+                        <span class="cursor"></span>
+                        <span class="text-[16px] font-bold tracking-widest text-yellow-400" id="displayBrandName">AroundForty</span>
+                    </div>
+                    <div class="text-[12px]">
+                        <span id="displayLevelLabel">Lv.</span> <span id="displayLevel" class="font-bold">40</span>
+                    </div>
+                </div>
+                
+                <!-- Status Body (Split Layout) -->
+                <div class="status-content">
+                    <!-- Left: Stats -->
+                    <div class="status-body">
+                        <div class="status-row">
+                            <span class="label" id="displayCodeNameLabel">しょくぎょう</span>
+                            <span class="value" id="displayCodeName">AroundFortyRB</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="label" id="displayMfgCodeLabel">せいぞうNo</span>
+                            <span class="value" id="displayMfgCode">02AFRB</span>
+                        </div>
+                         <div class="status-row">
+                            <span class="label" id="displayOwnerLabel">オーナー</span>
+                            <span class="value" id="displayOwner">勇者ユーザー</span>
+                        </div>
+                        
+                        <!-- Spacing -->
+                        <div class="h-0.5"></div>
+
+                        <!-- Equipment -->
+                        <div class="status-row">
+                            <span class="equip-mark">E</span>
+                            <span class="label" style="min-width: 4em;" id="displayKeySwitchLabel">ぶき</span>
+                            <span class="value" id="displayKeySwitch">赤軸スイッチ</span>
+                        </div>
+                        <div class="status-row">
+                            <span class="equip-mark">E</span>
+                            <span class="label" style="min-width: 4em;" id="displayKeyCapsLabel">ぼうぐ</span>
+                            <span class="value" id="displayKeyCaps">PBTキーキャップ</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Character Image -->
+                    <div class="status-image-area flex items-center justify-center">
+                        <img id="displayImage" src="" class="absolute w-full h-full object-cover" style="display: none; image-rendering: pixelated;">
+                        <span id="imagePlaceholder" class="text-[8px] text-gray-600 text-center leading-tight">NO<br>IMAGE</span>
+                    </div>
+                </div>
+
+                <!-- Message Window (Flex grow to fill space) -->
+                <div class="msg-window">
+                    <p id="displaySlogan" class="leading-relaxed whitespace-pre-wrap text-[10px]">大人のための道具。
+精密に設計されたキーボードだ。</p>
+                    <span class="animate-pulse absolute bottom-1 right-2 text-[10px]">▼</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <div class="flex justify-between items-center mb-4 border-b border-[#444] pb-2">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">パラメータ ヘンシュウ</h2>
+            </div>
+            
+            <div class="space-y-5">
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">ガゾウ (Image)</label>
+                    <label class="image-upload-zone block mb-2">
+                        <span>[ファイル ヲ センタク]</span>
+                        <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                    </label>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[8px] text-gray-500 mb-0.5">ヨコ (X)</label>
+                            <input type="range" id="imgPosX" min="-100" max="100" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] text-gray-500 mb-0.5">タテ (Y)</label>
+                            <input type="range" id="imgPosY" min="-100" max="100" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] text-gray-500 mb-0.5">オオキサ</label>
+                            <input type="range" id="imgScale" min="0.1" max="3.0" step="0.1" value="1.0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inputs -->
+                <div class="space-y-3">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="block text-[10px] text-gray-400 mb-1">ナマエ (Brand)</label>
+                            <input type="text" id="brandNameInput" value="AroundForty" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1">レベル (Label/Val)</label>
+                            <div class="flex gap-1">
+                                <input type="text" id="levelLabelInput" value="Lv." class="w-1/2 text-center px-0">
+                                <input type="text" id="levelInput" value="40" class="w-1/2 text-center px-0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">セツメイ (Slogan)</label>
+                        <textarea id="sloganInput" class="w-full h-16 mb-2">大人のための道具。
+精密に設計されたキーボードだ。</textarea>
+                        <!-- Font Size Slider -->
+                        <div class="flex justify-between items-center mb-1 px-1">
+                            <label class="text-[8px] text-gray-400">モジサイズ</label>
+                            <span id="sloganSizeDisplay" class="text-[8px] text-[#3bf6ff]">10px</span>
+                        </div>
+                        <input type="range" id="sloganSizeInput" min="6" max="16" value="10" step="1" class="w-full">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[8px] text-gray-400 mb-1">ラベル 1</label>
+                            <input type="text" id="codeNameLabelInput" value="しょくぎょう" class="w-full text-[10px] bg-[#222] border-gray-600 mb-1">
+                            <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] text-gray-400 mb-1">ラベル 2</label>
+                            <input type="text" id="mfgCodeLabelInput" value="せいぞうNo" class="w-full text-[10px] bg-[#222] border-gray-600 mb-1">
+                            <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full">
+                        </div>
+                         <div>
+                            <label class="block text-[8px] text-gray-400 mb-1">ラベル 3 (Owner)</label>
+                            <input type="text" id="ownerLabelInput" value="オーナー" class="w-full text-[10px] bg-[#222] border-gray-600 mb-1">
+                            <input type="text" id="ownerInput" value="勇者ユーザー" class="w-full">
+                        </div>
+                         <div><!-- Spacer --></div>
+                        <div>
+                            <label class="block text-[8px] text-gray-400 mb-1">そうび 1 (Switch)</label>
+                            <input type="text" id="keySwitchLabelInput" value="ぶき" class="w-full text-[10px] bg-[#222] border-gray-600 mb-1">
+                            <input type="text" id="keySwitchInput" value="赤軸スイッチ" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] text-gray-400 mb-1">そうび 2 (Caps)</label>
+                            <input type="text" id="keyCapsLabelInput" value="ぼうぐ" class="w-full text-[10px] bg-[#222] border-gray-600 mb-1">
+                            <input type="text" id="keyCapsInput" value="PBTキーキャップ" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-[#444] mt-6">
+                <button id="btnExport" class="w-full py-3 px-4 btn-retro text-sm flex items-center justify-center gap-2">
+                    <span>ガゾウ ヲ カキダス</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script type="text/javascript">
+        const els = {
+            card: document.getElementById('productCard'),
+            brandName: document.getElementById('displayBrandName'),
+            level: document.getElementById('displayLevel'),
+            levelLabel: document.getElementById('displayLevelLabel'),
+            slogan: document.getElementById('displaySlogan'),
+            
+            codeNameLabel: document.getElementById('displayCodeNameLabel'),
+            codeName: document.getElementById('displayCodeName'),
+            mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
+            mfgCode: document.getElementById('displayMfgCode'),
+            
+            keySwitchLabel: document.getElementById('displayKeySwitchLabel'),
+            keySwitch: document.getElementById('displayKeySwitch'),
+            keyCapsLabel: document.getElementById('displayKeyCapsLabel'),
+            keyCaps: document.getElementById('displayKeyCaps'),
+            ownerLabel: document.getElementById('displayOwnerLabel'),
+            owner: document.getElementById('displayOwner'),
+            
+            // Image
+            displayImage: document.getElementById('displayImage'),
+            imagePlaceholder: document.getElementById('imagePlaceholder'),
+            imageUpload: document.getElementById('imageUpload'),
+            imgPosX: document.getElementById('imgPosX'),
+            imgPosY: document.getElementById('imgPosY'),
+            imgScale: document.getElementById('imgScale'),
+
+            // Inputs
+            brandNameInput: document.getElementById('brandNameInput'),
+            levelInput: document.getElementById('levelInput'),
+            levelLabelInput: document.getElementById('levelLabelInput'),
+            sloganInput: document.getElementById('sloganInput'),
+            sloganSizeInput: document.getElementById('sloganSizeInput'),
+            sloganSizeDisplay: document.getElementById('sloganSizeDisplay'),
+            
+            codeNameLabelInput: document.getElementById('codeNameLabelInput'),
+            codeNameInput: document.getElementById('codeNameInput'),
+            mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
+            mfgCodeInput: document.getElementById('mfgCodeInput'),
+            
+            keySwitchLabelInput: document.getElementById('keySwitchLabelInput'),
+            keySwitchInput: document.getElementById('keySwitchInput'),
+            keyCapsLabelInput: document.getElementById('keyCapsLabelInput'),
+            keyCapsInput: document.getElementById('keyCapsInput'),
+            ownerLabelInput: document.getElementById('ownerLabelInput'),
+            ownerInput: document.getElementById('ownerInput'),
+            
+            btnExport: document.getElementById('btnExport'),
+            status: document.getElementById('exportStatus'),
+            exportJsonBtn: document.getElementById('exportJsonBtn'),
+            importJsonBtn: document.getElementById('importJsonBtn'),
+            jsonFileInput: document.getElementById('jsonFileInput')
+        };
+
+        const showStatus = (msg, duration = 3000) => {
+            els.status.innerText = msg;
+            els.status.style.display = 'block';
+            setTimeout(() => els.status.style.display = 'none', duration);
+        };
+
+        // Image Handling
+        els.imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    els.displayImage.src = event.target.result;
+                    els.displayImage.style.display = 'block';
+                    els.imagePlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Image Transform Sync
+        const syncImageTransform = () => {
+            const x = els.imgPosX.value;
+            const y = els.imgPosY.value;
+            const s = els.imgScale.value;
+            els.displayImage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+        };
+
+        [els.imgPosX, els.imgPosY, els.imgScale].forEach(el => {
+            el.addEventListener('input', syncImageTransform);
+        });
+
+        const syncUI = () => {
+            if(els.brandName) els.brandName.innerText = els.brandNameInput.value;
+            if(els.level) els.level.innerText = els.levelInput.value;
+            if(els.levelLabel) els.levelLabel.innerText = els.levelLabelInput.value;
+            if(els.slogan) els.slogan.innerText = els.sloganInput.value;
+
+            // Slogan Font Size
+            const sloganSize = els.sloganSizeInput.value;
+            if(els.slogan) els.slogan.style.fontSize = `${sloganSize}px`;
+            if(els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}px`;
+
+            if(els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
+            if(els.codeName) els.codeName.innerText = els.codeNameInput.value;
+            
+            if(els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
+            if(els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value;
+            
+            if(els.keySwitchLabel) els.keySwitchLabel.innerText = els.keySwitchLabelInput.value;
+            if(els.keySwitch) els.keySwitch.innerText = els.keySwitchInput.value;
+            
+            if(els.keyCapsLabel) els.keyCapsLabel.innerText = els.keyCapsLabelInput.value;
+            if(els.keyCaps) els.keyCaps.innerText = els.keyCapsInput.value;
+            
+            if(els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
+            if(els.owner) els.owner.innerText = els.ownerInput.value;
+        };
+
+        [
+            els.brandNameInput, els.levelInput, els.levelLabelInput, els.sloganInput, els.sloganSizeInput,
+            els.codeNameLabelInput, els.codeNameInput, 
+            els.mfgCodeLabelInput, els.mfgCodeInput,
+            els.keySwitchLabelInput, els.keySwitchInput,
+            els.keyCapsLabelInput, els.keyCapsInput,
+            els.ownerLabelInput, els.ownerInput
+        ].forEach(el => {
+            if(el) el.addEventListener('input', syncUI);
+        });
+
+        // File name helper
+        function getFileName(extension) {
+            const base = els.codeNameInput.value.trim() || "DQCard";
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            return `RPG_${base}_${timestamp}.${extension}`;
+        }
+
+        els.exportJsonBtn.onclick = () => {
+            const data = {
+                brandName: els.brandNameInput.value, level: els.levelInput.value, levelLabel: els.levelLabelInput.value,
+                slogan: els.sloganInput.value, sloganSize: els.sloganSizeInput.value,
+                codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
+                mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
+                keySwitchLabel: els.keySwitchLabelInput.value, keySwitch: els.keySwitchInput.value,
+                keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
+                ownerLabel: els.ownerLabelInput.value, owner: els.ownerInput.value,
+                imgX: els.imgPosX.value, imgY: els.imgPosY.value, imgS: els.imgScale.value,
+                exportedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = getFileName('json');
+            link.click();
+            URL.revokeObjectURL(url);
+            showStatus("ぼうけんのしょ を ほぞんしました");
+        };
+
+        els.importJsonBtn.onclick = () => els.jsonFileInput.click();
+        els.jsonFileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    applyData(data);
+                    showStatus("ぼうけんのしょ を よみこみました (ガゾウハ サイセッテイ)");
+                } catch (err) { showStatus("よみこみに しっぱい しました"); }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        function applyData(data) {
+            if (data.brandName) els.brandNameInput.value = data.brandName;
+            if (data.level) els.levelInput.value = data.level;
+            if (data.levelLabel) els.levelLabelInput.value = data.levelLabel;
+            if (data.slogan) els.sloganInput.value = data.slogan;
+            if (data.sloganSize) {
+                els.sloganSizeInput.value = data.sloganSize;
+                els.sloganSizeDisplay.innerText = data.sloganSize + "px";
+            }
+            
+            if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
+            if (data.codeName) els.codeNameInput.value = data.codeName;
+            
+            if (data.mfgCodeLabel) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
+            if (data.mfgCode) els.mfgCodeInput.value = data.mfgCode;
+            
+            if (data.keySwitchLabel) els.keySwitchLabelInput.value = data.keySwitchLabel;
+            if (data.keySwitch) els.keySwitchInput.value = data.keySwitch;
+            
+            if (data.keyCapsLabel) els.keyCapsLabelInput.value = data.keyCapsLabel;
+            if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
+            
+            if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
+            if (data.owner) els.ownerInput.value = data.owner;
+            
+            if (data.imgX) els.imgPosX.value = data.imgX;
+            if (data.imgY) els.imgPosY.value = data.imgY;
+            if (data.imgS) els.imgScale.value = data.imgS;
+            
+            syncUI();
+            syncImageTransform();
+        }
+
+        els.btnExport.onclick = async () => {
+            if (typeof html2canvas === 'undefined') return showStatus("ジュンビチュウ...");
+            els.btnExport.disabled = true;
+            const originalText = els.btnExport.innerHTML;
+            els.btnExport.innerHTML = '<span class="loader"></span> カキコミチュウ...';
+
+            try {
+                if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+                const cardRect = els.card.getBoundingClientRect();
+                
+                const options = {
+                    scale: 3, useCORS: true, backgroundColor: "#000000",
+                    width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
+                    onclone: (clonedDoc) => {
+                        const c = clonedDoc.getElementById('productCard');
+                        const msgWindow = clonedDoc.querySelector('.msg-window');
+                        const values = clonedDoc.querySelectorAll('.value');
+                        const labels = clonedDoc.querySelectorAll('.label');
+
+                        if (c) {
+                            c.style.boxShadow = 'none'; 
+                            c.style.transform = 'none';
+                            // 重要: カード自体のクリッピングを解除
+                            c.style.overflow = 'visible';
+                        }
+                        
+                        if (msgWindow) {
+                            msgWindow.style.overflow = 'visible';
+                            msgWindow.style.height = 'auto'; // 内容に合わせて高さを自動調整
+                            msgWindow.style.flexGrow = '0';  // flexの影響を排除して実サイズにする
+                            msgWindow.style.paddingBottom = '1em'; // 下部の見切れ防止
+                        }
+
+                        // ステータスの値部分の見切れ防止
+                        values.forEach(el => {
+                            el.style.overflow = 'visible';
+                            el.style.whiteSpace = 'normal';
+                            el.style.display = 'inline-block';
+                            el.style.lineHeight = '1.4';
+                            el.style.paddingBottom = '2px';
+                        });
+
+                        // ラベル部分の見切れ防止
+                        labels.forEach(el => {
+                             el.style.overflow = 'visible';
+                             el.style.lineHeight = '1.4';
+                             el.style.paddingBottom = '2px';
+                        });
+                    }
+                };
+
+                const canvas = await html2canvas(els.card, options);
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                const link = document.createElement('a');
+                link.download = getFileName('png');
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showStatus("カキコミ カンリョウ！");
+            } catch (err) {
+                console.error("Export failed:", err);
+                showStatus("シッパイ シマシタ");
+            } finally {
+                els.btnExport.disabled = false;
+                els.btnExport.innerHTML = originalText;
+            }
+        };
+
+        syncUI();
+    </script>
+</body>
+</html>
