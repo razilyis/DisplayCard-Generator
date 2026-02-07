@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DisplayCard Generator Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Fira+Code:wght@600&family=Rajdhani:wght@700&family=Share+Tech+Mono&family=Teko:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Fira+Code:wght@600&family=Rajdhani:wght@700&family=Share+Tech+Mono&family=Teko:wght@600&family=DotGothic16&display=swap" rel="stylesheet">
 </head>
 <body class="bg-zinc-100 flex items-center justify-center min-h-screen font-['Inter'] p-8">
 
@@ -15,7 +15,7 @@
         </h1>
         <p class="text-center text-zinc-500 mb-16 text-sm tracking-wide">Select your design style / デザインを選択してください</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             <!-- Light / Swiss Style -->
             <a href="light.html" class="group relative block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-zinc-200 h-full flex flex-col">
@@ -29,6 +29,7 @@
                 <div class="p-5 flex-grow border-t border-zinc-100">
                     <h2 class="text-sm font-bold text-zinc-900 mb-1 group-hover:text-[#E61B23] transition flex items-center gap-2">
                         Swiss Style
+                        <span class="text-[9px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-sans">Light</span>
                     </h2>
                     <p class="text-[10px] text-zinc-500 leading-relaxed">
                         Minimalist & Clean.<br>洗練された白ベース。
@@ -48,6 +49,7 @@
                 <div class="p-5 flex-grow border-t border-zinc-800">
                     <h2 class="text-sm font-bold text-white mb-1 group-hover:text-[#00E5FF] transition flex items-center gap-2">
                         Industrial
+                        <span class="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-sans">Dark</span>
                     </h2>
                     <p class="text-[10px] text-zinc-400 leading-relaxed">
                         Cyberpunk & Tech.<br>メカニカルな黒ベース。
@@ -72,6 +74,7 @@
                 <div class="p-5 flex-grow border-t border-gray-700">
                     <h2 class="text-sm font-bold text-[#abb2bf] mb-1 group-hover:text-[#61AFEF] transition flex items-center gap-2">
                         Developer
+                        <span class="text-[9px] bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full font-sans">Code</span>
                     </h2>
                     <p class="text-[10px] text-gray-500 leading-relaxed">
                         Editor style for devs.<br>macOSエディタ風。
@@ -92,6 +95,7 @@
                 <div class="p-5 flex-grow border-t border-[#004080]">
                     <h2 class="text-sm font-bold text-white mb-1 group-hover:text-[#00FFFF] transition flex items-center gap-2">
                         Blueprint
+                        <span class="text-[9px] bg-[#004080] text-white px-2 py-0.5 rounded-full font-sans">Tech</span>
                     </h2>
                     <p class="text-[10px] text-gray-300 leading-relaxed">
                         Engineering schematic.<br>青焼き設計図風。
@@ -112,10 +116,31 @@
                 <div class="p-5 flex-grow border-t border-gray-100">
                     <h2 class="text-sm font-bold text-gray-800 mb-1 group-hover:text-[#E63946] transition flex items-center gap-2">
                         Product Sketch
-                        <span class="text-[8px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-bold">NEW</span>
+                        <span class="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-sans">Img</span>
                     </h2>
                     <p class="text-[10px] text-gray-500 leading-relaxed">
                         Upload your drawings.<br>線画を配置するデザイン。
+                    </p>
+                </div>
+            </a>
+            
+            <!-- DQ Pixel Style -->
+            <a href="dq_pixel.html" class="group relative block bg-black rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-800 h-full flex flex-col">
+                <div class="h-40 bg-zinc-900 flex items-center justify-center p-6 group-hover:bg-black transition relative overflow-hidden">
+                    <div class="w-32 h-20 bg-black border-2 border-white shadow-md relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500 rounded flex flex-col justify-between">
+                        <div class="text-[6px] font-['DotGothic16'] text-white">ステータス</div>
+                        <div class="border border-white p-1 rounded">
+                            <div class="text-[5px] font-['DotGothic16'] text-white">▼コマンド</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 flex-grow border-t border-gray-800">
+                    <h2 class="text-sm font-bold text-white mb-1 group-hover:text-yellow-400 transition flex items-center gap-2">
+                        RPG Pixel
+                        <span class="text-[9px] bg-yellow-600 text-black px-1.5 py-0.5 rounded font-bold">New</span>
+                    </h2>
+                    <p class="text-[10px] text-gray-400 leading-relaxed font-['DotGothic16']">
+                        ボウケンノショ。<br>レトロゲーム風デザイン。
                     </p>
                 </div>
             </a>
@@ -125,7 +150,7 @@
         <div class="mt-16 text-center border-t border-zinc-200 pt-8">
             <p class="text-xs text-zinc-400 mb-2">Usage</p>
             <p class="text-[10px] text-zinc-400 font-mono">
-                index.html / light.html / dark.html / mac_code.html / blueprint.html / sketch.html
+                index.html / light.html / dark.html / mac_code.html / blueprint.html / sketch.html / dq_pixel.html
             </p>
         </div>
     </div>
