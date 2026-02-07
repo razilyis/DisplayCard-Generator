@@ -8,8 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- ドット絵フォント -->
-    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- レトロゲーム風の日本語フォントを一括ロード -->
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Kaisei+Opti&family=Mochiy+Pop+One&family=Reggae+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
@@ -17,6 +17,7 @@
             --text-color: #FFFFFF;
             --bg-color: #000000;
             --window-border: #FFFFFF;
+            --main-font: 'DotGothic16', sans-serif;
         }
         
         body {
@@ -28,7 +29,7 @@
             justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
-            font-family: 'DotGothic16', sans-serif;
+            font-family: var(--main-font);
             padding: 4rem 2rem;
         }
         
@@ -62,7 +63,7 @@
             box-sizing: border-box;
             border: 4px double white;
             border-radius: 6px;
-            font-family: 'DotGothic16', sans-serif;
+            font-family: var(--main-font);
             -webkit-font-smoothing: none;
             image-rendering: pixelated;
             transform: translateZ(0);
@@ -179,35 +180,18 @@
         }
 
         /* Inputs */
-        input[type="text"], textarea {
+        input[type="text"], textarea, select {
             background-color: #000;
             border: 1px solid #fff;
             color: #fff;
-            font-family: 'DotGothic16', sans-serif;
+            font-family: var(--main-font);
             font-size: 12px;
             padding: 4px 8px;
             border-radius: 4px;
         }
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus, textarea:focus, select:focus {
             border-color: #3bf6ff;
             outline: none;
-        }
-
-        /* Image Upload Area */
-        .image-upload-zone {
-            border: 2px dashed #666;
-            padding: 0.5rem;
-            text-align: center;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #111;
-            color: #888;
-            font-size: 10px;
-        }
-        .image-upload-zone:hover {
-            border-color: #fff;
-            color: #fff;
         }
         
         /* Slider */
@@ -229,12 +213,29 @@
             border: 2px solid #fff;
         }
 
+        /* Image Upload Area */
+        .image-upload-zone {
+            border: 2px dashed #666;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #111;
+            color: #888;
+            font-size: 10px;
+        }
+        .image-upload-zone:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
         /* Buttons */
         .btn-retro {
             background-color: #000;
             border: 2px solid #fff;
             color: #fff;
-            font-family: 'DotGothic16', sans-serif;
+            font-family: var(--main-font);
             border-radius: 4px;
             transition: all 0.1s;
         }
@@ -251,7 +252,7 @@
             padding: 8px 16px;
             border: 2px solid #fff;
             border-radius: 4px;
-            font-family: 'DotGothic16', sans-serif;
+            font-family: var(--main-font);
             font-size: 14px;
             display: none;
             z-index: 1000;
@@ -356,6 +357,19 @@
             </div>
             
             <div class="space-y-5">
+                <!-- Font Selection -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">フォント (FONT)</label>
+                    <select id="fontSelect" class="w-full text-xs p-2 bg-[#000] text-white border border-gray-600 h-8 cursor-pointer">
+                        <option value="'DotGothic16', sans-serif">DotGothic16 (ドットゴシック)</option>
+                        <option value="'Dela Gothic One', cursive">Dela Gothic (ゴツイ ゴシック)</option>
+                        <option value="'Reggae One', cursive">Reggae One (カクカク レトロ)</option>
+                        <option value="'RocknRoll One', sans-serif">RocknRoll (ポップ ロック)</option>
+                        <option value="'Mochiy Pop One', sans-serif">Mochiy Pop (マルッコイ)</option>
+                        <option value="'Kaisei Opti', serif">Kaisei Opti (PC98フウ)</option>
+                    </select>
+                </div>
+
                 <!-- Image Upload -->
                 <div>
                     <label class="block text-[10px] text-gray-400 mb-1">ガゾウ (Image)</label>
@@ -400,6 +414,7 @@
                         <label class="block text-[10px] text-gray-400 mb-1">セツメイ (Slogan)</label>
                         <textarea id="sloganInput" class="w-full h-16 mb-2">大人のための道具。
 精密に設計されたキーボードだ。</textarea>
+                        
                         <!-- Font Size Slider -->
                         <div class="flex justify-between items-center mb-1 px-1">
                             <label class="text-[8px] text-gray-400">モジサイズ</label>
@@ -478,6 +493,7 @@
             imgScale: document.getElementById('imgScale'),
 
             // Inputs
+            fontSelect: document.getElementById('fontSelect'), // New
             brandNameInput: document.getElementById('brandNameInput'),
             levelInput: document.getElementById('levelInput'),
             levelLabelInput: document.getElementById('levelLabelInput'),
@@ -562,6 +578,11 @@
             if(els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
             if(els.owner) els.owner.innerText = els.ownerInput.value;
         };
+        
+        // Font Change
+        els.fontSelect.onchange = (e) => {
+            document.documentElement.style.setProperty('--main-font', e.target.value);
+        };
 
         [
             els.brandNameInput, els.levelInput, els.levelLabelInput, els.sloganInput, els.sloganSizeInput,
@@ -592,6 +613,7 @@
                 keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
                 ownerLabel: els.ownerLabelInput.value, owner: els.ownerInput.value,
                 imgX: els.imgPosX.value, imgY: els.imgPosY.value, imgS: els.imgScale.value,
+                font: els.fontSelect.value, // Added
                 exportedAt: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
@@ -648,6 +670,11 @@
             if (data.imgX) els.imgPosX.value = data.imgX;
             if (data.imgY) els.imgPosY.value = data.imgY;
             if (data.imgS) els.imgScale.value = data.imgS;
+            
+            if (data.font) {
+                els.fontSelect.value = data.font;
+                document.documentElement.style.setProperty('--main-font', data.font);
+            }
             
             syncUI();
             syncImageTransform();
