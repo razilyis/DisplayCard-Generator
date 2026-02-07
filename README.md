@@ -8,6 +8,7 @@ https://razilyis.github.io/DisplayCard-Generator/
 
 2026年2月8日開催の天下一キーボードわいわい会 Vol.10に向けて作成しました。
 
-現在は5つのテーマを用意しています。
+現在は6つのテーマを用意しています。
 
-<img width="1839" height="741" alt="image" src="https://github.com/user-attachments/assets/6065b7a7-183e-4333-bfa6-c8e370342613" />
+<img width="1044" height="632" alt="image" src="https://github.com/user-attachments/assets/ddcb7f6c-0e81-4f41-ad9d-340f58e24464" />
+
