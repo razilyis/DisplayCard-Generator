@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- コーディング用フォント -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Inconsolata:wght@400;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Inconsolata:wght@400;700&family=Ubuntu+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
@@ -21,7 +24,7 @@
             --bg-color: #282C34;
             --main-font: 'Fira Code', monospace;
         }
-        
+
         body {
             background-color: #1e1e1e;
             color: #abb2bf;
@@ -34,66 +37,294 @@
             font-family: 'Inter', sans-serif;
             padding: 4rem 2rem;
         }
-        
-        .tool-container { width: var(--card-width); display: flex; flex-direction: column; align-items: center; }
-        #captureArea { padding: 0; background-color: transparent; display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem; width: 100%; }
+
+        .tool-container {
+            width: 100%;
+            max-width: var(--card-width);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #captureArea {
+            padding: 0.5rem;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Desktop Layout Override */
+        @media (min-width: 1024px) {
+            .tool-container {
+                max-width: 1600px;
+                display: grid;
+                grid-template-columns: 1fr 400px;
+                grid-template-areas:
+                    "preview filesystem"
+                    "preview editor";
+                gap: 2rem;
+                align-items: start;
+            }
+
+            #captureArea {
+                grid-area: preview;
+                /* Allow JS to set height for scaled card */
+                overflow: visible;
+                position: sticky;
+                top: 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+
+            .file-system-panel {
+                grid-area: filesystem;
+                width: 100%;
+            }
+
+            .editor-panel {
+                grid-area: editor;
+                width: 100%;
+            }
+        }
 
         /* Mac Window Style Card */
         .card {
-            width: var(--card-width); height: var(--card-height); background-color: var(--bg-color); color: #abb2bf;
-            position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            display: flex; flex-direction: column; box-sizing: border-box;
-            border-radius: 6px; border: 1px solid #181A1F;
-            font-family: var(--main-font); /* フォント変数適用 */
-            -webkit-font-smoothing: antialiased; transform: translateZ(0);
+            width: var(--card-width);
+            height: var(--card-height);
+            background-color: var(--bg-color);
+            color: #abb2bf;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            border-radius: 6px;
+            border: 1px solid #181A1F;
+            font-family: var(--main-font);
+            /* フォント変数適用 */
+            -webkit-font-smoothing: antialiased;
+            transform: translateZ(0);
         }
 
-        .title-bar { height: 12px; background-color: #21252B; display: flex; align-items: center; padding-left: 8px; border-bottom: 1px solid #181A1F; flex-shrink: 0; }
-        .window-dots { display: flex; gap: 4px; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; }
-        .dot-red { background-color: #FF5F56; }
-        .dot-yellow { background-color: #FFBD2E; }
-        .dot-green { background-color: #27C93F; }
+        .title-bar {
+            height: 12px;
+            background-color: #21252B;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            border-bottom: 1px solid #181A1F;
+            flex-shrink: 0;
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .dot-red {
+            background-color: #FF5F56;
+        }
+
+        .dot-yellow {
+            background-color: #FFBD2E;
+        }
+
+        .dot-green {
+            background-color: #27C93F;
+        }
 
         .editor-content {
-            padding: 6px 12px; font-size: 6.5pt; line-height: 1.4; flex-grow: 1; position: relative; z-index: 10;
-            white-space: pre-wrap; word-break: break-word; overflow: hidden;
+            padding: 6px 12px;
+            font-size: 6.5pt;
+            line-height: 1.4;
+            flex-grow: 1;
+            position: relative;
+            z-index: 10;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow: hidden;
         }
 
-        .code-line { display: flex; align-items: flex-start; }
-        .line-num { color: #4b5263; margin-right: 8px; user-select: none; text-align: right; display: inline-block; width: 12px; flex-shrink: 0; }
-        .kw { color: var(--keyword); } .fn { color: var(--accent-color); } .str { color: var(--string); } .cmt { color: var(--comment); font-style: italic; } .punc { color: #abb2bf; }
-        
-        .dynamic-text { color: var(--accent-color) !important; }
+        .code-line {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .line-num {
+            color: #4b5263;
+            margin-right: 8px;
+            user-select: none;
+            text-align: right;
+            display: inline-block;
+            width: 12px;
+            flex-shrink: 0;
+        }
+
+        .kw {
+            color: var(--keyword);
+        }
+
+        .fn {
+            color: var(--accent-color);
+        }
+
+        .str {
+            color: var(--string);
+        }
+
+        .cmt {
+            color: var(--comment);
+            font-style: italic;
+        }
+
+        .punc {
+            color: #abb2bf;
+        }
+
+        .dynamic-text {
+            color: var(--accent-color) !important;
+        }
 
         /* Editor Panel */
-        .editor-panel { background: #252526; border-radius: 4px; padding: 1.5rem; border: 1px solid #333; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-
-        input[type="text"], textarea, select {
-            background-color: #1e1e1e; border: 1px solid #3e3e42; color: #d4d4d4;
-            font-family: 'Fira Code', monospace; font-size: 10px;
+        .editor-panel {
+            background: #252526;
+            border-radius: 4px;
+            padding: 1.5rem;
+            border: 1px solid #333;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
-        input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent-color); outline: none; }
-        
+
+        input[type="text"],
+        textarea,
+        select {
+            background-color: #1e1e1e;
+            border: 1px solid #3e3e42;
+            color: #d4d4d4;
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
         /* Buttons */
-        .btn-dark { background-color: #333333; border: 1px solid #444; color: #eee; transition: all 0.2s; }
-        .btn-dark:hover { background-color: #444; }
-        .btn-accent { background-color: #007ACC; color: white; font-weight: 600; border: none; }
-        .btn-accent:hover { background-color: #0062A3; }
+        .btn-dark {
+            background-color: #333333;
+            border: 1px solid #444;
+            color: #eee;
+            transition: all 0.2s;
+        }
 
-        .color-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-        .color-dot { width: 100%; aspect-ratio: 1 / 1; border-radius: 2px; cursor: pointer; border: 1px solid #3e3e42; }
-        .color-dot:hover { transform: scale(1.1); z-index: 10; border-color: #fff; }
-        .color-dot.active { border: 2px solid #fff; }
+        .btn-dark:hover {
+            background-color: #444;
+        }
 
-        .loader { border: 2px solid #333; border-top: 2px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        #exportStatus { position: fixed; bottom: 20px; background: #252526; color: #fff; padding: 8px 16px; border: 1px solid #007ACC; font-family: 'Fira Code', monospace; font-size: 11px; display: none; z-index: 1000; }
-        input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #3e3e42; border-radius: 0; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #007ACC; border-radius: 0; cursor: pointer; }
+        .btn-accent {
+            background-color: #007ACC;
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-accent:hover {
+            background-color: #0062A3;
+        }
+
+        .color-swatch-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .color-dot {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 2px;
+            cursor: pointer;
+            border: 1px solid #3e3e42;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            border-color: #fff;
+        }
+
+        .color-dot.active {
+            border: 2px solid #fff;
+        }
+
+        .loader {
+            border: 2px solid #333;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #exportStatus {
+            position: fixed;
+            bottom: 20px;
+            background: #252526;
+            color: #fff;
+            padding: 8px 16px;
+            border: 1px solid #007ACC;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            display: none;
+            z-index: 1000;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #3e3e42;
+            border-radius: 0;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            background: #007ACC;
+            border-radius: 0;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="w-full max-w-3xl flex justify-between items-center mb-8 px-4 font-mono">
@@ -103,12 +334,15 @@
     </div>
 
     <div class="tool-container space-y-4">
-        
-        <div class="bg-[#252526] p-3 border border-[#333] w-full">
-            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">// FILE_SYSTEM</label>
+
+        <div class="file-system-panel bg-[#252526] p-3 border border-[#333] w-full">
+            <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">//
+                FILE_SYSTEM</label>
             <div class="grid grid-cols-2 gap-2">
-                <button id="exportJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>save(json)</span></button>
-                <button id="importJsonBtn" class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>load(json)</span></button>
+                <button id="exportJsonBtn"
+                    class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>save(json)</span></button>
+                <button id="importJsonBtn"
+                    class="btn-dark text-[10px] py-2 font-mono flex items-center justify-center gap-1"><span>load(json)</span></button>
                 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
             </div>
         </div>
@@ -117,19 +351,24 @@
             <div class="card" id="productCard">
                 <div class="title-bar">
                     <div class="window-dots">
-                        <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
                     </div>
-                    <div class="flex-grow text-center text-[5px] text-gray-500 tracking-wider" id="displayTitleLabel">PRODUCT_INFO.JS</div>
+                    <div class="flex-grow text-center text-[5px] text-gray-500 tracking-wider" id="displayTitleLabel">
+                        PRODUCT_INFO.JS</div>
                 </div>
 
                 <div class="editor-content" id="codeEditorContainer">
                     <!-- Dynamic Content -->
                 </div>
 
-                <div id="displayBgTextContainer" class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible" 
-                     style="bottom: -10%; right: -5%; width: 120%; height: 120%; opacity: 0.05; z-index: 0;">
-                    <span id="displayBgText" class="text-[100pt] font-bold tracking-tight uppercase inline-block leading-none whitespace-nowrap text-white" 
-                          style="padding: 0.5em;">AF</span>
+                <div id="displayBgTextContainer"
+                    class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible"
+                    style="bottom: -10%; right: -5%; width: 120%; height: 120%; opacity: 0.05; z-index: 0;">
+                    <span id="displayBgText"
+                        class="text-[100pt] font-bold tracking-tight uppercase inline-block leading-none whitespace-nowrap text-white"
+                        style="padding: 0.5em;">AF</span>
                 </div>
             </div>
         </div>
@@ -138,12 +377,14 @@
             <div class="flex justify-between items-center mb-6 border-b border-[#333] pb-4">
                 <h2 class="text-xs font-mono font-bold text-gray-400 flex items-center gap-2">>> CONFIGURATION</h2>
             </div>
-            
+
             <div class="space-y-5">
                 <!-- Font Selection -->
                 <div>
-                    <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">TYPEFACE</label>
-                    <select id="fontSelect" class="w-full text-xs p-2 border border-[#3e3e42] bg-[#1e1e1e] text-gray-300 font-mono h-8 cursor-pointer">
+                    <label
+                        class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">TYPEFACE</label>
+                    <select id="fontSelect"
+                        class="w-full text-xs p-2 border border-[#3e3e42] bg-[#1e1e1e] text-gray-300 font-mono h-8 cursor-pointer">
                         <option value="'Fira Code', monospace">FIRA CODE (LIGATURES)</option>
                         <option value="'JetBrains Mono', monospace">JETBRAINS MONO</option>
                         <option value="'Source Code Pro', monospace">SOURCE CODE PRO</option>
@@ -155,28 +396,35 @@
                 <!-- Syntax Colors -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">SYNTAX_THEME</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">SYNTAX_THEME</label>
                     </div>
                     <div class="color-swatch-grid" id="swatchGrid"></div>
                 </div>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">CLASS_NAME (Brand)</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">CLASS_NAME
+                            (Brand)</label>
                         <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs p-2">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">DOC_COMMENT (Slogan)</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">DOC_COMMENT
+                            (Slogan)</label>
                         <textarea id="sloganInput" class="w-full text-xs p-2 h-16 mb-2">DESIGNED FOR THE MATURE MIND.
 PRECISION ENGINEERED.</textarea>
                     </div>
-                    
+
                     <div class="p-3 bg-[#1e1e1e] border border-[#333]">
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">BG_WATERMARK</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">BG_WATERMARK</label>
                         <input type="text" id="bgTextInput" value="AF" class="w-full text-xs p-2 mb-3 uppercase">
                         <div class="flex justify-between items-center mb-1">
-                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">OPACITY</label>
+                            <label
+                                class="text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">OPACITY</label>
                             <span id="opacityDisplay" class="text-[9px] font-mono text-blue-400">0.05</span>
                         </div>
                         <input type="range" id="opacityInput" min="0" max="0.2" step="0.01" value="0.05" class="w-full">
@@ -185,38 +433,49 @@ PRECISION ENGINEERED.</textarea>
                     <div class="grid grid-cols-2 gap-3">
                         <!-- Model -->
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_1</label>
-                            <input type="text" id="codeNameLabelInput" value="model" class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
+                            <label
+                                class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_1</label>
+                            <input type="text" id="codeNameLabelInput" value="model"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
                             <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full text-xs p-2">
                         </div>
                         <!-- Switch -->
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_2</label>
-                            <input type="text" id="keySwitchLabelInput" value="switch" class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
+                            <label
+                                class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_2</label>
+                            <input type="text" id="keySwitchLabelInput" value="switch"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
                             <input type="text" id="keySwitchInput" value="Cherry MX Red" class="w-full text-xs p-2">
                         </div>
                         <!-- Keycaps -->
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_3</label>
-                            <input type="text" id="keyCapsLabelInput" value="keycaps" class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
+                            <label
+                                class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_3</label>
+                            <input type="text" id="keyCapsLabelInput" value="keycaps"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
                             <input type="text" id="keyCapsInput" value="PBT Double-shot" class="w-full text-xs p-2">
                         </div>
                         <!-- Owner -->
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_4</label>
-                            <input type="text" id="ownerLabelInput" value="owner" class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
+                            <label
+                                class="block text-[8px] font-bold text-gray-600 uppercase tracking-widest mb-1 font-mono">KEY_4</label>
+                            <input type="text" id="ownerLabelInput" value="owner"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-[#333] border-none text-gray-400">
                             <input type="text" id="ownerInput" value="@User" class="w-full text-xs p-2">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">WINDOW_TITLE</label>
-                        <input type="text" id="titleLabelInput" value="PRODUCT_INFO.JS" class="w-full text-xs p-2 uppercase">
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">WINDOW_TITLE</label>
+                        <input type="text" id="titleLabelInput" value="PRODUCT_INFO.JS"
+                            class="w-full text-xs p-2 uppercase">
                     </div>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-[#333] mt-6">
-                <button id="btnExport" class="w-full py-4 px-4 btn-accent text-xs tracking-widest flex items-center justify-center gap-2 rounded">
+                <button id="btnExport"
+                    class="w-full py-4 px-4 btn-accent text-xs tracking-widest flex items-center justify-center gap-2 rounded">
                     <span>$ npm run build:png</span>
                 </button>
             </div>
@@ -242,7 +501,7 @@ PRECISION ENGINEERED.</textarea>
             bgTextContainer: document.getElementById('displayBgTextContainer'),
             titleLabel: document.getElementById('displayTitleLabel'),
             container: document.getElementById('codeEditorContainer'),
-            
+
             // Inputs
             fontSelect: document.getElementById('fontSelect'),
             brandNameInput: document.getElementById('brandNameInput'),
@@ -251,19 +510,19 @@ PRECISION ENGINEERED.</textarea>
             opacityInput: document.getElementById('opacityInput'),
             opacityDisplay: document.getElementById('opacityDisplay'),
             titleLabelInput: document.getElementById('titleLabelInput'),
-            
+
             codeNameLabelInput: document.getElementById('codeNameLabelInput'),
             codeNameInput: document.getElementById('codeNameInput'),
-            
+
             keySwitchLabelInput: document.getElementById('keySwitchLabelInput'),
             keySwitchInput: document.getElementById('keySwitchInput'),
-            
+
             keyCapsLabelInput: document.getElementById('keyCapsLabelInput'),
             keyCapsInput: document.getElementById('keyCapsInput'),
-            
+
             ownerLabelInput: document.getElementById('ownerLabelInput'),
             ownerInput: document.getElementById('ownerInput'),
-            
+
             btnExport: document.getElementById('btnExport'),
             status: document.getElementById('exportStatus'),
             exportJsonBtn: document.getElementById('exportJsonBtn'),
@@ -282,11 +541,11 @@ PRECISION ENGINEERED.</textarea>
         function escapeHtml(unsafe) {
             if (!unsafe) return "";
             return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         // Render code content dynamically
@@ -295,10 +554,10 @@ PRECISION ENGINEERED.</textarea>
             let html = '';
 
             const brand = escapeHtml(els.brandNameInput.value);
-            
+
             // Line 1
             html += `<div class="code-line"><span class="line-num">${line++}</span><div><span class="kw">const</span> <span class="fn">Brand</span> <span class="punc">=</span> <span class="kw">new</span> <span class="fn">${brand}</span><span class="punc">();</span></div></div>`;
-            
+
             // Line 2
             html += `<div class="code-line"><span class="line-num">${line++}</span></div>`;
 
@@ -337,11 +596,11 @@ PRECISION ENGINEERED.</textarea>
             els.container.innerHTML = html;
 
             // Update other static elements
-            if(els.bgText) els.bgText.innerText = els.bgTextInput.value;
+            if (els.bgText) els.bgText.innerText = els.bgTextInput.value;
             const opacity = els.opacityInput.value;
-            if(els.bgTextContainer) els.bgTextContainer.style.opacity = opacity;
-            if(els.opacityDisplay) els.opacityDisplay.innerText = opacity;
-            if(els.titleLabel) els.titleLabel.innerText = els.titleLabelInput.value;
+            if (els.bgTextContainer) els.bgTextContainer.style.opacity = opacity;
+            if (els.opacityDisplay) els.opacityDisplay.innerText = opacity;
+            if (els.titleLabel) els.titleLabel.innerText = els.titleLabelInput.value;
         };
 
         // Font Change Listener
@@ -352,12 +611,12 @@ PRECISION ENGINEERED.</textarea>
         // Attach listeners to all inputs
         [
             els.brandNameInput, els.sloganInput, els.opacityInput, els.bgTextInput, els.titleLabelInput,
-            els.codeNameLabelInput, els.codeNameInput, 
+            els.codeNameLabelInput, els.codeNameInput,
             els.keySwitchLabelInput, els.keySwitchInput,
             els.keyCapsLabelInput, els.keyCapsInput,
             els.ownerLabelInput, els.ownerInput
         ].forEach(el => {
-            if(el) el.addEventListener('input', renderCode);
+            if (el) el.addEventListener('input', renderCode);
         });
 
         // Theme Logic
@@ -367,7 +626,7 @@ PRECISION ENGINEERED.</textarea>
             document.documentElement.style.setProperty('--accent-color', theme.main);
             document.documentElement.style.setProperty('--keyword', theme.keyword);
             document.documentElement.style.setProperty('--string', theme.string);
-            
+
             document.querySelectorAll('.color-dot').forEach(dot => {
                 dot.classList.toggle('active', dot.title === theme.label);
             });
@@ -406,7 +665,7 @@ PRECISION ENGINEERED.</textarea>
                 font: els.fontSelect.value,
                 themeLabel: currentTheme.label, exportedAt: new Date().toISOString()
             };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -441,24 +700,24 @@ PRECISION ENGINEERED.</textarea>
                 els.opacityDisplay.innerText = data.opacity;
             }
             if (data.titleLabel) els.titleLabelInput.value = data.titleLabel;
-            
+
             if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
             if (data.codeName) els.codeNameInput.value = data.codeName;
-            
+
             if (data.keySwitchLabel) els.keySwitchLabelInput.value = data.keySwitchLabel;
             if (data.keySwitch) els.keySwitchInput.value = data.keySwitch;
-            
+
             if (data.keyCapsLabel) els.keyCapsLabelInput.value = data.keyCapsLabel;
             if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
-            
+
             if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
             if (data.owner) els.ownerInput.value = data.owner;
-            
+
             if (data.font) {
                 els.fontSelect.value = data.font;
                 document.documentElement.style.setProperty('--main-font', data.font);
             }
-            
+
             if (data.themeLabel) {
                 const theme = syntaxThemes.find(t => t.label === data.themeLabel);
                 if (theme) updateTheme(theme);
@@ -476,7 +735,7 @@ PRECISION ENGINEERED.</textarea>
                 if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
                 const cardRect = els.card.getBoundingClientRect();
                 const options = {
-                    scale: 3, useCORS: true, backgroundColor: "#282C34",
+                    scale: 6, useCORS: true, backgroundColor: "#282C34",
                     width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
                         const c = clonedDoc.getElementById('productCard');
@@ -511,8 +770,47 @@ PRECISION ENGINEERED.</textarea>
             }
         };
 
+        // Context: Responsive & Init
+        function adjustCardScale() {
+            const card = els.card;
+            const container = document.getElementById('captureArea');
+            const screenWidth = window.innerWidth;
+            const cardWidth = 344;
+
+            // コンテナのパディング等を考慮した利用可能幅
+            const availableWidth = container.clientWidth - 32;
+            const currentCardWidth = 344; // Base width approx
+
+            // 常にスケール計算を行う（拡大・縮小両対応）
+            let scale = availableWidth / currentCardWidth;
+
+            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
+            // ここではシンプルに、利用可能幅に合わせてフィットさせる
+            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
+            scale = Math.min(scale, 2.5);
+
+            card.style.transform = `scale(${scale})`;
+            card.style.transformOrigin = 'center top';
+
+            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
+            const height = (currentCardWidth * (55 / 91) * scale) + 50;
+            container.style.height = `${height}px`;
+
+            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
+            if (window.innerWidth < 1024) {
+                container.style.marginBottom = '1.5rem';
+            } else {
+                container.style.marginBottom = '0';
+            }
+        }
+
+        window.addEventListener('resize', adjustCardScale);
+        window.addEventListener('load', adjustCardScale);
+        document.fonts.ready.then(adjustCardScale);
+
         initSwatches();
         renderCode();
     </script>
 </body>
+
 </html>

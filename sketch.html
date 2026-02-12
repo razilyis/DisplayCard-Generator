@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,18 +10,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- フォントの追加ロード: 日本語手書き風フォントを含む -->
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Teko:wght@300;400;600&family=Architects+Daughter&family=Yomogi&family=Kiwi+Maru:wght@300;500&family=Klee+One:wght@400;600&family=Yuji+Syuku&family=Kaisei+Decol&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Teko:wght@300;400;600&family=Architects+Daughter&family=Yomogi&family=Kiwi+Maru:wght@300;500&family=Klee+One:wght@400;600&family=Yuji+Syuku&family=Kaisei+Decol&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
             --card-height: 55mm;
-            --accent-color: #E63946; /* Marker Red */
+            --accent-color: #E63946;
+            /* Marker Red */
             --paper-color: #Fdfdfd;
             --ink-color: #333333;
             --grid-color: #e0e0e0;
             --slogan-font: 'Architects Daughter', cursive;
         }
-        
+
         body {
             background-color: #e5e5e5;
             color: #333;
@@ -33,22 +37,60 @@
             font-family: 'Barlow', sans-serif;
             padding: 4rem 2rem;
         }
-        
+
         .tool-container {
-            width: var(--card-width);
+            width: 100%;
+            max-width: var(--card-width);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         #captureArea {
-            padding: 0;
+            padding: 0.5rem;
             background-color: transparent;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 1.5rem;
             width: 100%;
+            overflow: hidden;
+        }
+
+        /* Desktop Layout Override */
+        @media (min-width: 1024px) {
+            .tool-container {
+                max-width: 1600px;
+                display: grid;
+                grid-template-columns: 1fr 400px;
+                grid-template-areas:
+                    "preview filesystem"
+                    "preview editor";
+                gap: 2rem;
+                align-items: start;
+            }
+
+            #captureArea {
+                grid-area: preview;
+                /* Allow JS to set height for scaled card */
+                overflow: visible;
+                position: sticky;
+                top: 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+
+            .file-system-panel {
+                grid-area: filesystem;
+                width: 100%;
+            }
+
+            .editor-panel {
+                grid-area: editor;
+                width: 100%;
+            }
         }
 
         /* Sketch Card Style */
@@ -59,7 +101,7 @@
             color: var(--ink-color);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -68,21 +110,36 @@
             border: 1px solid #ddd;
             -webkit-font-smoothing: antialiased;
             transform: translateZ(0);
-            
+
             /* Grid Pattern */
-            background-image: 
+            background-image:
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 5mm 5mm;
         }
 
-        .font-condensed { font-family: 'Teko', sans-serif; }
-        .font-hand { font-family: var(--slogan-font); } /* Variable Font */
+        .font-condensed {
+            font-family: 'Teko', sans-serif;
+        }
+
+        .font-hand {
+            font-family: var(--slogan-font);
+        }
+
+        /* Variable Font */
 
         /* Dynamic Colors */
-        .dynamic-text { color: var(--accent-color) !important; }
-        .dynamic-bg { background-color: var(--accent-color) !important; }
-        .dynamic-border { border-color: var(--accent-color) !important; }
+        .dynamic-text {
+            color: var(--accent-color) !important;
+        }
+
+        .dynamic-bg {
+            background-color: var(--accent-color) !important;
+        }
+
+        .dynamic-border {
+            border-color: var(--accent-color) !important;
+        }
 
         /* Editor Panel */
         .editor-panel {
@@ -91,18 +148,23 @@
             padding: 1.5rem;
             border: 1px solid #ccc;
             width: 100%;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         /* Inputs */
-        input[type="text"], textarea, select {
+        input[type="text"],
+        textarea,
+        select {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
             color: #333;
             font-family: 'Barlow', sans-serif;
             font-size: 11px;
         }
-        input[type="text"]:focus, textarea:focus, select:focus {
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
             border-color: #333;
             outline: none;
             background-color: #fff;
@@ -118,6 +180,7 @@
             transition: all 0.2s;
             background: #fafafa;
         }
+
         .image-upload-zone:hover {
             border-color: var(--accent-color);
             background: #fff;
@@ -129,6 +192,7 @@
             grid-template-columns: repeat(6, 1fr);
             gap: 6px;
         }
+
         .color-dot {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -137,8 +201,14 @@
             border: 1px solid #ddd;
             transition: all 0.2s;
         }
-        .color-dot:hover { transform: scale(1.1); z-index: 10; border-color: #333; }
-        .color-dot.active { 
+
+        .color-dot:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            border-color: #333;
+        }
+
+        .color-dot.active {
             border: 2px solid #333;
             box-shadow: 0 0 0 2px #fff inset;
         }
@@ -152,9 +222,11 @@
             font-weight: bold;
             transition: all 0.2s;
         }
+
         .btn-main:hover {
             background-color: #000;
         }
+
         .btn-outline {
             background-color: transparent;
             border: 1px solid #333;
@@ -162,6 +234,7 @@
             font-family: 'Barlow', sans-serif;
             font-weight: bold;
         }
+
         .btn-outline:hover {
             background-color: #eee;
         }
@@ -175,8 +248,17 @@
             animation: spin 1s linear infinite;
             display: inline-block;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         #exportStatus {
             position: fixed;
             bottom: 20px;
@@ -188,16 +270,28 @@
             display: none;
             z-index: 1000;
         }
-        
+
         /* Slider */
         input[type="range"] {
-            -webkit-appearance: none; width: 100%; height: 4px; background: #ddd; border-radius: 2px; outline: none;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
         }
+
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 12px; height: 12px; background: #333; border-radius: 50%; cursor: pointer;
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
 
     <div class="w-full max-w-3xl flex justify-between items-center mb-8 px-4 font-mono">
@@ -207,9 +301,9 @@
     </div>
 
     <div class="tool-container space-y-4">
-        
+
         <!-- File Save Section -->
-        <div class="bg-white p-3 border border-gray-300 w-full shadow-sm">
+        <div class="file-system-panel bg-white p-3 border border-gray-300 w-full shadow-sm">
             <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">
                 FILE SYSTEM
             </label>
@@ -229,32 +323,42 @@
             <div class="card" id="productCard">
                 <!-- Decorative Top Bar -->
                 <div class="absolute top-0 left-6 w-1.5 h-6 dynamic-bg"></div>
-                
+
                 <!-- Uploaded Image Container -->
                 <div class="absolute inset-0 flex items-center justify-center overflow-hidden z-0">
-                    <img id="displayImage" src="" alt="" class="opacity-90 grayscale contrast-125 mix-blend-multiply" style="transform: scale(1) translate(0px, 0px); display: none;">
+                    <img id="displayImage" src="" alt="" class="opacity-90 grayscale contrast-125 mix-blend-multiply"
+                        style="transform: scale(1) translate(0px, 0px); display: none;">
                     <!-- Placeholder if no image -->
-                    <div id="imagePlaceholder" class="text-gray-300 border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center">
-                        <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <div id="imagePlaceholder"
+                        class="text-gray-300 border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center">
+                        <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
                         <span class="text-[10px] font-mono uppercase tracking-widest">NO IMAGE DATA</span>
                     </div>
                 </div>
 
                 <!-- Content Overlay -->
                 <div class="z-10 flex flex-col h-full justify-between relative pointer-events-none">
-                    
+
                     <!-- Header -->
                     <div class="flex justify-between items-start">
                         <div>
-                            <h1 class="text-3xl font-condensed font-bold tracking-tight uppercase leading-none text-gray-800">
+                            <h1
+                                class="text-3xl font-condensed font-bold tracking-tight uppercase leading-none text-gray-800">
                                 <span id="displayBrandName">AroundForty</span><span class="dynamic-text">.</span>
                             </h1>
-                            <p class="text-[7px] font-mono text-gray-500 tracking-widest mt-1">PRODUCT SPECIFICATION SHEET</p>
+                            <p class="text-[7px] font-mono text-gray-500 tracking-widest mt-1">PRODUCT SPECIFICATION
+                                SHEET</p>
                         </div>
                         <div class="text-right">
-                             <!-- Fixed REF NO Box Alignment -->
-                             <div class="border border-gray-800 px-3 py-1 inline-flex flex-col items-center justify-center bg-white/80 min-w-[40px] shadow-sm">
-                                <span class="text-[5px] text-gray-500 uppercase leading-none mb-0.5 font-mono">REF NO.</span>
+                            <!-- Fixed REF NO Box Alignment -->
+                            <div
+                                class="border border-gray-800 px-3 py-1 inline-flex flex-col items-center justify-center bg-white/80 min-w-[40px] shadow-sm">
+                                <span class="text-[5px] text-gray-500 uppercase leading-none mb-0.5 font-mono">REF
+                                    NO.</span>
                                 <span class="text-[10px] font-bold leading-none font-mono text-gray-900">A-001</span>
                             </div>
                         </div>
@@ -265,35 +369,42 @@
 
                     <!-- Footer Info -->
                     <div class="flex items-end justify-between">
-                        
+
                         <!-- Left Block: Slogan -->
                         <div class="w-1/2 pr-4">
-                             <div class="w-8 h-0.5 dynamic-bg mb-2"></div>
-                             <div id="displaySlogan" class="text-[8pt] font-hand font-bold text-gray-600 leading-tight">
+                            <div class="w-8 h-0.5 dynamic-bg mb-2"></div>
+                            <div id="displaySlogan" class="text-[8pt] font-hand font-bold text-gray-600 leading-tight">
                                 Designed for the mature mind.
                                 Precision Engineered.
-                             </div>
+                            </div>
                         </div>
 
                         <!-- Right Block: Specs -->
                         <div class="w-1/2 flex flex-col gap-2 text-right">
                             <div class="bg-white/90 p-2 border-l-2 dynamic-border shadow-sm">
                                 <div class="flex justify-between items-baseline border-b border-gray-200 pb-1 mb-1">
-                                    <span class="text-[5px] text-gray-400 font-mono uppercase" id="displayCodeNameLabel">MODEL</span>
-                                    <span class="text-[9px] font-bold font-condensed text-gray-800 tracking-wide" id="displayCodeName">AROUNDFORTYRB</span>
+                                    <span class="text-[5px] text-gray-400 font-mono uppercase"
+                                        id="displayCodeNameLabel">MODEL</span>
+                                    <span class="text-[9px] font-bold font-condensed text-gray-800 tracking-wide"
+                                        id="displayCodeName">AROUNDFORTYRB</span>
                                 </div>
                                 <div class="flex justify-between items-baseline mb-1">
-                                    <span class="text-[5px] text-gray-400 font-mono uppercase" id="displayMfgCodeLabel">MFG. CODE</span>
-                                    <span class="text-[8px] font-bold font-mono text-gray-700" id="displayMfgCode">02AFRB</span>
+                                    <span class="text-[5px] text-gray-400 font-mono uppercase"
+                                        id="displayMfgCodeLabel">MFG. CODE</span>
+                                    <span class="text-[8px] font-bold font-mono text-gray-700"
+                                        id="displayMfgCode">02AFRB</span>
                                 </div>
                                 <div class="flex justify-between items-baseline">
-                                    <span class="text-[5px] text-gray-400 font-mono uppercase" id="displayOwnerLabel">OWNER</span>
-                                    <span class="text-[8px] font-bold font-mono text-gray-700" id="displayOwner">@USER</span>
+                                    <span class="text-[5px] text-gray-400 font-mono uppercase"
+                                        id="displayOwnerLabel">OWNER</span>
+                                    <span class="text-[8px] font-bold font-mono text-gray-700"
+                                        id="displayOwner">@USER</span>
                                 </div>
                             </div>
-                            
+
                             <!-- Sub Specs -->
-                            <div class="flex justify-end gap-3 text-[6px] font-mono text-gray-500 bg-white/80 py-1 px-2 rounded-sm inline-flex self-end shadow-sm">
+                            <div
+                                class="flex justify-end gap-3 text-[6px] font-mono text-gray-500 bg-white/80 py-1 px-2 rounded-sm inline-flex self-end shadow-sm">
                                 <div>
                                     <span class="block opacity-50" id="displayKeySwitchLabel">SWITCH</span>
                                     <span class="font-bold text-gray-800" id="displayKeySwitch">MX RED</span>
@@ -315,13 +426,16 @@
             <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
                 <h2 class="text-xs font-bold text-gray-500 flex items-center gap-2">>> EDIT PARAMETERS</h2>
             </div>
-            
+
             <div class="space-y-5">
                 <!-- Image Upload & Controls -->
                 <div>
-                    <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">PRODUCT IMAGE (LINE ART)</label>
+                    <label
+                        class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 font-mono">PRODUCT
+                        IMAGE (LINE ART)</label>
                     <label class="image-upload-zone block mb-3">
-                        <span class="text-xs text-gray-500 font-bold pointer-events-none">📁 CLICK TO UPLOAD IMAGE</span>
+                        <span class="text-xs text-gray-500 font-bold pointer-events-none">📁 CLICK TO UPLOAD
+                            IMAGE</span>
                         <input type="file" id="imageUpload" accept="image/*" class="hidden">
                     </label>
 
@@ -340,8 +454,11 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" id="imgMultiply" checked class="rounded border-gray-300 text-black focus:ring-black">
-                        <label for="imgMultiply" class="text-[9px] font-bold text-gray-500 uppercase cursor-pointer">MULTIPLY MODE (BLEND)</label>
+                        <input type="checkbox" id="imgMultiply" checked
+                            class="rounded border-gray-300 text-black focus:ring-black">
+                        <label for="imgMultiply"
+                            class="text-[9px] font-bold text-gray-500 uppercase cursor-pointer">MULTIPLY MODE
+                            (BLEND)</label>
                     </div>
                 </div>
 
@@ -350,7 +467,9 @@
                 <!-- Colors -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">MARKER COLOR</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">MARKER
+                            COLOR</label>
                     </div>
                     <div class="color-swatch-grid" id="swatchGrid"></div>
                 </div>
@@ -358,26 +477,37 @@
                 <!-- Text Inputs -->
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">BRAND NAME</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">BRAND
+                            NAME</label>
                         <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs p-2">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">SLOGAN (HANDWRITTEN)</label>
+                        <label
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">SLOGAN
+                            (HANDWRITTEN)</label>
                         <textarea id="sloganInput" class="w-full text-xs p-2 h-12 mb-2 font-hand">Designed for the mature mind.
 Precision Engineered.</textarea>
-                        
+
                         <div class="grid grid-cols-2 gap-2 mb-1">
                             <div>
-                                <label class="text-[7px] font-bold text-gray-500 uppercase tracking-widest font-mono">FONT SIZE</label>
+                                <label
+                                    class="text-[7px] font-bold text-gray-500 uppercase tracking-widest font-mono">FONT
+                                    SIZE</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="range" id="sloganSizeInput" min="4" max="24" value="8" step="0.5" class="flex-grow">
-                                    <span id="sloganSizeDisplay" class="text-[8px] font-mono text-gray-500 w-6 text-right">8pt</span>
+                                    <input type="range" id="sloganSizeInput" min="4" max="24" value="8" step="0.5"
+                                        class="flex-grow">
+                                    <span id="sloganSizeDisplay"
+                                        class="text-[8px] font-mono text-gray-500 w-6 text-right">8pt</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="text-[7px] font-bold text-gray-500 uppercase tracking-widest font-mono">FONT FAMILY</label>
-                                <select id="sloganFontSelect" class="w-full text-[10px] p-1 h-6 border border-gray-300 bg-white font-mono cursor-pointer">
+                                <label
+                                    class="text-[7px] font-bold text-gray-500 uppercase tracking-widest font-mono">FONT
+                                    FAMILY</label>
+                                <select id="sloganFontSelect"
+                                    class="w-full text-[10px] p-1 h-6 border border-gray-300 bg-white font-mono cursor-pointer">
                                     <option value="'Architects Daughter', cursive">ARCHITECTS (ENG)</option>
                                     <option value="'Yomogi', cursive">YOMOGI (JP)</option>
                                     <option value="'Kiwi Maru', serif">KIWI MARU (JP)</option>
@@ -391,30 +521,47 @@ Precision Engineered.</textarea>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL 1</label>
-                            <input type="text" id="codeNameLabelInput" value="MODEL" class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
-                            <input type="text" id="codeNameInput" value="AROUNDFORTYRB" class="w-full text-xs p-2 font-condensed tracking-wide uppercase">
+                            <label
+                                class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL
+                                1</label>
+                            <input type="text" id="codeNameLabelInput" value="MODEL"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
+                            <input type="text" id="codeNameInput" value="AROUNDFORTYRB"
+                                class="w-full text-xs p-2 font-condensed tracking-wide uppercase">
                         </div>
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL 2</label>
-                            <input type="text" id="mfgCodeLabelInput" value="MFG. CODE" class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
-                            <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full text-xs p-2 font-mono uppercase">
+                            <label
+                                class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL
+                                2</label>
+                            <input type="text" id="mfgCodeLabelInput" value="MFG. CODE"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
+                            <input type="text" id="mfgCodeInput" value="02AFRB"
+                                class="w-full text-xs p-2 font-mono uppercase">
                         </div>
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL 3</label>
-                            <input type="text" id="ownerLabelInput" value="OWNER" class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
+                            <label
+                                class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL
+                                3</label>
+                            <input type="text" id="ownerLabelInput" value="OWNER"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
                             <input type="text" id="ownerInput" value="@USER" class="w-full text-xs p-2 font-mono">
                         </div>
-                         <!-- Switch -->
-                         <div>
-                            <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL 4</label>
-                            <input type="text" id="keySwitchLabelInput" value="SWITCH" class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
+                        <!-- Switch -->
+                        <div>
+                            <label
+                                class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL
+                                4</label>
+                            <input type="text" id="keySwitchLabelInput" value="SWITCH"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
                             <input type="text" id="keySwitchInput" value="MX RED" class="w-full text-xs p-2 font-mono">
                         </div>
                         <!-- Keycaps -->
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL 5</label>
-                            <input type="text" id="keyCapsLabelInput" value="KEYCAPS" class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
+                            <label
+                                class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">LABEL
+                                5</label>
+                            <input type="text" id="keyCapsLabelInput" value="KEYCAPS"
+                                class="w-full text-[10px] p-1 mb-1 font-mono bg-white border border-gray-300 text-gray-400 uppercase">
                             <input type="text" id="keyCapsInput" value="PBT DS" class="w-full text-xs p-2 font-mono">
                         </div>
                     </div>
@@ -422,7 +569,8 @@ Precision Engineered.</textarea>
             </div>
 
             <div class="pt-6 border-t border-gray-200 mt-6">
-                <button id="btnExport" class="w-full py-4 px-4 btn-main text-xs tracking-widest flex items-center justify-center gap-2 rounded">
+                <button id="btnExport"
+                    class="w-full py-4 px-4 btn-main text-xs tracking-widest flex items-center justify-center gap-2 rounded">
                     <span>GENERATE IMAGE</span>
                 </button>
             </div>
@@ -447,7 +595,7 @@ Precision Engineered.</textarea>
             // UI Elements
             brandName: document.getElementById('displayBrandName'),
             slogan: document.getElementById('displaySlogan'),
-            
+
             codeNameLabel: document.getElementById('displayCodeNameLabel'),
             codeName: document.getElementById('displayCodeName'),
             mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
@@ -458,7 +606,7 @@ Precision Engineered.</textarea>
             keySwitch: document.getElementById('displayKeySwitch'),
             keyCapsLabel: document.getElementById('displayKeyCapsLabel'),
             keyCaps: document.getElementById('displayKeyCaps'),
-            
+
             // Image
             displayImage: document.getElementById('displayImage'),
             imagePlaceholder: document.getElementById('imagePlaceholder'),
@@ -467,14 +615,14 @@ Precision Engineered.</textarea>
             imgPosY: document.getElementById('imgPosY'),
             imgScale: document.getElementById('imgScale'),
             imgMultiply: document.getElementById('imgMultiply'),
-            
+
             // Inputs
             brandNameInput: document.getElementById('brandNameInput'),
             sloganInput: document.getElementById('sloganInput'),
             sloganSizeInput: document.getElementById('sloganSizeInput'),
             sloganSizeDisplay: document.getElementById('sloganSizeDisplay'),
             sloganFontSelect: document.getElementById('sloganFontSelect'), // New
-            
+
             codeNameLabelInput: document.getElementById('codeNameLabelInput'),
             codeNameInput: document.getElementById('codeNameInput'),
             mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
@@ -485,7 +633,7 @@ Precision Engineered.</textarea>
             keySwitchInput: document.getElementById('keySwitchInput'),
             keyCapsLabelInput: document.getElementById('keyCapsLabelInput'),
             keyCapsInput: document.getElementById('keyCapsInput'),
-            
+
             btnExport: document.getElementById('btnExport'),
             status: document.getElementById('exportStatus'),
             exportJsonBtn: document.getElementById('exportJsonBtn'),
@@ -520,7 +668,7 @@ Precision Engineered.</textarea>
             const y = els.imgPosY.value;
             const s = els.imgScale.value;
             els.displayImage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-            
+
             if (els.imgMultiply.checked) {
                 els.displayImage.classList.add('mix-blend-multiply');
             } else {
@@ -534,28 +682,28 @@ Precision Engineered.</textarea>
 
         // Text Sync
         const syncUI = () => {
-            if(els.brandName) els.brandName.innerText = els.brandNameInput.value;
-            if(els.slogan) els.slogan.innerText = els.sloganInput.value;
-            
+            if (els.brandName) els.brandName.innerText = els.brandNameInput.value;
+            if (els.slogan) els.slogan.innerText = els.sloganInput.value;
+
             // Slogan Font Size
             const sloganSize = els.sloganSizeInput.value;
-            if(els.slogan) els.slogan.style.fontSize = `${sloganSize}pt`;
-            if(els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}pt`;
+            if (els.slogan) els.slogan.style.fontSize = `${sloganSize}pt`;
+            if (els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}pt`;
 
-            if(els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if(els.codeName) els.codeName.innerText = els.codeNameInput.value.toUpperCase();
-            
-            if(els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if(els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
-            
-            if(els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
-            if(els.owner) els.owner.innerText = els.ownerInput.value;
-            
-            if(els.keySwitchLabel) els.keySwitchLabel.innerText = els.keySwitchLabelInput.value;
-            if(els.keySwitch) els.keySwitch.innerText = els.keySwitchInput.value.toUpperCase();
-            
-            if(els.keyCapsLabel) els.keyCapsLabel.innerText = els.keyCapsLabelInput.value;
-            if(els.keyCaps) els.keyCaps.innerText = els.keyCapsInput.value.toUpperCase();
+            if (els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
+            if (els.codeName) els.codeName.innerText = els.codeNameInput.value.toUpperCase();
+
+            if (els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
+            if (els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
+
+            if (els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
+            if (els.owner) els.owner.innerText = els.ownerInput.value;
+
+            if (els.keySwitchLabel) els.keySwitchLabel.innerText = els.keySwitchLabelInput.value;
+            if (els.keySwitch) els.keySwitch.innerText = els.keySwitchInput.value.toUpperCase();
+
+            if (els.keyCapsLabel) els.keyCapsLabel.innerText = els.keyCapsLabelInput.value;
+            if (els.keyCaps) els.keyCaps.innerText = els.keyCapsInput.value.toUpperCase();
         };
 
         // Font Change Listener
@@ -565,13 +713,13 @@ Precision Engineered.</textarea>
 
         [
             els.brandNameInput, els.sloganInput, els.sloganSizeInput,
-            els.codeNameLabelInput, els.codeNameInput, 
+            els.codeNameLabelInput, els.codeNameInput,
             els.mfgCodeLabelInput, els.mfgCodeInput,
             els.ownerLabelInput, els.ownerInput,
             els.keySwitchLabelInput, els.keySwitchInput,
             els.keyCapsLabelInput, els.keyCapsInput
         ].forEach(el => {
-            if(el) el.addEventListener('input', syncUI);
+            if (el) el.addEventListener('input', syncUI);
         });
 
         // Theme Logic
@@ -607,8 +755,8 @@ Precision Engineered.</textarea>
 
         els.exportJsonBtn.onclick = () => {
             const data = {
-                brandName: els.brandNameInput.value, 
-                slogan: els.sloganInput.value, 
+                brandName: els.brandNameInput.value,
+                slogan: els.sloganInput.value,
                 sloganSize: els.sloganSizeInput.value,
                 sloganFont: els.sloganFontSelect.value, // Added
                 codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
@@ -621,7 +769,7 @@ Precision Engineered.</textarea>
                 imgM: els.imgMultiply.checked,
                 exportedAt: new Date().toISOString()
             };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -658,10 +806,10 @@ Precision Engineered.</textarea>
                 els.sloganFontSelect.value = data.sloganFont;
                 document.documentElement.style.setProperty('--slogan-font', data.sloganFont);
             }
-            
+
             if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
             if (data.codeName) els.codeNameInput.value = data.codeName;
-            
+
             if (data.mfgCodeLabel) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
             if (data.mfgCode) els.mfgCodeInput.value = data.mfgCode;
             if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
@@ -670,14 +818,14 @@ Precision Engineered.</textarea>
             if (data.keySwitch) els.keySwitchInput.value = data.keySwitch;
             if (data.keyCapsLabel) els.keyCapsLabelInput.value = data.keyCapsLabel;
             if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
-            
+
             if (data.imgX) els.imgPosX.value = data.imgX;
             if (data.imgY) els.imgPosY.value = data.imgY;
             if (data.imgS) els.imgScale.value = data.imgS;
             if (data.imgM !== undefined) els.imgMultiply.checked = data.imgM;
 
             if (data.accentColor) updateTheme(data.accentColor);
-            
+
             syncUI();
             syncImageTransform();
         }
@@ -691,9 +839,9 @@ Precision Engineered.</textarea>
             try {
                 if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
                 const cardRect = els.card.getBoundingClientRect();
-                
+
                 const options = {
-                    scale: 3, useCORS: true, backgroundColor: "#fdfdfd",
+                    scale: 6, useCORS: true, backgroundColor: "#fdfdfd",
                     width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
                         const c = clonedDoc.getElementById('productCard');
@@ -722,8 +870,47 @@ Precision Engineered.</textarea>
             }
         };
 
+        // Context: Responsive & Init
+        function adjustCardScale() {
+            const card = els.card;
+            const container = document.getElementById('captureArea');
+            const screenWidth = window.innerWidth;
+            const cardWidth = 344;
+
+            // コンテナのパディング等を考慮した利用可能幅
+            const availableWidth = container.clientWidth - 32;
+            const currentCardWidth = 344; // Base width
+
+            // 常にスケール計算を行う（拡大・縮小両対応）
+            let scale = availableWidth / currentCardWidth;
+
+            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
+            // ここではシンプルに、利用可能幅に合わせてフィットさせる
+            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
+            scale = Math.min(scale, 2.5);
+
+            card.style.transform = `scale(${scale})`;
+            card.style.transformOrigin = 'center top';
+
+            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
+            const height = (currentCardWidth * (55 / 91) * scale) + 50;
+            container.style.height = `${height}px`;
+
+            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
+            if (window.innerWidth < 1024) {
+                container.style.marginBottom = '1.5rem';
+            } else {
+                container.style.marginBottom = '0';
+            }
+        }
+
+        window.addEventListener('resize', adjustCardScale);
+        window.addEventListener('load', adjustCardScale);
+        document.fonts.ready.then(adjustCardScale);
+
         initSwatches();
         syncUI();
     </script>
 </body>
+
 </html>

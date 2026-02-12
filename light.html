@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- 多様なフォントをロード -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@400;700;900&family=Lato:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Oswald:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@400;700;900&family=Lato:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Oswald:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --card-width: 91mm;
@@ -17,6 +20,7 @@
             --accent-color: #E60012;
             --main-font: 'Inter', sans-serif;
         }
+
         body {
             background-color: #f3f4f6;
             display: flex;
@@ -27,44 +31,222 @@
             font-family: 'Inter', sans-serif;
             padding: 4rem 2rem;
         }
-        .tool-container { width: var(--card-width); display: flex; flex-direction: column; align-items: center; }
-        #captureArea { padding: 0; background-color: transparent; display: flex; justify-content: center; align-items: center; margin-bottom: 1.5rem; width: 100%; }
+
+        .tool-container {
+            width: 100%;
+            max-width: var(--card-width);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #captureArea {
+            padding: 0.5rem;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Desktop Layout Override */
+        @media (min-width: 1024px) {
+            .tool-container {
+                max-width: 1600px;
+                display: grid;
+                grid-template-columns: 1fr 400px;
+                grid-template-areas:
+                    "preview filesystem"
+                    "preview editor";
+                gap: 2rem;
+                align-items: start;
+            }
+
+            #captureArea {
+                grid-area: preview;
+                /* Allow JS to set height for scaled card */
+                overflow: visible;
+                margin-bottom: 0;
+                position: sticky;
+                top: 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                /* Align card to top */
+                padding-top: 2rem;
+            }
+
+            .file-system-panel {
+                grid-area: filesystem;
+                width: 100%;
+            }
+
+            .editor-panel {
+                grid-area: editor;
+                width: 100%;
+            }
+        }
+
         .card {
-            width: var(--card-width); height: var(--card-height); background-color: #ffffff; color: #111111;
-            position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-            display: flex; flex-direction: column; justify-content: space-between; padding: 7mm;
-            box-sizing: border-box; border: 1px solid #eeeeee;
-            -webkit-font-smoothing: antialiased; transform: translateZ(0);
-            font-family: var(--main-font); /* フォント変数適用 */
+            width: var(--card-width);
+            height: var(--card-height);
+            background-color: #ffffff;
+            color: #111111;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 7mm;
+            box-sizing: border-box;
+            border: 1px solid #eeeeee;
+            -webkit-font-smoothing: antialiased;
+            transform: translateZ(0);
+            font-family: var(--main-font);
+            /* フォント変数適用 */
         }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .label-text { font-size: 5.5pt; letter-spacing: 0.1em; color: #888888; text-transform: uppercase; font-weight: 700; line-height: 1.2; }
-        .value-text { font-size: 8.5pt; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
-        .dynamic-bg { background-color: var(--accent-color) !important; }
-        .dynamic-text { color: var(--accent-color) !important; }
-        .accent-grey { background-color: #4b5563; }
-        .editor-panel { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e5e7eb; width: 100%; }
-        .color-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-        .color-dot { width: 100%; aspect-ratio: 1 / 1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); transition: all 0.2s; position: relative; }
-        .color-dot:hover { transform: scale(1.1); z-index: 10; }
-        .color-dot.active { border: 2px solid #000; box-shadow: 0 0 0 2px #fff; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .label-text {
+            font-size: 5.5pt;
+            letter-spacing: 0.1em;
+            color: #888888;
+            text-transform: uppercase;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .value-text {
+            font-size: 8.5pt;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+
+        .dynamic-bg {
+            background-color: var(--accent-color) !important;
+        }
+
+        .dynamic-text {
+            color: var(--accent-color) !important;
+        }
+
+        .accent-grey {
+            background-color: #4b5563;
+        }
+
+        .editor-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+            width: 100%;
+        }
+
+        .color-swatch-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .color-dot {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .color-dot.active {
+            border: 2px solid #000;
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         /* Inputs */
-        input[type="text"], textarea, select {
-            background-color: #f9fafb; border: 1px solid #e5e7eb; color: #111;
-            font-family: 'Inter', sans-serif; font-size: 11px;
+        input[type="text"],
+        textarea,
+        select {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #111;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
         }
-        input[type="text"]:focus, textarea:focus, select:focus {
-            border-color: #111; outline: none; background-color: #fff;
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #111;
+            outline: none;
+            background-color: #fff;
         }
-        
-        #exportStatus { position: fixed; bottom: 20px; background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; display: none; z-index: 1000; }
-        input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #e5e7eb; border-radius: 2px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; cursor: pointer; }
+
+        #exportStatus {
+            position: fixed;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
     <div class="w-full max-w-3xl flex justify-between items-center mb-8 px-4">
         <a href="index.html" class="text-xs font-bold text-gray-400 hover:text-gray-900 transition">← BACK TO MENU</a>
@@ -73,11 +255,16 @@
     </div>
 
     <div class="tool-container space-y-4">
-        <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm w-full">
-            <label class="block text-[9px] font-bold text-green-600 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+        <div class="file-system-panel bg-white p-3 rounded-xl border border-gray-200 shadow-sm w-full">
+            <label class="block text-[9px] font-bold text-green-600 uppercase tracking-widest mb-2">📄
+                ファイル保存レコード</label>
             <div class="grid grid-cols-2 gap-2">
-                <button id="exportJsonBtn" class="bg-white border border-green-500 text-green-600 text-[10px] py-2 rounded font-bold hover:bg-green-50 transition flex items-center justify-center gap-1 shadow-sm"><span>📥 設定をJSONで保存</span></button>
-                <button id="importJsonBtn" class="bg-white border border-blue-500 text-blue-600 text-[10px] py-2 rounded font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1 shadow-sm"><span>📤 設定を読み込む</span></button>
+                <button id="exportJsonBtn"
+                    class="bg-white border border-green-500 text-green-600 text-[10px] py-2 rounded font-bold hover:bg-green-50 transition flex items-center justify-center gap-1 shadow-sm"><span>📥
+                        設定をJSONで保存</span></button>
+                <button id="importJsonBtn"
+                    class="bg-white border border-blue-500 text-blue-600 text-[10px] py-2 rounded font-bold hover:bg-blue-50 transition flex items-center justify-center gap-1 shadow-sm"><span>📤
+                        設定を読み込む</span></button>
                 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
             </div>
         </div>
@@ -85,8 +272,12 @@
         <div id="captureArea">
             <div class="card" id="productCard">
                 <div class="absolute top-0 left-0 w-1.5 h-full dynamic-bg z-20"></div>
-                <div id="displayBgTextContainer" class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible" style="bottom: -5%; right: -5%; width: 120%; height: 120%; opacity: 0.08; z-index: 0;">
-                    <span id="displayBgText" class="text-[120pt] font-black italic tracking-tighter uppercase inline-block leading-none whitespace-nowrap" style="padding: 0.5em;">AF</span>
+                <div id="displayBgTextContainer"
+                    class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible"
+                    style="bottom: -5%; right: -5%; width: 120%; height: 120%; opacity: 0.08; z-index: 0;">
+                    <span id="displayBgText"
+                        class="text-[120pt] font-black italic tracking-tighter uppercase inline-block leading-none whitespace-nowrap"
+                        style="padding: 0.5em;">AF</span>
                 </div>
 
                 <div class="z-10 flex justify-between items-start mb-2">
@@ -97,8 +288,13 @@
                     </div>
                     <div class="text-right flex flex-col items-end">
                         <div class="flex gap-1 opacity-90 mb-2">
-                            <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5"><div class="w-[5px] h-[5px] dynamic-bg"></div></div>
-                            <div class="w-6 h-3.5 border border-black flex items-end justify-between p-0.5"><div class="w-[5px] h-[5px] dynamic-bg"></div><div class="w-[5px] h-[5px] accent-grey"></div></div>
+                            <div class="w-6 h-3.5 border border-black flex items-end justify-end p-0.5">
+                                <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                            </div>
+                            <div class="w-6 h-3.5 border border-black flex items-end justify-between p-0.5">
+                                <div class="w-[5px] h-[5px] dynamic-bg"></div>
+                                <div class="w-[5px] h-[5px] accent-grey"></div>
+                            </div>
                         </div>
                         <div class="flex flex-col">
                             <span class="label-text" id="displayCodeNameLabel">Code Name</span>
@@ -109,7 +305,9 @@
 
                 <div class="flex-grow flex flex-col justify-center relative z-10">
                     <div class="w-full h-[0.5px] bg-gray-100 mb-2"></div>
-                    <div id="displaySlogan" class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">DESIGNED FOR THE MATURE MIND</div>
+                    <div id="displaySlogan"
+                        class="text-[8pt] italic text-gray-400 font-medium leading-tight max-w-[85%] break-words">
+                        DESIGNED FOR THE MATURE MIND</div>
                 </div>
 
                 <div class="z-10 flex justify-end">
@@ -125,12 +323,14 @@
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-sm font-bold text-gray-800 flex items-center gap-2">🎨 Customize & Edit</h2>
             </div>
-            
+
             <div class="space-y-4">
                 <!-- Font Selection -->
                 <div>
-                    <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">TYPEFACE</label>
-                    <select id="fontSelect" class="w-full text-xs p-2 border border-gray-200 rounded h-8 cursor-pointer bg-gray-50">
+                    <label
+                        class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">TYPEFACE</label>
+                    <select id="fontSelect"
+                        class="w-full text-xs p-2 border border-gray-200 rounded h-8 cursor-pointer bg-gray-50">
                         <option value="'Inter', sans-serif">INTER (DEFAULT)</option>
                         <option value="'Roboto', sans-serif">ROBOTO (NEUTRAL)</option>
                         <option value="'Lato', sans-serif">LATO (FRIENDLY)</option>
@@ -142,49 +342,68 @@
 
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">Theme Color (CMYK Swatches)</label>
-                        <span id="cmykValueDisplay" class="text-[8px] font-mono text-blue-500 font-bold">C:0 M:100 Y:100 K:0</span>
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">Theme Color
+                            (CMYK Swatches)</label>
+                        <span id="cmykValueDisplay" class="text-[8px] font-mono text-blue-500 font-bold">C:0 M:100 Y:100
+                            K:0</span>
                     </div>
                     <div class="color-swatch-grid" id="swatchGrid"></div>
                 </div>
 
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand Name</label>
-                        <input type="text" id="brandNameInput" value="AroundForty" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
+                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Brand
+                            Name</label>
+                        <input type="text" id="brandNameInput" value="AroundForty"
+                            class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase">
                     </div>
                     <div>
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
-                        <textarea id="sloganInput" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-16">DESIGNED FOR THE MATURE MIND</textarea>
+                        <label
+                            class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Slogan</label>
+                        <textarea id="sloganInput"
+                            class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black h-16">DESIGNED FOR THE MATURE MIND</textarea>
                     </div>
                     <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Background Text (Watermark)</label>
-                        <input type="text" id="bgTextInput" value="AF" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase mb-3">
+                        <label
+                            class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Background
+                            Text (Watermark)</label>
+                        <input type="text" id="bgTextInput" value="AF"
+                            class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black uppercase mb-3">
                         <div class="flex justify-between items-center mb-1">
-                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Text Size</label>
+                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Text
+                                Size</label>
                             <span id="bgTextSizeDisplay" class="text-[9px] font-bold text-blue-500">120pt</span>
                         </div>
                         <input type="range" id="bgTextSizeInput" min="40" max="250" value="120" class="w-full">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper Label</label>
-                            <input type="text" id="codeNameLabelInput" value="Code Name" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
-                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Upper Value</label>
-                            <input type="text" id="codeNameInput" value="AroundFortyRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Upper
+                                Label</label>
+                            <input type="text" id="codeNameLabelInput" value="Code Name"
+                                class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Upper
+                                Value</label>
+                            <input type="text" id="codeNameInput" value="AroundFortyRB"
+                                class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
                         </div>
                         <div>
-                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Lower Label</label>
-                            <input type="text" id="mfgCodeLabelInput" value="Manufacturing code" class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
-                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lower Value</label>
-                            <input type="text" id="mfgCodeInput" value="02AFRB" class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Lower
+                                Label</label>
+                            <input type="text" id="mfgCodeLabelInput" value="Manufacturing code"
+                                class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lower
+                                Value</label>
+                            <input type="text" id="mfgCodeInput" value="02AFRB"
+                                class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="pt-6 border-t border-gray-100 mt-6">
-                <button id="btnExport" class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
+                <button id="btnExport"
+                    class="w-full py-4 px-4 bg-black text-white text-xs font-bold rounded-lg hover:opacity-80 transition flex items-center justify-center gap-2 shadow-lg active:scale-[0.98]">
                     <span>📸 高画質画像として保存 (PNG)</span>
                 </button>
             </div>
@@ -242,24 +461,24 @@
         };
 
         const syncUI = () => {
-            if(els.brandName) els.brandName.innerText = els.brandNameInput.value;
-            if(els.slogan) els.slogan.innerText = els.sloganInput.value;
-            if(els.bgText) els.bgText.innerText = els.bgTextInput.value;
+            if (els.brandName) els.brandName.innerText = els.brandNameInput.value;
+            if (els.slogan) els.slogan.innerText = els.sloganInput.value;
+            if (els.bgText) els.bgText.innerText = els.bgTextInput.value;
             const size = els.bgTextSizeInput.value;
-            if(els.bgText) els.bgText.style.fontSize = `${size}pt`;
-            if(els.bgTextSizeDisplay) els.bgTextSizeDisplay.innerText = `${size}pt`;
-            if(els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if(els.codeName) els.codeName.innerText = els.codeNameInput.value;
-            if(els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if(els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value;
+            if (els.bgText) els.bgText.style.fontSize = `${size}pt`;
+            if (els.bgTextSizeDisplay) els.bgTextSizeDisplay.innerText = `${size}pt`;
+            if (els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
+            if (els.codeName) els.codeName.innerText = els.codeNameInput.value;
+            if (els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
+            if (els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value;
         };
 
         els.fontSelect.onchange = (e) => {
             document.documentElement.style.setProperty('--main-font', e.target.value);
         };
 
-        [els.brandNameInput, els.sloganInput, els.bgTextInput, els.bgTextSizeInput, 
-         els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
+        [els.brandNameInput, els.sloganInput, els.bgTextInput, els.bgTextSizeInput,
+        els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
             el.addEventListener('input', syncUI);
         });
 
@@ -314,7 +533,7 @@
                 font: els.fontSelect.value,
                 accentColor: currentAccentColor, cmykLabel: els.cmykValueDisplay.innerText, exportedAt: new Date().toISOString()
             };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -370,7 +589,7 @@
                 if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
                 const cardRect = els.card.getBoundingClientRect();
                 const options = {
-                    scale: 3, useCORS: true, backgroundColor: "#ffffff",
+                    scale: 6, useCORS: true, backgroundColor: "#ffffff",
                     width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
                     onclone: (clonedDoc) => {
                         const c = clonedDoc.getElementById('productCard');
@@ -405,8 +624,49 @@
             }
         };
 
+        // レスポンシブ対応：カードのスケール調整
+        function adjustCardScale() {
+            const card = els.card;
+            const container = document.getElementById('captureArea');
+            const screenWidth = window.innerWidth;
+            const cardWidth = 344; // 91mm approx in px (91 * 3.7795) - 実際はCSSでmm指定だが計算用に固定値を持つか、offsetWidthを使う
+
+            // コンテナのパディング等を考慮した利用可能幅
+            // コンテナのパディング等を考慮した利用可能幅
+            const availableWidth = container.clientWidth - 32;
+            const currentCardWidth = 344; // Base width approx
+
+            // 常にスケール計算を行う（拡大・縮小両対応）
+            let scale = availableWidth / currentCardWidth;
+
+            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
+            // ここではシンプルに、利用可能幅に合わせてフィットさせる
+            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
+            scale = Math.min(scale, 2.5);
+
+            card.style.transform = `scale(${scale})`;
+            card.style.transformOrigin = 'center top';
+
+            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
+            const height = (currentCardWidth * (55 / 91) * scale) + 50;
+            container.style.height = `${height}px`;
+
+            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
+            if (window.innerWidth < 1024) {
+                container.style.marginBottom = '1.5rem';
+            } else {
+                container.style.marginBottom = '0';
+            }
+        }
+
+        window.addEventListener('resize', adjustCardScale);
+        window.addEventListener('load', adjustCardScale);
+        // フォントロード後などにも再計算
+        document.fonts.ready.then(adjustCardScale);
+
         initSwatches();
         syncUI();
     </script>
 </body>
+
 </html>
