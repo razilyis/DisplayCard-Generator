@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - Trading Card</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Serif+JP:wght@500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #C9A227;
+            --frame-dark: #221B10;
+            --ink: #1c1810;
+            --title-font: 'Cinzel', serif;
+            --body-font: 'Noto Serif JP', serif;
+        }
+
+        body {
+            --ui-bg: #1b1a22;
+            --ui-panel: #262533;
+            --ui-panel-2: #1b1a22;
+            --ui-border: #3d3b4d;
+            --ui-text: #e8e4d8;
+            --ui-muted: #8b869d;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #1c1810;
+            color: #e8e4d8;
+        }
+
+        .card {
+            /* 箔押し風のフチ。カード全面がフレームで、内側に本体を敷く */
+            background:
+                linear-gradient(135deg, var(--accent-color) 0%, #fff3c4 18%, var(--accent-color) 38%,
+                    #7d5f14 58%, var(--accent-color) 78%, #fff3c4 100%);
+            color: var(--ink);
+            font-family: var(--body-font);
+            padding: 1.6mm;
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.45);
+        }
+
+        .tcg-inner {
+            flex: 1 1 auto;
+            min-height: 0;
+            background: #F6F0E2;
+            border: 0.35mm solid var(--frame-dark);
+            display: flex;
+            flex-direction: column;
+            padding: 1.8mm 2.2mm 2mm;
+        }
+
+        .tcg-name {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2mm;
+            border-bottom: 0.3mm solid var(--frame-dark);
+            padding-bottom: 1mm;
+        }
+
+        .tcg-name b {
+            font-family: var(--title-font);
+            font-size: 11pt;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            line-height: 1.2;
+            min-width: 0;
+        }
+
+        .tcg-rarity {
+            flex-shrink: 0;
+            font-size: 7pt;
+            letter-spacing: 0.06em;
+            color: #9a7d1e;
+            white-space: nowrap;
+        }
+
+        .tcg-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            gap: 2.4mm;
+            padding-top: 1.6mm;
+        }
+
+        .tcg-art {
+            flex: 0 0 30mm;
+            position: relative;
+            overflow: hidden;
+            border: 0.3mm solid var(--frame-dark);
+            
+            background: linear-gradient(160deg, #d9cfae 0%, #efe7d0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tcg-art img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tcg-art .ph {
+            font-size: 4.4pt;
+            letter-spacing: 0.2em;
+            color: #a1936d;
+        }
+
+        .tcg-right {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tcg-type {
+            font-family: 'Oswald', sans-serif;
+            font-size: 5.2pt;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            background: var(--frame-dark);
+            color: #F6F0E2;
+            padding: 0.7mm 1.4mm;
+            align-self: flex-start;
+            max-width: 100%;
+        }
+
+        .tcg-flavor {
+            font-size: 5.6pt;
+            line-height: 1.55;
+            margin-top: 1.4mm;
+            color: #3a3325;
+            flex: 1 1 auto;
+        }
+
+        .tcg-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.2mm;
+            margin-top: 1.2mm;
+        }
+
+        .tcg-stat {
+            border: 0.3mm solid var(--frame-dark);
+            background: rgba(201, 162, 39, 0.14);
+            padding: 0.7mm 1mm;
+            min-width: 0;
+        }
+
+        .tcg-stat i {
+            display: block;
+            font-style: normal;
+            font-family: 'Oswald', sans-serif;
+            font-size: 3.6pt;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #8a7530;
+        }
+
+        .tcg-stat b {
+            display: block;
+            font-family: 'Oswald', sans-serif;
+            font-size: 6.4pt;
+            line-height: 1.2;
+        }
+
+        .tcg-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2mm;
+            border-top: 0.25mm solid #b9ac89;
+            margin-top: 1.4mm;
+            padding-top: 0.8mm;
+            font-family: 'Oswald', sans-serif;
+            font-size: 4.2pt;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #6f6448;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>Trading Card Generator</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="tcg-inner">
+                    <div class="tcg-name">
+                        <b class="ck-fit" id="displayBrandName">AroundForty</b>
+                        <span class="tcg-rarity" id="displayRarity">★★★★☆</span>
+                    </div>
+
+                    <div class="tcg-body">
+                        <div class="tcg-art">
+                            <img id="displayImage" src="" alt="" style="display:none">
+                            <span class="ph" id="imagePlaceholder">NO IMAGE</span>
+                        </div>
+
+                        <div class="tcg-right">
+                            <div class="tcg-type ck-fit" id="displayType">SPLIT KEYBOARD — 40%</div>
+                            <div class="tcg-flavor" id="displaySlogan">静かに、しかし確実に打鍵する。四十路の指に寄り添う一台。</div>
+
+                            <div class="tcg-stats">
+                                <div class="tcg-stat"><i id="displayKeySwitchLabel">SWITCH</i><b class="ck-fit"
+                                        id="displayKeySwitch">Cherry MX Red</b></div>
+                                <div class="tcg-stat"><i id="displayKeyCapsLabel">KEYCAPS</i><b class="ck-fit"
+                                        id="displayKeyCaps">PBT Double-shot</b></div>
+                                <div class="tcg-stat"><i id="displayCodeNameLabel">MODEL</i><b class="ck-fit"
+                                        id="displayCodeName">AroundFortyRB</b></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tcg-foot">
+                        <span><span id="displayOwnerLabel">OWNER</span> · <span id="displayOwner">@user</span></span>
+                        <span><span id="displayMfgCodeLabel">MFG</span> <span id="displayMfgCode">02AFRB</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">カード名 / Name</label><input type="text" id="brandNameInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label" for="typeInput">タイプ行 / Type</label><input type="text" id="typeInput" class="ck-input " value="SPLIT KEYBOARD — 40%"></div>
+            <div class="ck-field"><label class="ck-label" for="rarityInput">レアリティ / Rarity</label><input type="text" id="rarityInput" class="ck-input " value="★★★★☆"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">フレーバーテキスト</label><textarea id="sloganInput" class="ck-textarea" rows="3">静かに、しかし確実に打鍵する。四十路の指に寄り添う一台。</textarea></div>
+            <div class="ck-field"><label class="ck-label">カードイラスト / Art</label><label class="ck-upload">📁 クリックして画像を選択<input type="file" id="imageUpload" accept="image/*" hidden></label><button type="button" class="ck-link-btn" id="imageClear">✕ 画像を削除</button><div class="ck-row" style="grid-template-columns:1fr 1fr 1fr"><div><span class="ck-sub">X</span><input type="range" id="imgPosX" min="-200" max="200" value="0"></div><div><span class="ck-sub">Y</span><input type="range" id="imgPosY" min="-200" max="200" value="0"></div><div><span class="ck-sub">SCALE</span><input type="range" id="imgScale" min="0.1" max="3" step="0.05" value="1"></div></div></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">フチの色 / Foil Color</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">項目1 (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="MODEL" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="AroundFortyRB"></div>
+            <div class="ck-field"><label class="ck-label">項目2 (ラベル / 値)</label><input type="text" id="keySwitchLabelInput" class="ck-input" value="SWITCH" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keySwitchInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">項目3 (ラベル / 値)</label><input type="text" id="keyCapsLabelInput" class="ck-input" value="KEYCAPS" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keyCapsInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label">項目4 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">項目5 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'TCG',
+            exportBg: '#C9A227',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'typeInput', target: 'displayType', key: 'type' },
+                { input: 'rarityInput', target: 'displayRarity', key: 'rarity' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            image: {
+                input: 'imageUpload', target: 'displayImage', placeholder: 'imagePlaceholder',
+                clear: 'imageClear', posX: 'imgPosX', posY: 'imgPosY', scale: 'imgScale', key: 'image'
+            },
+            accent: {
+                cssVar: '--accent-color',
+                default: '#C9A227',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#C9A227', label: 'GOLD' }, { hex: '#B7BDC4', label: 'SILVER' },
+                    { hex: '#C77B49', label: 'BRONZE' }, { hex: '#7FB2D8', label: 'MYTHIC BLUE' },
+                    { hex: '#C0669B', label: 'ROSE FOIL' }, { hex: '#79B87A', label: 'EMERALD' },
+                    { hex: '#8E7CC3', label: 'AMETHYST' }, { hex: '#4E4638', label: 'ANTIQUE' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - Boarding Pass</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #0B5FA5;
+            --paper: #FCFBF7;
+            --ink: #1b1b1b;
+            --main-font: 'Barlow Condensed', sans-serif;
+        }
+
+        body {
+            --ui-bg: #E7EDF2;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #F5F8FA;
+            --ui-border: #ccd7e0;
+            --ui-text: #16283a;
+            --ui-muted: #8298aa;
+            --ui-accent: #0B5FA5;
+            --ui-accent-text: #ffffff;
+        }
+
+        .card {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Barlow', sans-serif;
+            flex-direction: row;
+            box-shadow: 0 16px 34px rgba(11, 60, 90, 0.22), 0 0 0 1px #dfe6ea;
+        }
+
+        .bp-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 3.6mm 4mm;
+        }
+
+        .bp-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 0.4mm solid var(--accent-color);
+            padding-bottom: 1.4mm;
+        }
+
+        .bp-title {
+            font-family: var(--main-font);
+            font-size: 8.5pt;
+            font-weight: 700;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            line-height: 1;
+        }
+
+        .bp-carrier {
+            font-family: var(--main-font);
+            font-size: 5pt;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #7d8a94;
+            margin-top: 0.6mm;
+        }
+
+        .bp-logo {
+            font-family: var(--main-font);
+            font-size: 12pt;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1;
+            text-align: right;
+            width: 34mm;
+        }
+
+        .bp-route {
+            display: flex;
+            align-items: center;
+            gap: 2.5mm;
+            margin: 2.2mm 0 1.8mm;
+        }
+
+        .bp-port {
+            min-width: 0;
+        }
+
+        .bp-port i {
+            display: block;
+            font-style: normal;
+            font-size: 4pt;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8d9aa4;
+        }
+
+        .bp-port b {
+            display: block;
+            font-family: var(--main-font);
+            font-size: 9.5pt;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: 0.01em;
+        }
+
+        .bp-arrow {
+            flex: 1 1 auto;
+            border-top: 0.25mm dashed #9fb0bc;
+            position: relative;
+            height: 0.25mm;
+            min-width: 4mm;
+        }
+
+        .bp-arrow::after {
+            content: '';
+            position: absolute;
+            right: -0.2mm;
+            top: -0.9mm;
+            border-left: 1.4mm solid var(--accent-color);
+            border-top: 0.9mm solid transparent;
+            border-bottom: 0.9mm solid transparent;
+        }
+
+        .bp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.6mm 2.5mm;
+            margin-top: auto;
+            padding-top: 2mm;
+        }
+
+        .bp-cell i {
+            display: block;
+            font-style: normal;
+            font-size: 3.8pt;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #8d9aa4;
+        }
+
+        .bp-cell b {
+            display: block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 6pt;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        /* ミシン目 */
+        .bp-perf {
+            flex: 0 0 auto;
+            width: 0;
+            border-left: 0.3mm dashed #b6c3cc;
+            position: relative;
+        }
+
+        .bp-perf::before,
+        .bp-perf::after {
+            content: '';
+            position: absolute;
+            left: -1.5mm;
+            width: 3mm;
+            height: 3mm;
+            border-radius: 50%;
+            background: var(--ui-bg, #E7EDF2);
+            box-shadow: 0 0 0 0.25mm #dfe6ea inset;
+        }
+
+        .bp-perf::before {
+            top: -1.5mm;
+        }
+
+        .bp-perf::after {
+            bottom: -1.5mm;
+        }
+
+        /* 半券 */
+        .bp-stub {
+            flex: 0 0 26mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3.6mm 3mm;
+            background: rgba(11, 95, 165, 0.05);
+        }
+
+        .bp-stub-title {
+            font-family: var(--main-font);
+            font-size: 4.4pt;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .bp-seat b {
+            display: block;
+            font-family: var(--main-font);
+            font-size: 11pt;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-color);
+        }
+
+        .bp-seat i {
+            display: block;
+            font-style: normal;
+            font-size: 3.8pt;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #8d9aa4;
+        }
+
+        .bp-barcode {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.28mm;
+            height: 7mm;
+        }
+
+        .bp-barcode span {
+            display: block;
+            flex: 0 0 auto;
+            background: #1b1b1b;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>Boarding Pass Generator</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="bp-main">
+                    <div class="bp-head">
+                        <div>
+                            <div class="bp-title" id="displayTitle">BOARDING PASS</div>
+                            <div class="bp-carrier" id="displaySlogan">TENKAICHI KEYBOARD MEETUP · VOL.10</div>
+                        </div>
+                        <div class="bp-logo ck-fit" id="displayBrandName">AroundForty</div>
+                    </div>
+
+                    <div class="bp-route">
+                        <div class="bp-port">
+                            <i id="displayKeySwitchLabel">SWITCH</i><b id="displayKeySwitch" class="ck-fit">Cherry MX Red</b>
+                        </div>
+                        <div class="bp-arrow"></div>
+                        <div class="bp-port" style="text-align:right">
+                            <i id="displayKeyCapsLabel">KEYCAPS</i><b id="displayKeyCaps" class="ck-fit">PBT Double-shot</b>
+                        </div>
+                    </div>
+
+                    <div class="bp-grid">
+                        <div class="bp-cell"><i id="displayCodeNameLabel">MODEL</i><b class="ck-fit"
+                                id="displayCodeName">AroundFortyRB</b></div>
+                        <div class="bp-cell"><i id="displayOwnerLabel">OWNER</i><b id="displayOwner" class="ck-fit">@user</b></div>
+                        <div class="bp-cell"><i id="displayMfgCodeLabel">MFG</i><b class="ck-fit" id="displayMfgCode">02AFRB</b></div>
+                    </div>
+                </div>
+
+                <div class="bp-perf"></div>
+
+                <div class="bp-stub">
+                    <div>
+                        <div class="bp-stub-title">STUB</div>
+                        <div class="bp-seat" style="margin-top:1.5mm">
+                            <i id="displaySeatLabel">SEAT</i><b id="displaySeat">40A</b>
+                        </div>
+                    </div>
+                    <div class="bp-barcode" id="displayBarcode"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">ブランド名 / Brand</label><input type="text" id="brandNameInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label" for="titleInput">見出し / Title</label><input type="text" id="titleInput" class="ck-input " value="BOARDING PASS"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">副題 / Sub</label><input type="text" id="sloganInput" class="ck-input " value="TENKAICHI KEYBOARD MEETUP · VOL.10"></div>
+            <div class="ck-field"><label class="ck-label">半券 (ラベル / 値)</label><input type="text" id="seatLabelInput" class="ck-input" value="SEAT" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="seatInput" class="ck-input" value="40A"></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">カラー / Color</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">項目1 (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="MODEL" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="AroundFortyRB"></div>
+            <div class="ck-field"><label class="ck-label">項目2 (ラベル / 値)</label><input type="text" id="keySwitchLabelInput" class="ck-input" value="SWITCH" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keySwitchInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">項目3 (ラベル / 値)</label><input type="text" id="keyCapsLabelInput" class="ck-input" value="KEYCAPS" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keyCapsInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label">項目4 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">項目5 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        // バーコードは「値の文字コードから決まる」ので、同じ入力なら毎回同じ絵になる
+        function drawBarcode() {
+            const src = ((document.getElementById('mfgCodeInput') || {}).value || 'AF') +
+                ((document.getElementById('seatInput') || {}).value || '');
+            const host = document.getElementById('displayBarcode');
+            host.innerHTML = '';
+            let seed = 0;
+            for (let i = 0; i < src.length; i++) seed = (seed * 31 + src.charCodeAt(i)) >>> 0;
+            for (let i = 0; i < 34; i++) {
+                seed = (seed * 1103515245 + 12345) >>> 0;
+                const bar = document.createElement('span');
+                bar.style.width = (0.2 + (seed % 3) * 0.16).toFixed(2) + 'mm';
+                if ((seed >>> 9) % 5 === 0) bar.style.background = 'transparent';
+                host.appendChild(bar);
+            }
+        }
+
+        CardKit({
+            theme: 'PASS',
+            exportBg: '#FCFBF7',
+            nameSource: 'codeNameInput',
+            onSync: drawBarcode,
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'titleInput', target: 'displayTitle', key: 'title' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'seatLabelInput', target: 'displaySeatLabel', key: 'seatLabel' },
+                { input: 'seatInput', target: 'displaySeat', key: 'seat' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#0B5FA5',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#0B5FA5', label: 'AIR BLUE' }, { hex: '#123B6D', label: 'NAVY' },
+                    { hex: '#00796B', label: 'TEAL' }, { hex: '#B3261E', label: 'RED TAIL' },
+                    { hex: '#C77700', label: 'AMBER' }, { hex: '#5C3D8C', label: 'PLUM' },
+                    { hex: '#37474F', label: 'GRAPHITE' }, { hex: '#0F8A5F', label: 'GREEN' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -13,10 +13,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&family=Inconsolata:wght@400;700&family=Orbitron:wght@400;700&family=VT323&family=Anonymous+Pro:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Space+Mono:wght@400;700&family=Courier+Prime:wght@400;700&family=Press+Start+2P&family=Special+Elite&family=Architects+Daughter&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
     <style>
         :root {
-            --card-width: 91mm;
-            --card-height: 55mm;
             --accent-color: #00FFFF;
             /* Cyan for dimensions */
             --paper-color: #003366;
@@ -28,94 +27,27 @@
         }
 
         body {
-            background-color: #e0e5ec;
+            --ui-bg: #e0e5ec;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #f3f6fa;
+            --ui-border: #c3cddb;
+            --ui-text: #17334f;
+            --ui-muted: #7a8ca0;
+            --ui-accent: #003366;
+            --ui-accent-text: #ffffff;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            padding: 4rem 2rem;
-        }
-
-        .tool-container {
-            width: 100%;
-            max-width: var(--card-width);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #captureArea {
-            padding: 0.5rem;
-            background-color: transparent;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        /* Desktop Layout Override */
-        @media (min-width: 1024px) {
-            .tool-container {
-                max-width: 1600px;
-                display: grid;
-                grid-template-columns: 1fr 400px;
-                grid-template-areas:
-                    "preview filesystem"
-                    "preview editor";
-                gap: 2rem;
-                align-items: start;
-            }
-
-            #captureArea {
-                grid-area: preview;
-                /* Allow JS to set height for scaled card */
-                overflow: visible;
-                position: sticky;
-                top: 2rem;
-                display: flex;
-                justify-content: center;
-                align-items: flex-start;
-                padding-top: 2rem;
-            }
-
-            .file-system-panel {
-                grid-area: filesystem;
-                width: 100%;
-            }
-
-            .editor-panel {
-                grid-area: editor;
-                width: 100%;
-            }
         }
 
         /* Blueprint Card Style */
         .card {
-            width: var(--card-width);
-            height: var(--card-height);
             background-color: var(--paper-color);
             color: var(--ink-color);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 51, 102, 0.4);
-            display: flex;
-            flex-direction: column;
             justify-content: space-between;
             padding: 8mm;
-            /* Slightly reduced padding to fit more content */
-            box-sizing: border-box;
+            /* 白い外枠は青焼きデザインの一部なので border のまま残す（プレビューでも出力でも同じ） */
             border: 2px solid white;
-            /* Outer Border */
             font-family: var(--main-font);
-            /* Use Variable */
-            -webkit-font-smoothing: antialiased;
-            transform: translateZ(0);
+            box-shadow: 0 20px 40px rgba(0, 51, 102, 0.4);
 
             /* Grid Pattern */
             background-image:
@@ -423,11 +355,10 @@
                 </div>
 
                 <!-- Background Watermark -->
-                <div id="displayBgTextContainer"
-                    class="absolute flex items-center justify-center pointer-events-none select-none overflow-visible"
-                    style="top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); width: 100%; height: 100%; opacity: 0.08; z-index: 0;">
+                <div class="ck-watermark ck-watermark--center" id="displayBgTextContainer"
+                    style="opacity: 0.08; --wm-rotate: -15deg;">
                     <span id="displayBgText"
-                        class="text-[90pt] font-tech tracking-widest uppercase inline-block leading-none whitespace-nowrap text-white border-4 border-white p-4 opacity-50"
+                        class="text-[90pt] font-tech tracking-widest uppercase whitespace-nowrap text-white border-4 border-white p-4 opacity-50"
                         style="border-style: double;">AF</span>
                 </div>
 
@@ -655,331 +586,50 @@ PRECISION ENGINEERED.</textarea>
 
     <div id="exportStatus"></div>
 
-    <script type="text/javascript">
-        // Blueprint Accent Colors
-        const bpSwatches = [
-            { hex: "#00FFFF", label: "CYAN" },
-            { hex: "#FF00FF", label: "MAGENTA" },
-            { hex: "#FFFF00", label: "YELLOW" },
-            { hex: "#FFFFFF", label: "WHITE" },
-            { hex: "#00FF00", label: "LIME" },
-            { hex: "#FF5555", label: "ALERT RED" }
-        ];
-
-        const els = {
-            card: document.getElementById('productCard'),
-            brandName: document.getElementById('displayBrandName'),
-            slogan: document.getElementById('displaySlogan'),
-            bgText: document.getElementById('displayBgText'),
-            bgTextContainer: document.getElementById('displayBgTextContainer'),
-
-            codeNameLabel: document.getElementById('displayCodeNameLabel'),
-            codeName: document.getElementById('displayCodeName'),
-            mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
-            mfgCode: document.getElementById('displayMfgCode'),
-            ownerLabel: document.getElementById('displayOwnerLabel'),
-            owner: document.getElementById('displayOwner'),
-            keySwitchLabel: document.getElementById('displayKeySwitchLabel'),
-            keySwitch: document.getElementById('displayKeySwitch'),
-            keyCapsLabel: document.getElementById('displayKeyCapsLabel'),
-            keyCaps: document.getElementById('displayKeyCaps'),
-            xLabel: document.getElementById('displayXLabel'),
-            xValue: document.getElementById('displayXValue'),
-
-            // Inputs
-            fontSelect: document.getElementById('fontSelect'),
-            brandNameInput: document.getElementById('brandNameInput'),
-            sloganInput: document.getElementById('sloganInput'),
-            sloganSizeInput: document.getElementById('sloganSizeInput'),
-            sloganSizeDisplay: document.getElementById('sloganSizeDisplay'),
-            bgTextInput: document.getElementById('bgTextInput'),
-            bgTextSizeInput: document.getElementById('bgTextSizeInput'),
-            bgTextSizeDisplay: document.getElementById('bgTextSizeDisplay'),
-
-            codeNameLabelInput: document.getElementById('codeNameLabelInput'),
-            codeNameInput: document.getElementById('codeNameInput'),
-            mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
-            mfgCodeInput: document.getElementById('mfgCodeInput'),
-            ownerLabelInput: document.getElementById('ownerLabelInput'),
-            ownerInput: document.getElementById('ownerInput'),
-            keySwitchLabelInput: document.getElementById('keySwitchLabelInput'),
-            keySwitchInput: document.getElementById('keySwitchInput'),
-            keyCapsLabelInput: document.getElementById('keyCapsLabelInput'),
-            keyCapsInput: document.getElementById('keyCapsInput'),
-            xLabelInput: document.getElementById('xLabelInput'),
-            xValueInput: document.getElementById('xValueInput'),
-
-            btnExport: document.getElementById('btnExport'),
-            status: document.getElementById('exportStatus'),
-            exportJsonBtn: document.getElementById('exportJsonBtn'),
-            importJsonBtn: document.getElementById('importJsonBtn'),
-            jsonFileInput: document.getElementById('jsonFileInput'),
-            swatchGrid: document.getElementById('swatchGrid')
-        };
-
-        const showStatus = (msg, duration = 3000) => {
-            els.status.innerText = `>> ${msg}`;
-            els.status.style.display = 'block';
-            setTimeout(() => els.status.style.display = 'none', duration);
-        };
-
-        // UI Sync
-        const syncUI = () => {
-            if (els.brandName) els.brandName.innerText = els.brandNameInput.value;
-            if (els.slogan) els.slogan.innerText = els.sloganInput.value;
-
-            const sloganSize = els.sloganSizeInput.value;
-            if (els.slogan) els.slogan.style.fontSize = `${sloganSize}pt`;
-            if (els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}pt`;
-
-            if (els.bgText) els.bgText.innerText = els.bgTextInput.value;
-            const bgSize = els.bgTextSizeInput.value;
-            if (els.bgText) els.bgText.style.fontSize = `${bgSize}pt`;
-            if (els.bgTextSizeDisplay) els.bgTextSizeDisplay.innerText = `${bgSize}pt`;
-
-            if (els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if (els.codeName) els.codeName.innerText = els.codeNameInput.value;
-
-            if (els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if (els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
-
-            if (els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
-            if (els.owner) els.owner.innerText = els.ownerInput.value;
-
-            if (els.keySwitchLabel) els.keySwitchLabel.innerText = els.keySwitchLabelInput.value;
-            if (els.keySwitch) els.keySwitch.innerText = els.keySwitchInput.value.toUpperCase();
-
-            if (els.keyCapsLabel) els.keyCapsLabel.innerText = els.keyCapsLabelInput.value;
-            if (els.keyCaps) els.keyCaps.innerText = els.keyCapsInput.value.toUpperCase();
-
-            if (els.xLabel) els.xLabel.innerText = els.xLabelInput.value;
-            if (els.xValue) els.xValue.innerText = els.xValueInput.value;
-        };
-
-        // Font Change Listener
-        els.fontSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--main-font', e.target.value);
-        };
-
-        [
-            els.brandNameInput, els.sloganInput, els.sloganSizeInput, els.bgTextInput, els.bgTextSizeInput,
-            els.codeNameLabelInput, els.codeNameInput,
-            els.mfgCodeLabelInput, els.mfgCodeInput,
-            els.ownerLabelInput, els.ownerInput,
-            els.keySwitchLabelInput, els.keySwitchInput,
-            els.keyCapsLabelInput, els.keyCapsInput,
-            els.xLabelInput, els.xValueInput
-        ].forEach(el => {
-            if (el) el.addEventListener('input', syncUI);
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'BP',
+            exportBg: '#003366',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'bgTextInput', target: 'displayBgText', key: 'bgText' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'xLabelInput', target: 'displayXLabel', key: 'xLabel' },
+                { input: 'xValueInput', target: 'displayXValue', key: 'xValue' }
+            ],
+            ranges: [
+                { input: 'bgTextSizeInput', display: 'bgTextSizeDisplay', target: 'displayBgText', style: 'fontSize', unit: 'pt', key: 'bgTextSize' },
+                { input: 'sloganSizeInput', display: 'sloganSizeDisplay', target: 'displaySlogan', style: 'fontSize', unit: 'pt', key: 'sloganSize' }
+            ],
+            selects: [
+                { input: 'fontSelect', cssVar: '--main-font', key: 'font' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#00FFFF',
+                labelDisplay: 'cmykValueDisplay',
+                swatches: [
+                    { hex: '#00FFFF', label: 'CYAN' },
+                    { hex: '#FF00FF', label: 'MAGENTA' },
+                    { hex: '#FFFF00', label: 'YELLOW' },
+                    { hex: '#FFFFFF', label: 'WHITE' },
+                    { hex: '#00FF00', label: 'LIME' },
+                    { hex: '#FF5555', label: 'ALERT RED' }
+                ]
+            }
         });
-
-        // Theme Logic
-        let currentAccentColor = "#00FFFF";
-        const updateTheme = (hex, label) => {
-            currentAccentColor = hex;
-            document.documentElement.style.setProperty('--accent-color', hex);
-
-            document.querySelectorAll('.color-dot').forEach(dot => {
-                dot.classList.toggle('active', dot.dataset.hex === hex);
-            });
-        };
-
-        const initSwatches = () => {
-            els.swatchGrid.innerHTML = "";
-            bpSwatches.forEach(swatch => {
-                const dot = document.createElement('div');
-                dot.className = 'color-dot';
-                dot.style.backgroundColor = swatch.hex;
-                dot.dataset.hex = swatch.hex;
-                dot.title = swatch.label;
-                dot.onclick = () => updateTheme(swatch.hex, swatch.label);
-                if (swatch.hex.toLowerCase() === currentAccentColor.toLowerCase()) { dot.classList.add('active'); }
-                els.swatchGrid.appendChild(dot);
-            });
-        };
-
-        // File name helper
-        function getFileName(extension) {
-            const base = els.codeNameInput.value.trim() || "Blueprint";
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            return `BP_${base}_${timestamp}.${extension}`;
-        }
-
-        els.exportJsonBtn.onclick = () => {
-            const data = {
-                brandName: els.brandNameInput.value, slogan: els.sloganInput.value, sloganSize: els.sloganSizeInput.value,
-                bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
-                codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
-                mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                ownerLabel: els.ownerLabelInput.value, owner: els.ownerInput.value,
-                keySwitchLabel: els.keySwitchLabelInput.value, keySwitch: els.keySwitchInput.value,
-                keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
-                xLabel: els.xLabelInput.value, xValue: els.xValueInput.value,
-                font: els.fontSelect.value,
-                accentColor: currentAccentColor, exportedAt: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = getFileName('json');
-            link.click();
-            URL.revokeObjectURL(url);
-            showStatus("CONFIG SAVED");
-        };
-
-        els.importJsonBtn.onclick = () => els.jsonFileInput.click();
-        els.jsonFileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    applyData(data);
-                    showStatus("CONFIG LOADED");
-                } catch (err) { showStatus("LOAD FAILED"); }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        };
-
-        function applyData(data) {
-            if (data.brandName) els.brandNameInput.value = data.brandName;
-            if (data.slogan) els.sloganInput.value = data.slogan;
-            if (data.sloganSize) {
-                els.sloganSizeInput.value = data.sloganSize;
-                els.sloganSizeDisplay.innerText = data.sloganSize + "pt";
-            }
-            if (data.bgText) els.bgTextInput.value = data.bgText;
-            if (data.bgTextSize) {
-                els.bgTextSizeInput.value = data.bgTextSize;
-                els.bgTextSizeDisplay.innerText = data.bgTextSize + "pt";
-            }
-            if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
-            if (data.codeName) els.codeNameInput.value = data.codeName;
-            if (data.mfgCodeLabel) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
-            if (data.mfgCode) els.mfgCodeInput.value = data.mfgCode;
-            if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
-            if (data.owner) els.ownerInput.value = data.owner;
-            if (data.keySwitchLabel) els.keySwitchLabelInput.value = data.keySwitchLabel;
-            if (data.keySwitch) els.keySwitchInput.value = data.keySwitch;
-            if (data.keyCapsLabel) els.keyCapsLabelInput.value = data.keyCapsLabel;
-            if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
-            if (data.xLabel) els.xLabelInput.value = data.xLabel;
-            if (data.xValue) els.xValueInput.value = data.xValue;
-
-            if (data.font) {
-                els.fontSelect.value = data.font;
-                document.documentElement.style.setProperty('--main-font', data.font);
-            }
-
-            if (data.accentColor) updateTheme(data.accentColor);
-
-            syncUI();
-        }
-
-        els.btnExport.onclick = async () => {
-            if (typeof html2canvas === 'undefined') return showStatus("INITIALIZING LIB...");
-            els.btnExport.disabled = true;
-            const originalText = els.btnExport.innerHTML;
-            els.btnExport.innerHTML = '<span class="loader"></span> PLOTTING...';
-
-            try {
-                if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
-                const cardRect = els.card.getBoundingClientRect();
-
-                const options = {
-                    scale: 6, useCORS: true, backgroundColor: "#003366", // Blueprint Blue
-                    width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
-                    onclone: (clonedDoc) => {
-                        const c = clonedDoc.getElementById('productCard');
-                        if (c) {
-                            c.style.boxShadow = 'none'; c.style.transform = 'none';
-                            c.style.overflow = 'visible';
-                        }
-                        // Fix for watermark rotation and clipping
-                        const bgContainer = clonedDoc.getElementById('displayBgTextContainer');
-                        const bgText = clonedDoc.getElementById('displayBgText');
-                        if (bgContainer && bgText) {
-                            bgContainer.style.width = '200%'; bgContainer.style.height = '200%';
-                            bgContainer.style.top = '50%'; bgContainer.style.left = '50%';
-                            bgText.style.display = 'inline-block'; bgText.style.padding = '1em';
-                        }
-                        // タイトルブロックの文字見切れ対策
-                        const tbValues = clonedDoc.querySelectorAll('.tb-value');
-                        tbValues.forEach(val => {
-                            val.style.overflow = 'visible';
-                            val.style.whiteSpace = 'normal';
-                            val.style.lineHeight = '1.4';
-                        });
-                        const tbCells = clonedDoc.querySelectorAll('.tb-cell');
-                        tbCells.forEach(cell => {
-                            cell.style.overflow = 'visible';
-                            cell.style.height = 'auto';
-                        });
-                    }
-                };
-
-                const canvas = await html2canvas(els.card, options);
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
-                const link = document.createElement('a');
-                link.download = getFileName('png');
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showStatus("PLOT COMPLETE");
-            } catch (err) {
-                console.error("Export failed:", err);
-                showStatus("PLOT FAILED");
-            } finally {
-                els.btnExport.disabled = false;
-                els.btnExport.innerHTML = originalText;
-            }
-        };
-
-        // Context: Responsive & Init
-        function adjustCardScale() {
-            const card = els.card;
-            const container = document.getElementById('captureArea');
-            const screenWidth = window.innerWidth;
-            const cardWidth = 344;
-
-            // コンテナのパディング等を考慮した利用可能幅
-            const availableWidth = container.clientWidth - 32;
-            const currentCardWidth = 344;
-
-            // 常にスケール計算を行う（拡大・縮小両対応）
-            let scale = availableWidth / currentCardWidth;
-
-            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
-            // ここではシンプルに、利用可能幅に合わせてフィットさせる
-            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
-            scale = Math.min(scale, 2.5);
-
-            card.style.transform = `scale(${scale})`;
-            card.style.transformOrigin = 'center top';
-
-            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
-            const height = (currentCardWidth * (55 / 91) * scale) + 50;
-            container.style.height = `${height}px`;
-
-            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
-            if (window.innerWidth < 1024) {
-                container.style.marginBottom = '1.5rem';
-            } else {
-                container.style.marginBottom = '0';
-            }
-        }
-
-        window.addEventListener('resize', adjustCardScale);
-        window.addEventListener('load', adjustCardScale);
-        document.fonts.ready.then(adjustCardScale);
-
-        initSwatches();
-        syncUI();
     </script>
 </body>
 

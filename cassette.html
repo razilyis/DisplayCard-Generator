@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - Cassette Tape</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;700&family=Yomogi&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #E4572E;
+            --paper: #F4EFE2;
+            --ink: #22201d;
+            --hand-font: 'Yomogi', cursive;
+        }
+
+        body {
+            --ui-bg: #2a2724;
+            --ui-panel: #37332e;
+            --ui-panel-2: #262320;
+            --ui-border: #4d473f;
+            --ui-text: #efe8d9;
+            --ui-muted: #a09684;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #ffffff;
+            color: #efe8d9;
+        }
+
+        .card {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Barlow', sans-serif;
+            padding: 0;
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.4), 0 0 0 1px #cfc6b2;
+        }
+
+        /* 上のカラーストライプ */
+        .cs-stripes {
+            flex: 0 0 auto;
+            height: 5.5mm;
+            display: flex;
+        }
+
+        .cs-stripes i {
+            flex: 1 1 auto;
+        }
+
+        .cs-stripes i:nth-child(1) {
+            background: var(--accent-color);
+        }
+
+        .cs-stripes i:nth-child(2) {
+            background: #F2B138;
+        }
+
+        .cs-stripes i:nth-child(3) {
+            background: #2E86AB;
+        }
+
+        .cs-stripes i:nth-child(4) {
+            background: #1d1b19;
+        }
+
+        .cs-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            gap: 3mm;
+            padding: 2.6mm 4mm 3mm;
+        }
+
+        .cs-left {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cs-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: 0.01em;
+        }
+
+        .cs-sub {
+            font-family: var(--hand-font);
+            font-size: 6pt;
+            color: #6b6459;
+            margin: 0.4mm 0 1.6mm;
+            line-height: 1.4;
+        }
+
+        .cs-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55mm;
+            margin-top: auto;
+        }
+
+        .cs-track {
+            display: flex;
+            align-items: baseline;
+            gap: 1.4mm;
+            font-family: var(--hand-font);
+            font-size: 6.2pt;
+            border-bottom: 0.18mm solid #d3cab6;
+            padding-bottom: 0.35mm;
+            min-width: 0;
+        }
+
+        .cs-track em {
+            font-style: normal;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 4.6pt;
+            color: var(--accent-color);
+            flex: 0 0 auto;
+            font-weight: 700;
+        }
+
+        .cs-track b {
+            font-weight: 400;
+            min-width: 0;
+        }
+
+        /* 右側：テープ窓とリール */
+        .cs-right {
+            flex: 0 0 30mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cs-side {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5mm;
+        }
+
+        .cs-side b {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 9pt;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 0.2mm 1.4mm;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+
+        .cs-type {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 4.2pt;
+            letter-spacing: 0.08em;
+            border: 0.25mm solid var(--ink);
+            padding: 0.4mm 0.8mm;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .cs-window {
+            height: 13mm;
+            border: 0.35mm solid var(--ink);
+            border-radius: 1mm;
+            background: #E5DDCA;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 2mm;
+            margin: 1.4mm 0;
+        }
+
+        .cs-hub {
+            width: 6.5mm;
+            height: 6.5mm;
+            border-radius: 50%;
+            border: 0.6mm solid var(--ink);
+            background: #d8cfb8;
+            position: relative;
+        }
+
+        .cs-hub::after {
+            content: '';
+            position: absolute;
+            inset: 1.6mm;
+            border-radius: 50%;
+            background: #E5DDCA;
+            border: 0.3mm solid var(--ink);
+        }
+
+        .cs-meta {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 4.2pt;
+            letter-spacing: 0.06em;
+            color: #6b6459;
+            gap: 1.5mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>Cassette Tape Generator</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="cs-stripes"><i></i><i></i><i></i><i></i></div>
+
+                <div class="cs-body">
+                    <div class="cs-left">
+                        <div class="cs-title ck-fit" id="displayBrandName">AroundForty</div>
+                        <div class="cs-sub" id="displaySlogan">recorded at 天下一キーボードわいわい会 vol.10</div>
+
+                        <div class="cs-tracks">
+                            <div class="cs-track"><em>01</em><b class="ck-fit" id="displayCodeName">AroundFortyRB</b>
+                            </div>
+                            <div class="cs-track"><em>02</em><b class="ck-fit" id="displayKeySwitch">Cherry MX Red</b>
+                            </div>
+                            <div class="cs-track"><em>03</em><b class="ck-fit" id="displayKeyCaps">PBT Double-shot</b>
+                            </div>
+                            <div class="cs-track"><em>04</em><b class="ck-fit" id="displayOwner">@user</b></div>
+                        </div>
+                    </div>
+
+                    <div class="cs-right">
+                        <div class="cs-side">
+                            <b class="ck-fit" id="displaySide">SIDE A</b>
+                            <span class="cs-type ck-fit" id="displayType">TYPE II · HIGH</span>
+                        </div>
+
+                        <div class="cs-window">
+                            <span class="cs-hub"></span>
+                            <span class="cs-hub"></span>
+                        </div>
+
+                        <div class="cs-meta">
+                            <span><span id="displayMfgCodeLabel">NO.</span> <span id="displayMfgCode">02AFRB</span></span>
+                            <span id="displayLength">C-40</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">タイトル / Title</label><input type="text" id="brandNameInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">手書きメモ / Note</label><input type="text" id="sloganInput" class="ck-input " value="recorded at 天下一キーボードわいわい会 vol.10"></div>
+            <div class="ck-field"><label class="ck-label" for="sideInput">面 / Side</label><input type="text" id="sideInput" class="ck-input " value="SIDE A"></div>
+            <div class="ck-field"><label class="ck-label" for="typeInput">テープ種別 / Type</label><input type="text" id="typeInput" class="ck-input " value="TYPE II · HIGH"></div>
+            <div class="ck-field"><label class="ck-label" for="lengthInput">長さ / Length</label><input type="text" id="lengthInput" class="ck-input " value="C-40"></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">ストライプ色 / Stripe</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">項目1 (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="MODEL" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="AroundFortyRB"></div>
+            <div class="ck-field"><label class="ck-label">項目2 (ラベル / 値)</label><input type="text" id="keySwitchLabelInput" class="ck-input" value="SWITCH" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keySwitchInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">項目3 (ラベル / 値)</label><input type="text" id="keyCapsLabelInput" class="ck-input" value="KEYCAPS" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keyCapsInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label">項目4 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">項目5 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'TAPE',
+            exportBg: '#F4EFE2',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'sideInput', target: 'displaySide', key: 'side' },
+                { input: 'typeInput', target: 'displayType', key: 'type' },
+                { input: 'lengthInput', target: 'displayLength', key: 'length' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#E4572E',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#E4572E', label: 'VERMILION' }, { hex: '#F2B138', label: 'MUSTARD' },
+                    { hex: '#2E86AB', label: 'OCEAN' }, { hex: '#8AB17D', label: 'MOSS' },
+                    { hex: '#D96A9A', label: 'CITY POP PINK' }, { hex: '#6C5CE7', label: 'SYNTH' },
+                    { hex: '#1d1b19', label: 'BLACK' }, { hex: '#9C6644', label: 'SEPIA' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

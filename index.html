@@ -1,159 +1,726 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DisplayCard Generator Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Fira+Code:wght@600&family=Rajdhani:wght@700&family=Share+Tech+Mono&family=Teko:wght@600&family=DotGothic16&display=swap" rel="stylesheet">
+    <title>DisplayCard Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=DotGothic16&family=Share+Tech+Mono&family=VT323&family=Archivo+Black&family=Shippori+Mincho:wght@800&family=Cinzel:wght@800&family=Barlow+Condensed:wght@700&family=Zen+Maru+Gothic:wght@900&family=Fira+Code:wght@600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --panel: #ffffff;
+            --border: #e4e7eb;
+            --text: #14171c;
+            --muted: #78818d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 4rem 1.5rem 6rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 6vw, 3.25rem);
+            font-weight: 900;
+            letter-spacing: -0.035em;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 0 0 0.5rem;
+        }
+
+        .lede {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.8rem;
+            line-height: 1.9;
+            margin: 0 0 1.5rem;
+        }
+
+        .specbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .specbar span {
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .tile {
+            display: flex;
+            flex-direction: column;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px rgb(20 30 45 / 0.13);
+        }
+
+        /* 各テーマの雰囲気を出す小さなサムネイル（91:55 の比率） */
+        .thumb {
+            aspect-ratio: 91 / 55;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 14px 16px;
+            overflow: hidden;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta {
+            padding: 0.85rem 1rem 1rem;
+        }
+
+        .meta h2 {
+            margin: 0 0 0.3rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.58rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            background: var(--bg);
+            border-radius: 999px;
+            padding: 0.15rem 0.5rem;
+        }
+
+        .meta p {
+            margin: 0;
+            font-size: 0.66rem;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.68rem;
+            line-height: 2;
+        }
+
+        footer code {
+            font-size: 0.66rem;
+        }
+
+        /* ---- サムネイル個別 ---- */
+        .t-light {
+            background: #fff;
+            color: #111;
+        }
+
+        .t-light b {
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+
+        .t-light i {
+            position: absolute;
+            right: -4px;
+            bottom: -14px;
+            font-size: 54px;
+            font-weight: 900;
+            font-style: italic;
+            opacity: 0.07;
+        }
+
+        .t-light::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: #E60012;
+        }
+
+        .t-dark {
+            background: #0F0F11;
+            color: #E0E0E0;
+            font-family: 'Fira Code', monospace;
+            background-image: linear-gradient(rgb(255 255 255/.08) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255/.08) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+
+        .t-dark b {
+            font-size: 14px;
+        }
+
+        .t-dark s {
+            text-decoration: none;
+            color: #00E5FF;
+        }
+
+        .t-dev {
+            background: #282C34;
+            color: #abb2bf;
+            font-family: 'Fira Code', monospace;
+            font-size: 9px;
+            line-height: 1.8;
+            justify-content: flex-start;
+            padding-top: 22px;
+        }
+
+        .t-dev .bar {
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 14px;
+            background: #21252B;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-left: 6px;
+        }
+
+        .t-dev .bar i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .t-bp {
+            background: #003366;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            background-image: linear-gradient(rgb(255 255 255/.16) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255/.16) 1px, transparent 1px);
+            background-size: 14px 14px;
+        }
+
+        .t-sketch {
+            background: #fdfdfd;
+            color: #444;
+            background-image: linear-gradient(#e8e8e8 1px, transparent 1px), linear-gradient(90deg, #e8e8e8 1px, transparent 1px);
+            background-size: 11px 11px;
+            align-items: center;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .t-sketch .box {
+            width: 62%;
+            height: 46%;
+            border: 1.5px dashed #ccc;
+            border-radius: 5px;
+        }
+
+        .t-rpg {
+            background: #000;
+            color: #fff;
+            font-family: 'DotGothic16', sans-serif;
+            border: 3px double #fff;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        .t-brut {
+            background: #FFFDF5;
+            color: #111;
+            border: 3px solid #111;
+            font-family: 'Archivo Black', sans-serif;
+            justify-content: space-between;
+        }
+
+        .t-brut b {
+            background: #FFDE00;
+            border: 2px solid #111;
+            box-shadow: 3px 3px 0 #111;
+            padding: 3px 6px;
+            font-size: 13px;
+            align-self: flex-start;
+        }
+
+        .t-brut .row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .t-brut .row i {
+            flex: 1;
+            height: 15px;
+            border: 2px solid #111;
+            box-shadow: 2px 2px 0 #111;
+            background: #fff;
+        }
+
+        .t-washi {
+            background: #F7F2E4;
+            color: #22201C;
+            font-family: 'Shippori Mincho', serif;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .t-washi .seal {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #C1272D;
+            border-radius: 3px;
+            color: #C1272D;
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-5deg);
+        }
+
+        .t-washi .tate {
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.05;
+            writing-mode: vertical-rl;
+            max-height: 100%;
+        }
+
+        .t-pass {
+            background: #FCFBF7;
+            color: #0B5FA5;
+            font-family: 'Barlow Condensed', sans-serif;
+            justify-content: space-between;
+        }
+
+        .t-pass b {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+        }
+
+        .t-pass .perf {
+            position: absolute;
+            right: 27%;
+            top: 0;
+            bottom: 0;
+            border-left: 1.5px dashed #b6c3cc;
+        }
+
+        .t-pass .code {
+            display: flex;
+            gap: 1.5px;
+            height: 16px;
+        }
+
+        .t-pass .code i {
+            width: 2px;
+            background: #1b1b1b;
+        }
+
+        .t-tcg {
+            background: linear-gradient(135deg, #C9A227, #fff3c4 20%, #C9A227 45%, #7d5f14 65%, #C9A227 100%);
+            padding: 7px;
+        }
+
+        .t-tcg .in {
+            flex: 1;
+            background: #F6F0E2;
+            border: 1px solid #221B10;
+            padding: 7px 9px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1c1810;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .t-tcg .st {
+            display: flex;
+            gap: 3px;
+        }
+
+        .t-tcg .st i {
+            flex: 1;
+            height: 12px;
+            border: 1px solid #221B10;
+            background: rgb(201 162 39/.2);
+        }
+
+        .t-crt {
+            background: #050B06;
+            color: #33FF7A;
+            font-family: 'VT323', monospace;
+            font-size: 13px;
+            line-height: 1.25;
+            justify-content: flex-start;
+        }
+
+        .t-crt::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(to bottom, rgb(0 0 0/.35) 0 1px, transparent 1px 3px);
+        }
+
+        .t-tape {
+            background: #F4EFE2;
+            color: #22201d;
+            padding: 0;
+            justify-content: flex-start;
+        }
+
+        .t-tape .stripes {
+            display: flex;
+            height: 16px;
+        }
+
+        .t-tape .stripes i {
+            flex: 1;
+        }
+
+        .t-tape .body {
+            padding: 8px 12px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .t-tape .hubs {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .t-tape .hubs i {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #22201d;
+            border-radius: 50%;
+        }
+
+        .t-ds {
+            background: #fff;
+            color: #14181D;
+            justify-content: flex-start;
+        }
+
+        .t-ds b {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+
+        .t-ds .rule {
+            height: 2px;
+            background: #1F5FA8;
+            margin: 5px 0 7px;
+        }
+
+        .t-ds .rows i {
+            display: block;
+            height: 3px;
+            background: #dde3e9;
+            margin-bottom: 4px;
+            width: 78%;
+        }
+
+        .t-oshi {
+            background: #FFFBF5;
+            color: #2E2A2E;
+            flex-direction: row;
+            padding: 0;
+            font-family: 'Zen Maru Gothic', sans-serif;
+        }
+
+        .t-oshi .band {
+            width: 26px;
+            background: #E8557A;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            writing-mode: vertical-rl;
+        }
+
+        .t-oshi .list {
+            flex: 1;
+            padding: 12px 12px;
+        }
+
+        .t-oshi .list i {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 8px;
+            margin-bottom: 5px;
+            font-style: normal;
+        }
+
+        .t-oshi .list i::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px dotted #cbbcc3;
+        }
+
+        .t-eki {
+            background: #fff;
+            color: #1A1A1A;
+            padding: 0;
+            justify-content: space-between;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .t-eki .bar {
+            height: 11px;
+            background: #009944;
+        }
+
+        .t-eki .mid {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+
+        .t-eki .mid small {
+            display: block;
+            font-size: 7px;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            color: #43525a;
+            margin-top: 2px;
+        }
+    </style>
 </head>
-<body class="bg-zinc-100 flex items-center justify-center min-h-screen font-['Inter'] p-8">
 
-    <div class="max-w-7xl w-full">
-        <h1 class="text-3xl md:text-5xl font-black text-center mb-2 text-zinc-900 tracking-tighter uppercase">
-            DisplayCard Generator
-        </h1>
-        <p class="text-center text-zinc-500 mb-16 text-sm tracking-wide">Select your design style / デザインを選択してください</p>
+<body>
+    <div class="wrap">
+        <h1>DisplayCard Generator</h1>
+        <p class="lede">
+            天下一キーボードわいわい会などの展示卓に置く、統一感のあるディスプレイカードを作るツールです。<br>
+            Select your design style / デザインを選んでください
+        </p>
+        <div class="specbar">
+            <span>15 THEMES</span>
+            <span>91 × 55mm（名刺サイズ）</span>
+            <span>600dpi・実寸情報つきPNG</span>
+            <span>設定はJSONで保存 / 読込</span>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <!-- Light / Swiss Style -->
-            <a href="light.html" class="group relative block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-zinc-200 h-full flex flex-col">
-                <div class="h-40 bg-zinc-50 flex items-center justify-center p-6 group-hover:bg-white transition relative overflow-hidden">
-                    <div class="w-32 h-20 bg-white border border-zinc-200 shadow-md relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#E61B23]"></div>
-                        <div class="text-[6px] font-black text-zinc-900">AROUNDFORTY.</div>
-                        <div class="text-[50px] absolute -right-2 -bottom-4 opacity-[0.05] font-black italic leading-none">AF</div>
-                    </div>
-                </div>
-                <div class="p-5 flex-grow border-t border-zinc-100">
-                    <h2 class="text-sm font-bold text-zinc-900 mb-1 group-hover:text-[#E61B23] transition flex items-center gap-2">
-                        Swiss Style
-                        <span class="text-[9px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-sans">Light</span>
-                    </h2>
-                    <p class="text-[10px] text-zinc-500 leading-relaxed">
-                        Minimalist & Clean.<br>洗練された白ベース。
-                    </p>
+        <div class="grid">
+
+            <a class="tile" href="light.html">
+                <div class="thumb t-light"><b>AROUNDFORTY.</b><i>AF</i></div>
+                <div class="meta">
+                    <h2>Swiss Style <span class="tag">Light</span></h2>
+                    <p>白ベースのミニマル。余白で見せる定番。</p>
                 </div>
             </a>
 
-            <!-- Dark / Industrial Style -->
-            <a href="dark.html" class="group relative block bg-[#0F0F11] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-zinc-800 h-full flex flex-col">
-                <div class="h-40 bg-[#1a1a1a] flex items-center justify-center p-6 relative overflow-hidden">
-                    <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-                    <div class="w-32 h-20 bg-[#0F0F11] border border-zinc-700 shadow-2xl relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500">
-                        <div class="absolute top-1 right-1 w-4 h-0.5 bg-[#00E5FF]"></div>
-                        <div class="text-[6px] font-black text-white font-['Rajdhani']">DARK_<span class="text-[#00E5FF]">MODE</span></div>
-                    </div>
-                </div>
-                <div class="p-5 flex-grow border-t border-zinc-800">
-                    <h2 class="text-sm font-bold text-white mb-1 group-hover:text-[#00E5FF] transition flex items-center gap-2">
-                        Industrial
-                        <span class="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-sans">Dark</span>
-                    </h2>
-                    <p class="text-[10px] text-zinc-400 leading-relaxed">
-                        Cyberpunk & Tech.<br>メカニカルな黒ベース。
-                    </p>
+            <a class="tile" href="dark.html">
+                <div class="thumb t-dark"><b>AROUNDFORTY<s>_</s></b></div>
+                <div class="meta">
+                    <h2>Industrial <span class="tag">Dark</span></h2>
+                    <p>黒×ネオン。メカニカルでサイバーな雰囲気。</p>
                 </div>
             </a>
 
-            <!-- Developer / Mac Code Style -->
-            <a href="mac_code.html" class="group relative block bg-[#282C34] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700 h-full flex flex-col">
-                <div class="h-40 bg-[#21252B] flex items-center justify-center p-6 relative overflow-hidden">
-                    <div class="w-32 h-20 bg-[#282C34] border border-gray-600 shadow-2xl rounded-md relative overflow-hidden flex flex-col transform group-hover:scale-105 transition duration-500">
-                        <div class="h-3 bg-[#21252B] border-b border-gray-700 flex items-center px-1 gap-0.5">
-                            <div class="w-1.5 h-1.5 rounded-full bg-[#FF5F56]"></div>
-                            <div class="w-1.5 h-1.5 rounded-full bg-[#FFBD2E]"></div>
-                            <div class="w-1.5 h-1.5 rounded-full bg-[#27C93F]"></div>
-                        </div>
-                        <div class="p-1 text-[4px] font-['Fira_Code'] text-[#abb2bf] leading-tight">
-                            <span class="text-[#C678DD]">const</span> <span class="text-[#61AFEF]">Card</span> = ...
-                        </div>
-                    </div>
+            <a class="tile" href="mac_code.html">
+                <div class="thumb t-dev">
+                    <div class="bar"><i style="background:#FF5F56"></i><i style="background:#FFBD2E"></i><i
+                            style="background:#27C93F"></i></div>
+                    <div><span style="color:#C678DD">const</span> <span style="color:#61AFEF">Brand</span> = …</div>
+                    <div><span style="color:#98C379">"AroundFortyRB"</span></div>
                 </div>
-                <div class="p-5 flex-grow border-t border-gray-700">
-                    <h2 class="text-sm font-bold text-[#abb2bf] mb-1 group-hover:text-[#61AFEF] transition flex items-center gap-2">
-                        Developer
-                        <span class="text-[9px] bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full font-sans">Code</span>
-                    </h2>
-                    <p class="text-[10px] text-gray-500 leading-relaxed">
-                        Editor style for devs.<br>macOSエディタ風。
-                    </p>
+                <div class="meta">
+                    <h2>Developer <span class="tag">Code</span></h2>
+                    <p>macOSエディタ風。設定をコードとして見せる。</p>
                 </div>
             </a>
 
-            <!-- Blueprint / Engineering Style -->
-            <a href="blueprint.html" class="group relative block bg-[#003366] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-[#004080] h-full flex flex-col">
-                <div class="h-40 bg-[#e0e5ec] flex items-center justify-center p-6 relative overflow-hidden">
-                    <div class="w-32 h-20 bg-[#003366] border-2 border-white shadow-2xl relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500 flex flex-col justify-between" style="background-image: linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px); background-size: 5px 5px;">
-                        <div class="text-[6px] font-['Share_Tech_Mono'] text-white">PROJECT_BLUE</div>
-                        <div class="border border-white p-0.5 w-10">
-                            <div class="h-px bg-[#00FFFF] w-full"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 flex-grow border-t border-[#004080]">
-                    <h2 class="text-sm font-bold text-white mb-1 group-hover:text-[#00FFFF] transition flex items-center gap-2">
-                        Blueprint
-                        <span class="text-[9px] bg-[#004080] text-white px-2 py-0.5 rounded-full font-sans">Tech</span>
-                    </h2>
-                    <p class="text-[10px] text-gray-300 leading-relaxed">
-                        Engineering schematic.<br>青焼き設計図風。
-                    </p>
+            <a class="tile" href="blueprint.html">
+                <div class="thumb t-bp">PROJECT_BLUE<br><span style="color:#00FFFF">REV. 2.0</span></div>
+                <div class="meta">
+                    <h2>Blueprint <span class="tag">Tech</span></h2>
+                    <p>青焼き設計図。寸法線と図番で製品資料っぽく。</p>
                 </div>
             </a>
 
-            <!-- Sketch / Image Upload Style -->
-            <a href="sketch.html" class="group relative block bg-[#fdfdfd] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-200 h-full flex flex-col">
-                <div class="h-40 bg-[#e5e5e5] flex items-center justify-center p-6 group-hover:bg-white transition relative overflow-hidden">
-                    <div class="w-32 h-20 bg-[#fdfdfd] border border-gray-300 shadow-md relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500 flex flex-col justify-center items-center">
-                        <div class="text-[6px] font-['Teko'] text-gray-400 mb-1">IMAGE AREA</div>
-                        <div class="w-12 h-8 border border-dashed border-gray-300 rounded flex items-center justify-center">
-                            <div class="w-4 h-4 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
+            <a class="tile" href="sketch.html">
+                <div class="thumb t-sketch">
+                    <div class="box"></div>
                 </div>
-                <div class="p-5 flex-grow border-t border-gray-100">
-                    <h2 class="text-sm font-bold text-gray-800 mb-1 group-hover:text-[#E63946] transition flex items-center gap-2">
-                        Product Sketch
-                        <span class="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-sans">Img</span>
-                    </h2>
-                    <p class="text-[10px] text-gray-500 leading-relaxed">
-                        Upload your drawings.<br>線画を配置するデザイン。
-                    </p>
+                <div class="meta">
+                    <h2>Product Sketch <span class="tag">画像</span></h2>
+                    <p>線画やレンダを載せるレイアウト。乗算合成つき。</p>
                 </div>
             </a>
-            
-            <!-- DQ Pixel Style -->
-            <a href="dq_pixel.html" class="group relative block bg-black rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-800 h-full flex flex-col">
-                <div class="h-40 bg-zinc-900 flex items-center justify-center p-6 group-hover:bg-black transition relative overflow-hidden">
-                    <div class="w-32 h-20 bg-black border-2 border-white shadow-md relative overflow-hidden p-2 transform group-hover:scale-105 transition duration-500 rounded flex flex-col justify-between">
-                        <div class="text-[6px] font-['DotGothic16'] text-white">ステータス</div>
-                        <div class="border border-white p-1 rounded">
-                            <div class="text-[5px] font-['DotGothic16'] text-white">▼コマンド</div>
-                        </div>
+
+            <a class="tile" href="dq_pixel.html">
+                <div class="thumb t-rpg">▶ AroundForty<br>しょくぎょう ……</div>
+                <div class="meta">
+                    <h2>RPG Pixel <span class="tag">画像</span></h2>
+                    <p>ボウケンノショ風。ステータス画面レイアウト。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="neobrutal.html">
+                <div class="thumb t-brut">
+                    <b>AROUND</b>
+                    <div class="row"><i style="background:#FFDE00"></i><i></i><i></i><i></i></div>
+                </div>
+                <div class="meta">
+                    <h2>Neo-Brutalism <span class="tag">NEW</span></h2>
+                    <p>極太の黒枠と原色ブロック。遠目でも目立つ。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="washi.html">
+                <div class="thumb t-washi">
+                    <div class="seal">朱</div>
+                    <div class="tate">あらうんど四十</div>
+                </div>
+                <div class="meta">
+                    <h2>和風ラベル <span class="tag">NEW</span></h2>
+                    <p>縦書きの銘と朱印。和紙の質感を敷いた落ち着いた版。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="boarding.html">
+                <div class="thumb t-pass">
+                    <b>BOARDING PASS</b>
+                    <div class="perf"></div>
+                    <div class="code"><i></i><i style="width:4px"></i><i></i><i style="width:3px"></i><i></i><i
+                            style="width:5px"></i><i></i><i style="width:3px"></i></div>
+                </div>
+                <div class="meta">
+                    <h2>Boarding Pass <span class="tag">NEW</span></h2>
+                    <p>航空券風。ミシン目と半券、バーコードつき。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="tcg.html">
+                <div class="thumb t-tcg">
+                    <div class="in">
+                        <span>AroundForty</span>
+                        <div class="st"><i></i><i></i><i></i></div>
                     </div>
                 </div>
-                <div class="p-5 flex-grow border-t border-gray-800">
-                    <h2 class="text-sm font-bold text-white mb-1 group-hover:text-yellow-400 transition flex items-center gap-2">
-                        RPG Pixel
-                        <span class="text-[9px] bg-yellow-600 text-black px-1.5 py-0.5 rounded font-bold">New</span>
-                    </h2>
-                    <p class="text-[10px] text-gray-400 leading-relaxed font-['DotGothic16']">
-                        ボウケンノショ。<br>レトロゲーム風デザイン。
-                    </p>
+                <div class="meta">
+                    <h2>Trading Card <span class="tag">画像</span></h2>
+                    <p>カードゲーム風。箔押しフチとステータス欄。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="crt.html">
+                <div class="thumb t-crt">TENKAICHI VOL.10<br>AroundForty<br>READY. █</div>
+                <div class="meta">
+                    <h2>CRT Terminal <span class="tag">NEW</span></h2>
+                    <p>蛍光管の緑と走査線。ブート画面のような版。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="cassette.html">
+                <div class="thumb t-tape">
+                    <div class="stripes"><i style="background:#E4572E"></i><i style="background:#F2B138"></i><i
+                            style="background:#2E86AB"></i><i style="background:#1d1b19"></i></div>
+                    <div class="body">AroundForty
+                        <div class="hubs"><i></i><i></i></div>
+                    </div>
+                </div>
+                <div class="meta">
+                    <h2>Cassette Tape <span class="tag">NEW</span></h2>
+                    <p>80sのカセットラベル風。曲目リストにスペックを。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="datasheet.html">
+                <div class="thumb t-ds">
+                    <b>AroundForty</b>
+                    <div class="rule"></div>
+                    <div class="rows"><i></i><i style="width:62%"></i><i style="width:70%"></i></div>
+                </div>
+                <div class="meta">
+                    <h2>Datasheet <span class="tag">NEW</span></h2>
+                    <p>ICの仕様書風。FEATURESとパッケージ図で構成。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="oshinagaki.html">
+                <div class="thumb t-oshi">
+                    <div class="band">お品書き</div>
+                    <div class="list"><i>キット<span>¥18,000</span></i><i>完成品<span>¥28,000</span></i><i>ステッカー<span>¥200</span></i>
+                    </div>
+                </div>
+                <div class="meta">
+                    <h2>お品書き <span class="tag">NEW</span></h2>
+                    <p>即売会向け。頒布物と価格、スペース番号を並べる。</p>
+                </div>
+            </a>
+
+            <a class="tile" href="ekimeisho.html">
+                <div class="thumb t-eki">
+                    <div class="bar"></div>
+                    <div class="mid">あらうんど<small>AROUNDFORTY</small></div>
+                    <div class="bar" style="height:8px"></div>
+                </div>
+                <div class="meta">
+                    <h2>駅名標 <span class="tag">NEW</span></h2>
+                    <p>JR風サインボード。前後の駅にスイッチ名などを。</p>
                 </div>
             </a>
 
         </div>
-        
-        <div class="mt-16 text-center border-t border-zinc-200 pt-8">
-            <p class="text-xs text-zinc-400 mb-2">Usage</p>
-            <p class="text-[10px] text-zinc-400 font-mono">
-                index.html / light.html / dark.html / mac_code.html / blueprint.html / sketch.html / dq_pixel.html
-            </p>
-        </div>
+
+        <footer>
+            書き出したPNGは <b>91×55mm / 600dpi</b> の実寸情報（pHYs）を持っているので、<br>
+            Word・Illustrator・プレビュー.app などに置くだけで名刺サイズで印刷できます。<br>
+            <br>
+            <code>index.html / light / dark / mac_code / blueprint / sketch / dq_pixel /
+                neobrutal / washi / boarding / tcg / crt / cassette / datasheet / oshinagaki / ekimeisho</code>
+        </footer>
     </div>
-
 </body>
+
 </html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - 和風ラベル</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Yuji+Syuku&family=Kaisei+Decol:wght@500;700&family=Zen+Old+Mincho:wght@500;700;900&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #C1272D;
+            --paper: #F7F2E4;
+            --ink: #22201C;
+            --main-font: 'Shippori Mincho', serif;
+        }
+
+        body {
+            --ui-bg: #EDE6D6;
+            --ui-panel: #FBF8F0;
+            --ui-panel-2: #F3EEE1;
+            --ui-border: #D6CAB0;
+            --ui-text: #3a352c;
+            --ui-muted: #9a8f78;
+            --ui-accent: #C1272D;
+            --ui-accent-text: #ffffff;
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        .card {
+            background-color: var(--paper);
+            color: var(--ink);
+            font-family: var(--main-font);
+            padding: 5mm;
+            flex-direction: row;
+            box-shadow: 0 14px 32px rgba(60, 45, 25, 0.22), 0 0 0 1px #ded3ba;
+            /* 和紙の繊維感（薄い斜めの筋） */
+            background-image:
+                repeating-linear-gradient(115deg, rgba(150, 130, 95, 0.05) 0 0.35mm, transparent 0.35mm 1.6mm),
+                repeating-linear-gradient(15deg, rgba(150, 130, 95, 0.04) 0 0.3mm, transparent 0.3mm 2.1mm);
+        }
+
+        /* 左：横組みの明細 */
+        .wa-body {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-right: 3mm;
+        }
+
+        .wa-rule {
+            border-top: 0.35mm solid var(--accent-color);
+            width: 14mm;
+            margin-bottom: 1.6mm;
+        }
+
+        .wa-slogan {
+            font-size: 6.5pt;
+            line-height: 1.7;
+            color: #4a443a;
+            letter-spacing: 0.04em;
+        }
+
+        .wa-specs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9mm;
+        }
+
+        .wa-spec {
+            display: flex;
+            align-items: baseline;
+            gap: 1.6mm;
+            border-bottom: 0.2mm dotted #c9bda2;
+            padding-bottom: 0.5mm;
+        }
+
+        .wa-spec i {
+            font-style: normal;
+            font-size: 4.6pt;
+            letter-spacing: 0.22em;
+            color: #8c8069;
+            width: 15mm;
+            flex-shrink: 0;
+        }
+
+        .wa-spec b {
+            font-size: 6.6pt;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        /* 右：縦書きの銘 */
+        .wa-side {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            gap: 2.2mm;
+            border-left: 0.3mm solid #cdbf9f;
+            padding-left: 3mm;
+        }
+
+        .wa-seal {
+            width: 9mm;
+            height: 9mm;
+            border: 0.5mm solid var(--accent-color);
+            border-radius: 1mm;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 4.4pt;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: 0.05em;
+            transform: rotate(-4deg);
+            align-self: flex-end;
+        }
+
+        /* 縦書きは html2canvas での再現が不安定なため、1文字ずつ縦に積む */
+        .wa-tate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 13pt;
+            font-weight: 800;
+            line-height: 1.06;
+            letter-spacing: 0;
+        }
+
+        .wa-tate .ch {
+            display: block;
+        }
+
+        .wa-tate .rot {
+            transform: rotate(90deg);
+        }
+
+        .wa-kana {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 4.6pt;
+            letter-spacing: 0.1em;
+            color: #8c8069;
+            line-height: 1.1;
+            padding-top: 1mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>和風ラベル ジェネレータ</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="wa-body">
+                    <div>
+                        <div class="wa-rule"></div>
+                        <div class="wa-slogan" id="displaySlogan">四十路のための道具。<br>手に馴染むまで、幾度も削る。</div>
+                    </div>
+                    <div class="wa-specs">
+                        <div class="wa-spec"><i id="displayCodeNameLabel">型式</i><b id="displayCodeName" class="ck-fit">AroundFortyRB</b>
+                        </div>
+                        <div class="wa-spec"><i id="displayKeySwitchLabel">軸</i><b id="displayKeySwitch" class="ck-fit">Cherry MX Red</b>
+                        </div>
+                        <div class="wa-spec"><i id="displayKeyCapsLabel">キーキャップ</i><b id="displayKeyCaps" class="ck-fit">PBT
+                                Double-shot</b></div>
+                        <div class="wa-spec"><i id="displayOwnerLabel">作</i><b id="displayOwner" class="ck-fit">@user</b></div>
+                        <div class="wa-spec"><i id="displayMfgCodeLabel">製番</i><b class="ck-fit" id="displayMfgCode">02AFRB</b></div>
+                    </div>
+                </div>
+
+                <div class="wa-side">
+                    <div class="wa-seal" id="displaySeal">天下一<br>参加</div>
+                    <div class="wa-kana" id="displayKana"></div>
+                    <div class="wa-tate" id="displayBrandName"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">銘 / 縦書きの名前</label><input type="text" id="brandNameInput" class="ck-input " value="あらうんど四十"></div>
+            <div class="ck-field"><label class="ck-label" for="kanaInput">添え書き（縦・小）</label><input type="text" id="kanaInput" class="ck-input " value="AROUNDFORTY"></div>
+            <div class="ck-field"><label class="ck-label" for="sealInput">朱印の文字（2行まで）</label><input type="text" id="sealInput" class="ck-input " value="天下一 参加"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">ひとこと</label><textarea id="sloganInput" class="ck-textarea" rows="3">四十路のための道具。
+手に馴染むまで、幾度も削る。</textarea></div>
+            <div class="ck-field"><label class="ck-label" for="fontSelect">書体 / Typeface</label><select id="fontSelect" class="ck-select"><option value="'Shippori Mincho', serif">しっぽり明朝</option><option value="'Zen Old Mincho', serif">Zen オールド明朝</option><option value="'Kaisei Decol', serif">解星デコール</option><option value="'Yuji Syuku', serif">Yuji 淑</option><option value="'Klee One', cursive">クレー（硬筆）</option></select></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">朱色 / Seal Color</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">項目1 (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="MODEL" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="AroundFortyRB"></div>
+            <div class="ck-field"><label class="ck-label">項目2 (ラベル / 値)</label><input type="text" id="keySwitchLabelInput" class="ck-input" value="SWITCH" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keySwitchInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">項目3 (ラベル / 値)</label><input type="text" id="keyCapsLabelInput" class="ck-input" value="KEYCAPS" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keyCapsInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label">項目4 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">項目5 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        // 縦書きは html2canvas での再現が不安定なので、1文字ずつ span に積んで擬似的に作る。
+        // 長音符や括弧など横倒しになる字だけ 90 度回す。
+        const ROTATE = new Set(['ー', '-', '－', '~', '〜', '（', '）', '(', ')', '「', '」', '[', ']', '<', '>', '=']);
+
+        function stackVertical(el, str) {
+            el.innerHTML = '';
+            Array.from(String(str)).forEach((ch) => {
+                if (ch === ' ' || ch === '\u3000') {
+                    const sp = document.createElement('span');
+                    sp.className = 'ch';
+                    sp.style.height = '0.5em';
+                    el.appendChild(sp);
+                    return;
+                }
+                const sp = document.createElement('span');
+                sp.className = ROTATE.has(ch) ? 'ch rot' : 'ch';
+                sp.textContent = ch;
+                el.appendChild(sp);
+            });
+        }
+
+        CardKit({
+            theme: 'WASHI',
+            exportBg: '#F7F2E4',
+            nameSource: 'codeNameInput',
+            onSync: function () {
+                const v = (id) => (document.getElementById(id) || {}).value || '';
+                stackVertical(document.getElementById('displayBrandName'), v('brandNameInput'));
+                stackVertical(document.getElementById('displayKana'), v('kanaInput'));
+                document.getElementById('displaySeal').innerHTML =
+                    v('sealInput').split(/\s+/).filter(Boolean).slice(0, 2)
+                        .map((s) => s.replace(/[&<>]/g, '')).join('<br>');
+            },
+            fields: [
+                { input: 'brandNameInput', key: 'brandName' },
+                { input: 'kanaInput', key: 'kana' },
+                { input: 'sealInput', key: 'seal' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            selects: [
+                { input: 'fontSelect', cssVar: '--main-font', key: 'font' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#C1272D',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#C1272D', label: '朱' }, { hex: '#9E2B25', label: '臙脂' },
+                    { hex: '#D9541E', label: '柿' }, { hex: '#B4996A', label: '砂' },
+                    { hex: '#2E6E5A', label: '青竹' }, { hex: '#1F4E79', label: '藍' },
+                    { hex: '#5B4B8A', label: '桔梗' }, { hex: '#22201C', label: '墨' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

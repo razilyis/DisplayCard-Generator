@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - CRT Terminal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #33FF7A;
+            --screen: #050B06;
+            --main-font: 'VT323', monospace;
+        }
+
+        body {
+            --ui-bg: #0d1310;
+            --ui-panel: #131c17;
+            --ui-panel-2: #0a0f0c;
+            --ui-border: #24382c;
+            --ui-text: #bfe8cd;
+            --ui-muted: #5c8a6d;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #050B06;
+            color: #bfe8cd;
+        }
+
+        .card {
+            background: var(--screen);
+            color: var(--accent-color);
+            font-family: var(--main-font);
+            padding: 4mm 4.5mm;
+            justify-content: flex-start;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px #1d2a21;
+            /* 蛍光管のにじみ */
+            text-shadow: 0 0 0.35mm currentColor;
+        }
+
+        /* 走査線。カード全面に重ねる。
+           repeating-linear-gradient は html2canvas が再現できず「プレビューには出るのに
+           書き出すと消える」ため、実体のある div を並べて描いている（JS で生成）。 */
+        .crt-scan {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .crt-scan i {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 0.18mm;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* 画面中央がわずかに明るいブラウン管っぽさ */
+        .crt-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            background: radial-gradient(120% 90% at 50% 45%,
+                    rgba(255, 255, 255, 0.07) 0%, rgba(0, 0, 0, 0) 55%),
+                radial-gradient(130% 110% at 50% 50%,
+                    rgba(0, 0, 0, 0) 62%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        .crt-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 2mm;
+            font-size: 6.5pt;
+            letter-spacing: 0.12em;
+            opacity: 0.72;
+            border-bottom: 0.25mm solid currentColor;
+            padding-bottom: 0.8mm;
+        }
+
+        .crt-brand {
+            font-size: 17pt;
+            line-height: 1.05;
+            letter-spacing: 0.02em;
+            margin: 1.8mm 0 0.4mm;
+        }
+
+        .crt-sub {
+            font-size: 7pt;
+            opacity: 0.75;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.4mm;
+        }
+
+        .crt-lines {
+            font-size: 8pt;
+            line-height: 1.45;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15mm;
+        }
+
+        .crt-line {
+            display: flex;
+            gap: 1.6mm;
+            min-width: 0;
+        }
+
+        .crt-line span:first-child {
+            opacity: 0.6;
+            flex: 0 0 22mm;
+        }
+
+        .crt-line span:last-child {
+            min-width: 0;
+        }
+
+        .crt-foot {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 1.5mm;
+            font-size: 7.5pt;
+            opacity: 0.85;
+        }
+
+        .crt-caret {
+            display: inline-block;
+            width: 1.8mm;
+            height: 2.6mm;
+            background: currentColor;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>CRT Terminal Generator</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="crt-head">
+                    <span id="displayTitle">TENKAICHI KEYBOARD MEETUP VOL.10</span>
+                    <span id="displayMfgCode">02AFRB</span>
+                </div>
+
+                <div class="crt-brand ck-fit" id="displayBrandName">AroundForty</div>
+                <div class="crt-sub ck-fit" id="displaySlogan">DESIGNED FOR THE MATURE MIND</div>
+
+                <div class="crt-lines">
+                    <div class="crt-line"><span id="displayCodeNameLabel">MODEL</span><span class="ck-fit"
+                            id="displayCodeName">AroundFortyRB</span></div>
+                    <div class="crt-line"><span id="displayKeySwitchLabel">SWITCH</span><span class="ck-fit"
+                            id="displayKeySwitch">Cherry MX Red</span></div>
+                    <div class="crt-line"><span id="displayKeyCapsLabel">KEYCAPS</span><span class="ck-fit"
+                            id="displayKeyCaps">PBT Double-shot</span></div>
+                    <div class="crt-line"><span id="displayOwnerLabel">OWNER</span><span class="ck-fit"
+                            id="displayOwner">@user</span></div>
+                </div>
+
+                <div class="crt-foot">
+                    <span id="displayPrompt">READY.</span><span class="crt-caret"></span>
+                </div>
+
+                <div class="crt-glow"></div>
+                <div class="crt-scan"></div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">ブランド名 / Brand</label><input type="text" id="brandNameInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label" for="titleInput">ヘッダ行 / Header</label><input type="text" id="titleInput" class="ck-input " value="TENKAICHI KEYBOARD MEETUP VOL.10"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">サブ行 / Sub</label><input type="text" id="sloganInput" class="ck-input " value="DESIGNED FOR THE MATURE MIND"></div>
+            <div class="ck-field"><label class="ck-label" for="promptInput">プロンプト / Prompt</label><input type="text" id="promptInput" class="ck-input " value="READY."></div>
+            <div class="ck-field"><label class="ck-label" for="fontSelect">書体 / Typeface</label><select id="fontSelect" class="ck-select"><option value="'VT323', monospace">VT323 (CRT)</option><option value="'Share Tech Mono', monospace">SHARE TECH MONO</option><option value="'IBM Plex Mono', monospace">IBM PLEX MONO</option></select></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">蛍光色 / Phosphor</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">項目1 (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="MODEL" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="AroundFortyRB"></div>
+            <div class="ck-field"><label class="ck-label">項目2 (ラベル / 値)</label><input type="text" id="keySwitchLabelInput" class="ck-input" value="SWITCH" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keySwitchInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">項目3 (ラベル / 値)</label><input type="text" id="keyCapsLabelInput" class="ck-input" value="KEYCAPS" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="keyCapsInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label">項目4 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">項目5 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        // 走査線を実体の div として敷き詰める（0.42mm 間隔）
+        (function buildScanlines() {
+            const host = document.querySelector('.crt-scan');
+            const pitch = 0.42, height = 55;
+            let html = '';
+            for (let y = 0; y < height; y += pitch) html += '<i style="top:' + y.toFixed(2) + 'mm"></i>';
+            host.innerHTML = html;
+        })();
+
+        CardKit({
+            theme: 'CRT',
+            exportBg: '#050B06',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'titleInput', target: 'displayTitle', key: 'title' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'promptInput', target: 'displayPrompt', key: 'prompt' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            selects: [
+                { input: 'fontSelect', cssVar: '--main-font', key: 'font' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#33FF7A',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#33FF7A', label: 'P1 GREEN' }, { hex: '#7CFF3C', label: 'LIME' },
+                    { hex: '#FFB000', label: 'P3 AMBER' }, { hex: '#FF7A29', label: 'ORANGE' },
+                    { hex: '#E8E8E8', label: 'P4 WHITE' }, { hex: '#4FD8FF', label: 'CYAN' },
+                    { hex: '#FF5C8A', label: 'MAGENTA' }, { hex: '#B08CFF', label: 'VIOLET' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

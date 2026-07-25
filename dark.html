@@ -12,10 +12,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Rajdhani:wght@500;700&family=Oswald:wght@400;700&family=Teko:wght@400;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700&family=Chakra+Petch:wght@400;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
     <style>
         :root {
-            --card-width: 91mm;
-            --card-height: 55mm;
             --accent-color: #00E5FF;
             --bg-color: #0F0F11;
             --text-main: #E0E0E0;
@@ -24,93 +23,27 @@
         }
 
         body {
-            background-color: #1a1a1a;
+            --ui-bg: #1a1a1a;
+            --ui-panel: #252525;
+            --ui-panel-2: #1a1a1a;
+            --ui-border: #333;
+            --ui-text: #cccccc;
+            --ui-muted: #6b7280;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #000;
             color: #ccc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            padding: 4rem 2rem;
-        }
-
-        .tool-container {
-            width: 100%;
-            max-width: var(--card-width);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #captureArea {
-            padding: 0.5rem;
-            background-color: transparent;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        /* Desktop Layout Override */
-        @media (min-width: 1024px) {
-            .tool-container {
-                max-width: 1600px;
-                display: grid;
-                grid-template-columns: 1fr 400px;
-                grid-template-areas:
-                    "preview filesystem"
-                    "preview editor";
-                gap: 2rem;
-                align-items: start;
-            }
-
-            #captureArea {
-                grid-area: preview;
-                /* Allow JS to set height for scaled card */
-                overflow: visible;
-                position: sticky;
-                top: 2rem;
-                display: flex;
-                justify-content: center;
-                align-items: flex-start;
-                padding-top: 2rem;
-            }
-
-            .file-system-panel {
-                grid-area: filesystem;
-                width: 100%;
-            }
-
-            .editor-panel {
-                grid-area: editor;
-                width: 100%;
-            }
         }
 
         .card {
-            width: var(--card-width);
-            height: var(--card-height);
             background-color: var(--bg-color);
             color: var(--text-main);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
             justify-content: space-between;
             padding: 6mm;
-            box-sizing: border-box;
-            border: 1px solid #333;
-            -webkit-font-smoothing: antialiased;
-            transform: translateZ(0);
+            /* 外周ラインは box-shadow で描く（border と違いレイアウトに影響しない） */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px #333;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 10mm 10mm;
             font-family: var(--main-font);
-            /* フォント変数適用 */
         }
 
         .font-tech {
@@ -291,11 +224,10 @@
         <div id="captureArea">
             <div class="card" id="productCard">
                 <div class="absolute top-6 right-6 w-16 h-1 dynamic-bg"></div>
-                <div id="displayBgTextContainer"
-                    class="absolute flex items-end justify-end pointer-events-none select-none overflow-visible"
-                    style="bottom: -15%; right: -5%; width: 120%; height: 120%; opacity: 0.05; z-index: 0;">
+                <div class="ck-watermark" id="displayBgTextContainer"
+                    style="opacity: 0.05; --wm-right: -0.18em; --wm-bottom: -0.28em;">
                     <span id="displayBgText"
-                        class="text-[120pt] font-mono font-bold tracking-widest uppercase inline-block leading-none whitespace-nowrap text-white"
+                        class="text-[120pt] font-mono font-bold tracking-widest uppercase whitespace-nowrap text-white"
                         style="padding: 0.5em; border: 2px solid white;">AF</span>
                 </div>
 
@@ -442,253 +374,40 @@
 
     <div id="exportStatus"></div>
 
-    <script type="text/javascript">
-        const techSwatches = [
-            { hex: "#00E5FF", label: "NEON CYAN" }, { hex: "#FF0055", label: "HOT PINK" },
-            { hex: "#FFE600", label: "CYBER YELLOW" }, { hex: "#00FF41", label: "MATRIX GREEN" },
-            { hex: "#FF5722", label: "BLAZE ORANGE" }, { hex: "#7B00FF", label: "DEEP VIOLET" },
-            { hex: "#FFFFFF", label: "PURE WHITE" }, { hex: "#444444", label: "STEALTH GREY" }
-        ];
-
-        const els = {
-            card: document.getElementById('productCard'),
-            brandName: document.getElementById('displayBrandName'),
-            slogan: document.getElementById('displaySlogan'),
-            bgText: document.getElementById('displayBgText'),
-            bgTextContainer: document.getElementById('displayBgTextContainer'),
-            codeNameLabel: document.getElementById('displayCodeNameLabel'),
-            codeName: document.getElementById('displayCodeName'),
-            mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
-            mfgCode: document.getElementById('displayMfgCode'),
-            brandNameInput: document.getElementById('brandNameInput'),
-            sloganInput: document.getElementById('sloganInput'),
-            sloganSizeInput: document.getElementById('sloganSizeInput'),
-            sloganSizeDisplay: document.getElementById('sloganSizeDisplay'),
-            bgTextInput: document.getElementById('bgTextInput'),
-            bgTextSizeInput: document.getElementById('bgTextSizeInput'),
-            bgTextSizeDisplay: document.getElementById('bgTextSizeDisplay'),
-            codeNameLabelInput: document.getElementById('codeNameLabelInput'),
-            codeNameInput: document.getElementById('codeNameInput'),
-            mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
-            mfgCodeInput: document.getElementById('mfgCodeInput'),
-            btnExport: document.getElementById('btnExport'),
-            status: document.getElementById('exportStatus'),
-            exportJsonBtn: document.getElementById('exportJsonBtn'),
-            importJsonBtn: document.getElementById('importJsonBtn'),
-            jsonFileInput: document.getElementById('jsonFileInput'),
-            cmykValueDisplay: document.getElementById('cmykValueDisplay'),
-            swatchGrid: document.getElementById('swatchGrid'),
-            fontSelect: document.getElementById('fontSelect')
-        };
-
-        const showStatus = (msg, duration = 3000) => {
-            els.status.innerText = `>> ${msg}`;
-            els.status.style.display = 'block';
-            setTimeout(() => els.status.style.display = 'none', duration);
-        };
-
-        const syncUI = () => {
-            if (els.brandName) els.brandName.innerText = els.brandNameInput.value;
-            if (els.slogan) els.slogan.innerText = els.sloganInput.value;
-            const sloganSize = els.sloganSizeInput.value;
-            if (els.slogan) els.slogan.style.fontSize = `${sloganSize}pt`;
-            if (els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}pt`;
-            if (els.bgText) els.bgText.innerText = els.bgTextInput.value;
-            const bgSize = els.bgTextSizeInput.value;
-            if (els.bgText) els.bgText.style.fontSize = `${bgSize}pt`;
-            if (els.bgTextSizeDisplay) els.bgTextSizeDisplay.innerText = `${bgSize}pt`;
-            if (els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if (els.codeName) els.codeName.innerText = els.codeNameInput.value;
-            if (els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if (els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
-        };
-
-        els.fontSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--main-font', e.target.value);
-        };
-
-        [els.brandNameInput, els.sloganInput, els.sloganSizeInput, els.bgTextInput, els.bgTextSizeInput,
-        els.codeNameLabelInput, els.codeNameInput, els.mfgCodeLabelInput, els.mfgCodeInput].forEach(el => {
-            if (el) el.addEventListener('input', syncUI);
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'DARK',
+            exportBg: '#0F0F11',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'bgTextInput', target: 'displayBgText', key: 'bgText' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            ranges: [
+                { input: 'bgTextSizeInput', display: 'bgTextSizeDisplay', target: 'displayBgText', style: 'fontSize', unit: 'pt', key: 'bgTextSize' },
+                { input: 'sloganSizeInput', display: 'sloganSizeDisplay', target: 'displaySlogan', style: 'fontSize', unit: 'pt', key: 'sloganSize' }
+            ],
+            selects: [
+                { input: 'fontSelect', cssVar: '--main-font', key: 'font' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#00E5FF',
+                labelDisplay: 'cmykValueDisplay',
+                swatches: [
+                    { hex: '#00E5FF', label: 'NEON CYAN' }, { hex: '#FF0055', label: 'HOT PINK' },
+                    { hex: '#FFE600', label: 'CYBER YELLOW' }, { hex: '#00FF41', label: 'MATRIX GREEN' },
+                    { hex: '#FF5722', label: 'BLAZE ORANGE' }, { hex: '#7B00FF', label: 'DEEP VIOLET' },
+                    { hex: '#FFFFFF', label: 'PURE WHITE' }, { hex: '#444444', label: 'STEALTH GREY' }
+                ]
+            }
         });
-
-        let currentAccentColor = "#00E5FF";
-        const updateThemeColor = (hex, label = "CUSTOM") => {
-            currentAccentColor = hex;
-            document.documentElement.style.setProperty('--accent-color', hex);
-            els.cmykValueDisplay.innerText = label;
-            document.querySelectorAll('.color-dot').forEach(dot => {
-                dot.classList.toggle('active', dot.dataset.hex === hex);
-            });
-        };
-
-        const initSwatches = () => {
-            els.swatchGrid.innerHTML = "";
-            techSwatches.forEach(swatch => {
-                const dot = document.createElement('div');
-                dot.className = 'color-dot';
-                dot.style.backgroundColor = swatch.hex;
-                dot.dataset.hex = swatch.hex;
-                dot.title = swatch.label;
-                dot.onclick = () => updateThemeColor(swatch.hex, swatch.label);
-                if (swatch.hex.toLowerCase() === currentAccentColor.toLowerCase()) { dot.classList.add('active'); }
-                els.swatchGrid.appendChild(dot);
-            });
-        };
-
-        function getFileName(extension) {
-            const base = els.codeNameInput.value.trim() || "DarkCard";
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            return `DARK_${base}_${timestamp}.${extension}`;
-        }
-
-        els.exportJsonBtn.onclick = () => {
-            const data = {
-                brandName: els.brandNameInput.value, slogan: els.sloganInput.value, sloganSize: els.sloganSizeInput.value,
-                bgText: els.bgTextInput.value, bgTextSize: els.bgTextSizeInput.value,
-                codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
-                mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                font: els.fontSelect.value,
-                accentColor: currentAccentColor, colorLabel: els.cmykValueDisplay.innerText, exportedAt: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = getFileName('json');
-            link.click();
-            URL.revokeObjectURL(url);
-            showStatus("CONFIG SAVED");
-        };
-
-        els.importJsonBtn.onclick = () => els.jsonFileInput.click();
-        els.jsonFileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    applyData(data);
-                    showStatus("CONFIG LOADED");
-                } catch (err) { showStatus("LOAD FAILED"); }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        };
-
-        function applyData(data) {
-            if (data.brandName) els.brandNameInput.value = data.brandName;
-            if (data.slogan) els.sloganInput.value = data.slogan;
-            if (data.sloganSize) {
-                els.sloganSizeInput.value = data.sloganSize;
-                els.sloganSizeDisplay.innerText = data.sloganSize + "pt";
-            }
-            if (data.bgText) els.bgTextInput.value = data.bgText;
-            if (data.bgTextSize) {
-                els.bgTextSizeInput.value = data.bgTextSize;
-                els.bgTextSizeDisplay.innerText = data.bgTextSize + "pt";
-            }
-            if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
-            if (data.codeName) els.codeNameInput.value = data.codeName;
-            if (data.mfgCodeLabel) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
-            if (data.mfgCode) els.mfgCodeInput.value = data.mfgCode;
-            if (data.font) {
-                els.fontSelect.value = data.font;
-                document.documentElement.style.setProperty('--main-font', data.font);
-            }
-            if (data.accentColor) updateThemeColor(data.accentColor, data.colorLabel || "CUSTOM");
-
-            syncUI();
-        }
-
-        els.btnExport.onclick = async () => {
-            if (typeof html2canvas === 'undefined') return showStatus("INITIALIZING LIB...");
-            els.btnExport.disabled = true;
-            const originalText = els.btnExport.innerHTML;
-            els.btnExport.innerHTML = '<span class="loader"></span> PROCESSING...';
-
-            try {
-                if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
-                const cardRect = els.card.getBoundingClientRect();
-                const options = {
-                    scale: 6, useCORS: true, backgroundColor: "#0F0F11",
-                    width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
-                    onclone: (clonedDoc) => {
-                        const c = clonedDoc.getElementById('productCard');
-                        const bgContainer = clonedDoc.getElementById('displayBgTextContainer');
-                        const bgText = clonedDoc.getElementById('displayBgText');
-                        if (c) {
-                            c.style.boxShadow = 'none'; c.style.transform = 'none'; c.style.overflow = 'visible';
-                        }
-                        if (bgContainer && bgText) {
-                            bgContainer.style.width = '200%'; bgContainer.style.height = '200%';
-                            bgContainer.style.bottom = '-15%'; bgContainer.style.right = '-5%';
-                            bgText.style.display = 'inline-block'; bgText.style.lineHeight = '1.2';
-                            bgText.style.padding = '1em'; bgText.style.margin = '0';
-                        }
-                    }
-                };
-                const canvas = await html2canvas(els.card, options);
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
-                const link = document.createElement('a');
-                link.download = getFileName('png');
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showStatus("EXPORT COMPLETE");
-            } catch (err) {
-                console.error("Export failed:", err);
-                showStatus("EXPORT FAILED");
-            } finally {
-                els.btnExport.disabled = false;
-                els.btnExport.innerHTML = originalText;
-            }
-        };
-
-        // レスポンシブ対応：カードのスケール調整
-        function adjustCardScale() {
-            const card = els.card;
-            const container = document.getElementById('captureArea');
-            const screenWidth = window.innerWidth;
-            const cardWidth = 344; // 91mm approx in px
-
-            // コンテナのパディング等を考慮した利用可能幅
-            // コンテナのパディング等を考慮した利用可能幅
-            const availableWidth = container.clientWidth - 32;
-            const currentCardWidth = 344; // Base width approx in px
-
-            // 常にスケール計算を行う（拡大・縮小両対応）
-            let scale = availableWidth / currentCardWidth;
-
-            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
-            // ここではシンプルに、利用可能幅に合わせてフィットさせる
-            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
-            scale = Math.min(scale, 2.5);
-
-            card.style.transform = `scale(${scale})`;
-            card.style.transformOrigin = 'center top';
-
-            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
-            const height = (currentCardWidth * (55 / 91) * scale) + 50;
-            container.style.height = `${height}px`;
-
-            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
-            if (window.innerWidth < 1024) {
-                container.style.marginBottom = '1.5rem';
-            } else {
-                container.style.marginBottom = '0';
-            }
-        }
-
-        window.addEventListener('resize', adjustCardScale);
-        window.addEventListener('load', adjustCardScale);
-        document.fonts.ready.then(adjustCardScale);
-
-        initSwatches();
-        syncUI();
     </script>
 </body>
 

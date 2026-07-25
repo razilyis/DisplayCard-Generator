@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - お品書き</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Kaisei+Decol:wght@500;700&family=Shippori+Mincho:wght@600;800&family=RocknRoll+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #E8557A;
+            --paper: #FFFBF5;
+            --ink: #2E2A2E;
+            --main-font: 'Zen Maru Gothic', sans-serif;
+        }
+
+        body {
+            --ui-bg: #F6EBF0;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #FDF6F9;
+            --ui-border: #EBD5DE;
+            --ui-text: #4a3f45;
+            --ui-muted: #b09aa3;
+            --ui-accent: #E8557A;
+            --ui-accent-text: #ffffff;
+            font-family: 'Zen Maru Gothic', sans-serif;
+        }
+
+        .card {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: var(--main-font);
+            flex-direction: row;
+            padding: 0;
+            box-shadow: 0 14px 32px rgba(120, 60, 90, 0.18), 0 0 0 1px #f0dfe6;
+        }
+
+        /* 左の帯：縦書きの「お品書き」 */
+        .os-band {
+            flex: 0 0 13mm;
+            background: var(--accent-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2mm;
+            padding: 3mm 0;
+        }
+
+        .os-tate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10pt;
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: 0;
+        }
+
+        .os-band-sub {
+            font-size: 4.2pt;
+            letter-spacing: 0.3em;
+            opacity: 0.85;
+            writing-mode: horizontal-tb;
+        }
+
+        .os-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 3.4mm 4mm 3mm;
+        }
+
+        .os-title {
+            font-size: 12.5pt;
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: 0.01em;
+        }
+
+        .os-note {
+            font-size: 5.4pt;
+            color: #8a7d84;
+            margin: 0.4mm 0 1.6mm;
+            line-height: 1.5;
+        }
+
+        .os-items {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7mm;
+        }
+
+        .os-item {
+            display: flex;
+            align-items: baseline;
+            gap: 1.6mm;
+            min-width: 0;
+        }
+
+        .os-item b {
+            font-size: 6.6pt;
+            font-weight: 700;
+            flex: 0 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .os-dots {
+            flex: 1 1 auto;
+            border-bottom: 0.2mm dotted #cbbcc3;
+            min-width: 2mm;
+            transform: translateY(-0.4mm);
+        }
+
+        .os-price {
+            flex: 0 0 auto;
+            font-size: 7pt;
+            font-weight: 900;
+            color: var(--accent-color);
+            white-space: nowrap;
+        }
+
+        .os-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 2mm;
+            border-top: 0.25mm solid #ecdfe4;
+            margin-top: 1.4mm;
+            padding-top: 1mm;
+        }
+
+        .os-space {
+            font-size: 5pt;
+            color: #8a7d84;
+            line-height: 1.5;
+            min-width: 0;
+        }
+
+        .os-space b {
+            display: block;
+            font-size: 7.5pt;
+            font-weight: 900;
+            color: var(--ink);
+        }
+
+        .os-sns {
+            flex-shrink: 0;
+            text-align: right;
+            font-size: 5pt;
+            color: #8a7d84;
+            line-height: 1.5;
+        }
+
+        .os-sns b {
+            display: block;
+            font-size: 6.6pt;
+            font-weight: 700;
+            color: var(--ink);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>お品書き ジェネレータ</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="os-band">
+                    <div class="os-tate" id="displayBandText"></div>
+                    <div class="os-band-sub" id="displayBandSub">MENU</div>
+                </div>
+
+                <div class="os-main">
+                    <div class="os-title ck-fit" id="displayBrandName">AroundForty</div>
+                    <div class="os-note" id="displaySlogan">自作キーボードと周辺小物を頒布しています。見本は自由に触ってください。</div>
+
+                    <div class="os-items" id="displayItems"></div>
+
+                    <div class="os-foot">
+                        <div class="os-space">
+                            <span id="displayCodeNameLabel">SPACE</span>
+                            <b class="ck-fit" id="displayCodeName">あ-01</b>
+                        </div>
+                        <div class="os-sns">
+                            <span id="displayOwnerLabel">OWNER</span>
+                            <b class="ck-fit" id="displayOwner">@user</b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="bandTextInput">帯の文字（縦書き）</label><input type="text" id="bandTextInput" class="ck-input " value="お品書き"></div>
+            <div class="ck-field"><label class="ck-label" for="bandSubInput">帯の小文字</label><input type="text" id="bandSubInput" class="ck-input " value="MENU"></div>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">サークル名 / 見出し</label><input type="text" id="brandNameInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label" for="sloganInput">ひとこと</label><textarea id="sloganInput" class="ck-textarea" rows="3">自作キーボードと周辺小物を頒布しています。見本は自由に触ってください。</textarea></div>
+            <div class="ck-field"><label class="ck-label" for="itemsInput">頒布物（1行 = 「品名, 価格」）</label><textarea id="itemsInput" class="ck-textarea" rows="5">AroundForty キット, ¥18,000
+組み立て済み完成品, ¥28,000
+キーキャップセット, ¥3,500
+ステッカー, ¥200</textarea></div>
+            <div class="ck-field"><label class="ck-label" for="fontSelect">書体 / Typeface</label><select id="fontSelect" class="ck-select"><option value="'Zen Maru Gothic', sans-serif">Zen 丸ゴシック</option><option value="'RocknRoll One', sans-serif">RocknRoll One</option><option value="'Kaisei Decol', serif">解星デコール</option><option value="'Shippori Mincho', serif">しっぽり明朝</option></select></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">帯の色 / Band Color</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">スペース (ラベル / 値)</label><input type="text" id="codeNameLabelInput" class="ck-input" value="SPACE" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="codeNameInput" class="ck-input" value="あ-01"></div>
+            <div class="ck-field"><label class="ck-label">名義 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        // 縦書きは html2canvas での再現が不安定なので 1 文字ずつ積む
+        const ROTATE = new Set(['ー', '-', '－', '~', '〜', '（', '）', '(', ')', '「', '」']);
+
+        function stackVertical(el, str) {
+            el.innerHTML = '';
+            Array.from(String(str)).forEach((ch) => {
+                const sp = document.createElement('span');
+                if (ch === ' ' || ch === '\u3000') { sp.style.height = '0.5em'; }
+                else { sp.textContent = ch; if (ROTATE.has(ch)) sp.style.transform = 'rotate(90deg)'; }
+                sp.style.display = 'block';
+                el.appendChild(sp);
+            });
+        }
+
+        function renderItems() {
+            const src = ((document.getElementById('itemsInput') || {}).value || '');
+            const host = document.getElementById('displayItems');
+            host.innerHTML = '';
+            src.split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 6).forEach((line) => {
+                // 行末の価格らしい部分を先に切り出す。こうしないと "¥18,000" の
+                // 桁区切りカンマで分かれてしまう。見つからなければ最初のカンマで割る。
+                let name = line, price = '';
+                const m = line.match(/[,、\s]+((?:[¥￥$]\s?)?[\d０-９][\d０-９,，.]*\s*(?:円|yen)?)\s*$/i);
+                if (m) {
+                    name = line.slice(0, m.index).trim();
+                    price = m[1].trim();
+                } else {
+                    const at = Math.min(...[line.indexOf(','), line.indexOf('、')].filter((i) => i > 0));
+                    if (Number.isFinite(at)) { name = line.slice(0, at).trim(); price = line.slice(at + 1).trim(); }
+                }
+                const row = document.createElement('div');
+                row.className = 'os-item';
+                const b = document.createElement('b');
+                b.className = 'ck-fit';
+                b.textContent = name;
+                const dots = document.createElement('span');
+                dots.className = 'os-dots';
+                const p = document.createElement('span');
+                p.className = 'os-price';
+                p.textContent = price;
+                row.append(b, dots, p);
+                host.appendChild(row);
+            });
+        }
+
+        CardKit({
+            theme: 'OSHI',
+            exportBg: '#FFFBF5',
+            nameSource: 'codeNameInput',
+            onSync: function () {
+                stackVertical(document.getElementById('displayBandText'),
+                    (document.getElementById('bandTextInput') || {}).value || '');
+                renderItems();
+            },
+            fields: [
+                { input: 'bandTextInput', key: 'bandText' },
+                { input: 'bandSubInput', target: 'displayBandSub', key: 'bandSub' },
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'itemsInput', key: 'items' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' }
+            ],
+            selects: [
+                { input: 'fontSelect', cssVar: '--main-font', key: 'font' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#E8557A',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#E8557A', label: 'さくら' }, { hex: '#F2825C', label: 'あんず' },
+                    { hex: '#F0B429', label: 'たまご' }, { hex: '#6BBF8A', label: 'まっちゃ' },
+                    { hex: '#4FA8D8', label: 'そら' }, { hex: '#8E7CC3', label: 'ふじ' },
+                    { hex: '#C1272D', label: 'しゅ' }, { hex: '#4A4048', label: 'すみ' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

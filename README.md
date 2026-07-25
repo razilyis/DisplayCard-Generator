@@ -8,10 +8,53 @@ https://razilyis.github.io/DisplayCard-Generator/
 
 2026年2月8日開催の天下一キーボードわいわい会 Vol.10に向けて作成しました。
 
-現在は6つのテーマを用意しています。
-<img width="1031" height="623" alt="RPG_AroundFortyDB_2026-02-07T09-13-07" src="https://github.com/user-attachments/assets/9771b52f-c0aa-4926-a73e-6cd9ee664ecf" />
-<img width="1031" height="623" alt="LIGHT_AroundFortyDB_2026-02-07T08-07-29" src="https://github.com/user-attachments/assets/6c2f4357-ad51-4ff6-857f-1eaafe4d7018" />
-<img width="1031" height="623" alt="BP_AroundFortyDB_2026-02-07T08-07-08" src="https://github.com/user-attachments/assets/9eec3221-f2c4-4f00-8a34-91d070ea8dde" />
-<img width="1031" height="623" alt="DARK_AroundFortyDB_2026-02-07T08-06-01" src="https://github.com/user-attachments/assets/cf075080-3514-4005-8b75-a47cfb955bba" />
-<img width="1031" height="623" alt="DEV_AroundFortyDB_2026-02-07T08-03-25" src="https://github.com/user-attachments/assets/cb7028af-c6d7-4a33-8a80-b2f7093ad9ca" />
-<img width="1031" height="623" alt="SKETCH_AroundFortyDB_2026-02-07T08-02-27" src="https://github.com/user-attachments/assets/7cb0169f-3bff-4094-b37c-19a5b9f6f84a" />
+## テーマ（15種類）
+
+| ファイル | テーマ | 特徴 |
+| --- | --- | --- |
+| `light.html` | Swiss Style | 白ベースのミニマル |
+| `dark.html` | Industrial | 黒×ネオンのサイバー系 |
+| `mac_code.html` | Developer | macOSエディタ風 |
+| `blueprint.html` | Blueprint | 青焼き設計図 |
+| `sketch.html` | Product Sketch | 線画・レンダ画像を配置（画像対応） |
+| `dq_pixel.html` | RPG Pixel | ボウケンノショ風（画像対応） |
+| `neobrutal.html` | Neo-Brutalism | 極太の黒枠と原色ブロック |
+| `washi.html` | 和風ラベル | 縦書きの銘と朱印、和紙の質感 |
+| `boarding.html` | Boarding Pass | 航空券風。ミシン目・半券・バーコード |
+| `tcg.html` | Trading Card | カードゲーム風。箔押しフチとステータス欄（画像対応） |
+| `crt.html` | CRT Terminal | 蛍光管の緑と走査線 |
+| `cassette.html` | Cassette Tape | 80sのカセットラベル風 |
+| `datasheet.html` | Datasheet | ICの仕様書風 |
+| `oshinagaki.html` | お品書き | 即売会向け。頒布物と価格、スペース番号 |
+| `ekimeisho.html` | 駅名標 | JR風サインボード |
+
+## 印刷について
+
+書き出されるPNGは **91×55mm（名刺サイズ）/ 600dpi = 2150×1299px** 固定で、
+PNGの `pHYs` チャンクに実寸情報を書き込んでいます。
+
+そのため Word / Illustrator / プレビュー.app などに貼り付けるだけで
+拡大縮小せずに 91×55mm で配置されます。
+
+また、書き出しはプレビュー中のカードそのものを撮影しているので、
+**画面で見えているものがそのまま出力されます**（以前は書き出し時だけ
+背景文字の位置とカードの枠が変わっていました）。
+
+## 使い方
+
+1. `index.html` を開いてテーマを選ぶ
+2. 右側のパネルで文字・色・画像を編集する
+3. 「高画質PNGで保存」で書き出す
+4. 「JSONで保存」しておくと、次回そのまま復元できます（画像も含めて保存されます）
+
+## 構成
+
+```
+index.html          ポータル（テーマ選択）
+*.html              テーマごとのジェネレータ
+assets/cardkit.js   共通エンジン（入力同期 / JSON / 配色 / PNG書き出し）
+assets/cardkit.css  共通スタイル（カード寸法・編集UI）
+```
+
+テーマを追加する場合は、既存のHTMLをコピーしてカード部分のマークアップとCSSを差し替え、
+末尾の `CardKit({ ... })` に項目を宣言すれば動きます。

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard - 駅名標</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #009944;
+            --paper: #FFFFFF;
+            --ink: #1A1A1A;
+            --main-font: 'Noto Sans JP', sans-serif;
+        }
+
+        body {
+            --ui-bg: #eceff1;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #f6f8f9;
+            --ui-border: #d6dce0;
+            --ui-text: #1A1A1A;
+            --ui-muted: #90a0a8;
+            --ui-accent: #009944;
+            --ui-accent-text: #ffffff;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .card {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: var(--main-font);
+            padding: 0;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18), 0 0 0 1px #dfe4e7;
+        }
+
+        /* 上下のラインカラー帯 */
+        .ek-bar {
+            flex: 0 0 auto;
+            height: 4mm;
+            background: var(--accent-color);
+        }
+
+        .ek-bar--bottom {
+            height: 3mm;
+        }
+
+        .ek-main {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 3mm;
+            gap: 2mm;
+        }
+
+        /* 左右の隣駅 */
+        .ek-side {
+            flex: 0 0 17mm;
+            min-width: 0;
+            text-align: center;
+            color: #5b6a72;
+        }
+
+        .ek-side b {
+            display: block;
+            font-size: 6pt;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .ek-side i {
+            display: block;
+            font-style: normal;
+            font-family: 'Barlow', sans-serif;
+            font-size: 4pt;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #8a979e;
+            margin-top: 0.2mm;
+        }
+
+        .ek-arrow {
+            font-size: 7pt;
+            line-height: 1;
+            color: var(--accent-color);
+            margin-bottom: 0.6mm;
+        }
+
+        .ek-center {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .ek-name {
+            font-size: 21pt;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: 0.06em;
+        }
+
+        .ek-romaji {
+            font-family: 'Barlow', sans-serif;
+            font-size: 7pt;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #43525a;
+            margin-top: 0.8mm;
+        }
+
+        .ek-badge {
+            position: absolute;
+            top: 5.2mm;
+            left: 3mm;
+            display: flex;
+            align-items: center;
+            gap: 1.2mm;
+        }
+
+        .ek-num {
+            width: 8mm;
+            height: 8mm;
+            border: 0.7mm solid var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Barlow', sans-serif;
+            font-size: 6pt;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent-color);
+        }
+
+        .ek-line {
+            font-size: 4.6pt;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: #5b6a72;
+        }
+
+        .ek-foot {
+            position: absolute;
+            right: 3mm;
+            bottom: 4.2mm;
+            text-align: right;
+            font-size: 4.2pt;
+            letter-spacing: 0.1em;
+            color: #8a979e;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-head">
+        <a href="index.html">← BACK TO MENU</a>
+        <h1>駅名標 ジェネレータ</h1>
+        <span class="ck-spacer"></span>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel ck-panel" style="padding:0.85rem">
+            <label class="ck-label">📄 設定の保存 / 読み込み</label>
+            <div class="ck-row">
+                <button class="ck-btn" id="exportJsonBtn">📥 JSONで保存</button>
+                <button class="ck-btn" id="importJsonBtn">📤 読み込む</button>
+            </div>
+            <input type="file" id="jsonFileInput" accept=".json" hidden>
+        </div>
+
+        <div id="captureArea">
+            <div class="card" id="productCard">
+                <div class="ek-bar"></div>
+
+                <div class="ek-badge">
+                    <span class="ek-num ck-fit" id="displayStationNo">AF40</span>
+                    <span class="ek-line ck-fit" id="displayLineName">AROUNDFORTY LINE</span>
+                </div>
+
+                <div class="ek-main">
+                    <div class="ek-side">
+                        <div class="ek-arrow">←</div>
+                        <b class="ck-fit" id="displayPrev">きーすいっち</b>
+                        <i class="ck-fit" id="displayPrevRomaji">Cherry MX Red</i>
+                    </div>
+
+                    <div class="ek-center">
+                        <div class="ek-name ck-fit" id="displayBrandName">あらうんどふぉーてぃ</div>
+                        <div class="ek-romaji ck-fit" id="displayRomaji">AroundForty</div>
+                    </div>
+
+                    <div class="ek-side">
+                        <div class="ek-arrow">→</div>
+                        <b class="ck-fit" id="displayNext">きーきゃっぷ</b>
+                        <i class="ck-fit" id="displayNextRomaji">PBT Double-shot</i>
+                    </div>
+                </div>
+
+                <div class="ek-foot">
+                    <span id="displayOwnerLabel">OWNER</span> <span id="displayOwner">@user</span><br>
+                    <span id="displayMfgCodeLabel">MFG</span> <span id="displayMfgCode">02AFRB</span>
+                </div>
+
+                <div class="ek-bar ek-bar--bottom"></div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集</label>
+            <div class="ck-field"><label class="ck-label" for="brandNameInput">駅名（大きい方）</label><input type="text" id="brandNameInput" class="ck-input " value="あらうんどふぉーてぃ"></div>
+            <div class="ck-field"><label class="ck-label" for="romajiInput">ローマ字 / Romaji</label><input type="text" id="romajiInput" class="ck-input " value="AroundForty"></div>
+            <div class="ck-field"><label class="ck-label">前の駅（かな / 英字）</label><input type="text" id="prevInput" class="ck-input" value="きーすいっち" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="prevRomajiInput" class="ck-input" value="Cherry MX Red"></div>
+            <div class="ck-field"><label class="ck-label">次の駅（かな / 英字）</label><input type="text" id="nextInput" class="ck-input" value="きーきゃっぷ" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="nextRomajiInput" class="ck-input" value="PBT Double-shot"></div>
+            <div class="ck-field"><label class="ck-label" for="stationNoInput">駅ナンバリング</label><input type="text" id="stationNoInput" class="ck-input " value="AF40"></div>
+            <div class="ck-field"><label class="ck-label" for="lineNameInput">路線名 / Line</label><input type="text" id="lineNameInput" class="ck-input " value="AROUNDFORTY LINE"></div>
+            <div class="ck-field"><div class="ck-section-head"><label class="ck-label">ラインカラー / Line Color</label><span class="ck-value" id="colorLabelDisplay">—</span></div><div class="color-swatch-grid" id="swatchGrid"></div></div>
+            <div class="ck-field"><label class="ck-label">名義 (ラベル / 値)</label><input type="text" id="ownerLabelInput" class="ck-input" value="OWNER" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="ownerInput" class="ck-input" value="@user"></div>
+            <div class="ck-field"><label class="ck-label">製造番号 (ラベル / 値)</label><input type="text" id="mfgCodeLabelInput" class="ck-input" value="MFG" style="font-size:10px;opacity:.75;margin-bottom:4px"><input type="text" id="mfgCodeInput" class="ck-input" value="02AFRB"></div>
+            <hr class="ck-divider">
+            <button class="ck-btn ck-btn-primary" id="btnExport">📸 高画質PNGで保存</button>
+            <p class="ck-print-note">91×55mm / 600dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます</p>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'EKI',
+            exportBg: '#FFFFFF',
+            nameSource: 'romajiInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'romajiInput', target: 'displayRomaji', key: 'romaji' },
+                { input: 'prevInput', target: 'displayPrev', key: 'prev' },
+                { input: 'prevRomajiInput', target: 'displayPrevRomaji', key: 'prevRomaji' },
+                { input: 'nextInput', target: 'displayNext', key: 'next' },
+                { input: 'nextRomajiInput', target: 'displayNextRomaji', key: 'nextRomaji' },
+                { input: 'stationNoInput', target: 'displayStationNo', key: 'stationNo' },
+                { input: 'lineNameInput', target: 'displayLineName', key: 'lineName' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#009944',
+                labelDisplay: 'colorLabelDisplay',
+                swatches: [
+                    { hex: '#009944', label: '山手グリーン' }, { hex: '#F15A22', label: '中央オレンジ' },
+                    { hex: '#00A7DB', label: '京浜東北ブルー' }, { hex: '#FFD400', label: '総武イエロー' },
+                    { hex: '#E60012', label: '丸ノ内レッド' }, { hex: '#9B7CB6', label: '半蔵門パープル' },
+                    { hex: '#00B48D', label: '千代田グリーン' }, { hex: '#0079C2', label: '東西ブルー' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

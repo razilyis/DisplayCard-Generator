@@ -13,10 +13,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Teko:wght@300;400;600&family=Architects+Daughter&family=Yomogi&family=Kiwi+Maru:wght@300;500&family=Klee+One:wght@400;600&family=Yuji+Syuku&family=Kaisei+Decol&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
     <style>
         :root {
-            --card-width: 91mm;
-            --card-height: 55mm;
             --accent-color: #E63946;
             /* Marker Red */
             --paper-color: #Fdfdfd;
@@ -26,90 +25,24 @@
         }
 
         body {
-            background-color: #e5e5e5;
+            --ui-bg: #e5e5e5;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #fafafa;
+            --ui-border: #dddddd;
+            --ui-text: #333333;
+            --ui-muted: #999999;
+            --ui-accent: #333333;
+            --ui-accent-text: #ffffff;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Barlow', sans-serif;
-            padding: 4rem 2rem;
         }
 
-        .tool-container {
-            width: 100%;
-            max-width: var(--card-width);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #captureArea {
-            padding: 0.5rem;
-            background-color: transparent;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        /* Desktop Layout Override */
-        @media (min-width: 1024px) {
-            .tool-container {
-                max-width: 1600px;
-                display: grid;
-                grid-template-columns: 1fr 400px;
-                grid-template-areas:
-                    "preview filesystem"
-                    "preview editor";
-                gap: 2rem;
-                align-items: start;
-            }
-
-            #captureArea {
-                grid-area: preview;
-                /* Allow JS to set height for scaled card */
-                overflow: visible;
-                position: sticky;
-                top: 2rem;
-                display: flex;
-                justify-content: center;
-                align-items: flex-start;
-                padding-top: 2rem;
-            }
-
-            .file-system-panel {
-                grid-area: filesystem;
-                width: 100%;
-            }
-
-            .editor-panel {
-                grid-area: editor;
-                width: 100%;
-            }
-        }
-
-        /* Sketch Card Style */
         .card {
-            width: var(--card-width);
-            height: var(--card-height);
             background-color: var(--paper-color);
             color: var(--ink-color);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            display: flex;
-            flex-direction: column;
             justify-content: space-between;
             padding: 6mm;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            -webkit-font-smoothing: antialiased;
-            transform: translateZ(0);
+            /* 外周ラインは box-shadow で描く（border と違いレイアウトに影響しない） */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px #ddd;
 
             /* Grid Pattern */
             background-image:
@@ -438,6 +371,9 @@
                             IMAGE</span>
                         <input type="file" id="imageUpload" accept="image/*" class="hidden">
                     </label>
+                    <button id="imageClear"
+                        class="w-full mb-3 text-[9px] font-bold text-gray-400 hover:text-red-500 uppercase tracking-widest py-1">✕
+                        画像を削除</button>
 
                     <div class="grid grid-cols-3 gap-2 mb-2">
                         <div>
@@ -579,337 +515,51 @@ Precision Engineered.</textarea>
 
     <div id="exportStatus"></div>
 
-    <script type="text/javascript">
-        // Marker Colors
-        const sketchSwatches = [
-            { hex: "#E63946", label: "RED" },
-            { hex: "#457B9D", label: "BLUE" },
-            { hex: "#2A9D8F", label: "TEAL" },
-            { hex: "#E9C46A", label: "YELLOW" },
-            { hex: "#F4A261", label: "ORANGE" },
-            { hex: "#333333", label: "BLACK" }
-        ];
-
-        const els = {
-            card: document.getElementById('productCard'),
-            // UI Elements
-            brandName: document.getElementById('displayBrandName'),
-            slogan: document.getElementById('displaySlogan'),
-
-            codeNameLabel: document.getElementById('displayCodeNameLabel'),
-            codeName: document.getElementById('displayCodeName'),
-            mfgCodeLabel: document.getElementById('displayMfgCodeLabel'),
-            mfgCode: document.getElementById('displayMfgCode'),
-            ownerLabel: document.getElementById('displayOwnerLabel'),
-            owner: document.getElementById('displayOwner'),
-            keySwitchLabel: document.getElementById('displayKeySwitchLabel'),
-            keySwitch: document.getElementById('displayKeySwitch'),
-            keyCapsLabel: document.getElementById('displayKeyCapsLabel'),
-            keyCaps: document.getElementById('displayKeyCaps'),
-
-            // Image
-            displayImage: document.getElementById('displayImage'),
-            imagePlaceholder: document.getElementById('imagePlaceholder'),
-            imageUpload: document.getElementById('imageUpload'),
-            imgPosX: document.getElementById('imgPosX'),
-            imgPosY: document.getElementById('imgPosY'),
-            imgScale: document.getElementById('imgScale'),
-            imgMultiply: document.getElementById('imgMultiply'),
-
-            // Inputs
-            brandNameInput: document.getElementById('brandNameInput'),
-            sloganInput: document.getElementById('sloganInput'),
-            sloganSizeInput: document.getElementById('sloganSizeInput'),
-            sloganSizeDisplay: document.getElementById('sloganSizeDisplay'),
-            sloganFontSelect: document.getElementById('sloganFontSelect'), // New
-
-            codeNameLabelInput: document.getElementById('codeNameLabelInput'),
-            codeNameInput: document.getElementById('codeNameInput'),
-            mfgCodeLabelInput: document.getElementById('mfgCodeLabelInput'),
-            mfgCodeInput: document.getElementById('mfgCodeInput'),
-            ownerLabelInput: document.getElementById('ownerLabelInput'),
-            ownerInput: document.getElementById('ownerInput'),
-            keySwitchLabelInput: document.getElementById('keySwitchLabelInput'),
-            keySwitchInput: document.getElementById('keySwitchInput'),
-            keyCapsLabelInput: document.getElementById('keyCapsLabelInput'),
-            keyCapsInput: document.getElementById('keyCapsInput'),
-
-            btnExport: document.getElementById('btnExport'),
-            status: document.getElementById('exportStatus'),
-            exportJsonBtn: document.getElementById('exportJsonBtn'),
-            importJsonBtn: document.getElementById('importJsonBtn'),
-            jsonFileInput: document.getElementById('jsonFileInput'),
-            swatchGrid: document.getElementById('swatchGrid')
-        };
-
-        const showStatus = (msg, duration = 3000) => {
-            els.status.innerText = `>> ${msg}`;
-            els.status.style.display = 'block';
-            setTimeout(() => els.status.style.display = 'none', duration);
-        };
-
-        // Image Handling
-        els.imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    els.displayImage.src = event.target.result;
-                    els.displayImage.style.display = 'block';
-                    els.imagePlaceholder.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'SKETCH',
+            exportBg: '#fdfdfd',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'ownerLabelInput', target: 'displayOwnerLabel', key: 'ownerLabel' },
+                { input: 'ownerInput', target: 'displayOwner', key: 'owner' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' }
+            ],
+            ranges: [
+                { input: 'sloganSizeInput', display: 'sloganSizeDisplay', target: 'displaySlogan', style: 'fontSize', unit: 'pt', key: 'sloganSize' }
+            ],
+            selects: [
+                { input: 'sloganFontSelect', cssVar: '--slogan-font', key: 'sloganFont' }
+            ],
+            image: {
+                input: 'imageUpload', target: 'displayImage', placeholder: 'imagePlaceholder',
+                clear: 'imageClear',
+                posX: 'imgPosX', posY: 'imgPosY', scale: 'imgScale', multiply: 'imgMultiply',
+                key: 'image'
+            },
+            accent: {
+                cssVar: '--accent-color',
+                default: '#E63946',
+                swatches: [
+                    { hex: '#E63946', label: 'RED' },
+                    { hex: '#457B9D', label: 'BLUE' },
+                    { hex: '#2A9D8F', label: 'TEAL' },
+                    { hex: '#E9C46A', label: 'YELLOW' },
+                    { hex: '#F4A261', label: 'ORANGE' },
+                    { hex: '#333333', label: 'BLACK' }
+                ]
             }
         });
-
-        // Image Transform Sync
-        const syncImageTransform = () => {
-            const x = els.imgPosX.value;
-            const y = els.imgPosY.value;
-            const s = els.imgScale.value;
-            els.displayImage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-
-            if (els.imgMultiply.checked) {
-                els.displayImage.classList.add('mix-blend-multiply');
-            } else {
-                els.displayImage.classList.remove('mix-blend-multiply');
-            }
-        };
-
-        [els.imgPosX, els.imgPosY, els.imgScale, els.imgMultiply].forEach(el => {
-            el.addEventListener('input', syncImageTransform);
-        });
-
-        // Text Sync
-        const syncUI = () => {
-            if (els.brandName) els.brandName.innerText = els.brandNameInput.value;
-            if (els.slogan) els.slogan.innerText = els.sloganInput.value;
-
-            // Slogan Font Size
-            const sloganSize = els.sloganSizeInput.value;
-            if (els.slogan) els.slogan.style.fontSize = `${sloganSize}pt`;
-            if (els.sloganSizeDisplay) els.sloganSizeDisplay.innerText = `${sloganSize}pt`;
-
-            if (els.codeNameLabel) els.codeNameLabel.innerText = els.codeNameLabelInput.value;
-            if (els.codeName) els.codeName.innerText = els.codeNameInput.value.toUpperCase();
-
-            if (els.mfgCodeLabel) els.mfgCodeLabel.innerText = els.mfgCodeLabelInput.value;
-            if (els.mfgCode) els.mfgCode.innerText = els.mfgCodeInput.value.toUpperCase();
-
-            if (els.ownerLabel) els.ownerLabel.innerText = els.ownerLabelInput.value;
-            if (els.owner) els.owner.innerText = els.ownerInput.value;
-
-            if (els.keySwitchLabel) els.keySwitchLabel.innerText = els.keySwitchLabelInput.value;
-            if (els.keySwitch) els.keySwitch.innerText = els.keySwitchInput.value.toUpperCase();
-
-            if (els.keyCapsLabel) els.keyCapsLabel.innerText = els.keyCapsLabelInput.value;
-            if (els.keyCaps) els.keyCaps.innerText = els.keyCapsInput.value.toUpperCase();
-        };
-
-        // Font Change Listener
-        els.sloganFontSelect.onchange = (e) => {
-            document.documentElement.style.setProperty('--slogan-font', e.target.value);
-        };
-
-        [
-            els.brandNameInput, els.sloganInput, els.sloganSizeInput,
-            els.codeNameLabelInput, els.codeNameInput,
-            els.mfgCodeLabelInput, els.mfgCodeInput,
-            els.ownerLabelInput, els.ownerInput,
-            els.keySwitchLabelInput, els.keySwitchInput,
-            els.keyCapsLabelInput, els.keyCapsInput
-        ].forEach(el => {
-            if (el) el.addEventListener('input', syncUI);
-        });
-
-        // Theme Logic
-        let currentAccentColor = "#E63946";
-        const updateTheme = (hex) => {
-            currentAccentColor = hex;
-            document.documentElement.style.setProperty('--accent-color', hex);
-            document.querySelectorAll('.color-dot').forEach(dot => {
-                dot.classList.toggle('active', dot.dataset.hex === hex);
-            });
-        };
-
-        const initSwatches = () => {
-            els.swatchGrid.innerHTML = "";
-            sketchSwatches.forEach(swatch => {
-                const dot = document.createElement('div');
-                dot.className = 'color-dot';
-                dot.style.backgroundColor = swatch.hex;
-                dot.dataset.hex = swatch.hex;
-                dot.title = swatch.label;
-                dot.onclick = () => updateTheme(swatch.hex);
-                if (swatch.hex.toLowerCase() === currentAccentColor.toLowerCase()) { dot.classList.add('active'); }
-                els.swatchGrid.appendChild(dot);
-            });
-        };
-
-        function getFileName(extension) {
-            const base = els.codeNameInput.value.trim() || "Sketch";
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            return `SKETCH_${base}_${timestamp}.${extension}`;
-        }
-
-        els.exportJsonBtn.onclick = () => {
-            const data = {
-                brandName: els.brandNameInput.value,
-                slogan: els.sloganInput.value,
-                sloganSize: els.sloganSizeInput.value,
-                sloganFont: els.sloganFontSelect.value, // Added
-                codeNameLabel: els.codeNameLabelInput.value, codeName: els.codeNameInput.value,
-                mfgCodeLabel: els.mfgCodeLabelInput.value, mfgCode: els.mfgCodeInput.value,
-                ownerLabel: els.ownerLabelInput.value, owner: els.ownerInput.value,
-                keySwitchLabel: els.keySwitchLabelInput.value, keySwitch: els.keySwitchInput.value,
-                keyCapsLabel: els.keyCapsLabelInput.value, keyCaps: els.keyCapsInput.value,
-                accentColor: currentAccentColor,
-                imgX: els.imgPosX.value, imgY: els.imgPosY.value, imgS: els.imgScale.value,
-                imgM: els.imgMultiply.checked,
-                exportedAt: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = getFileName('json');
-            link.click();
-            URL.revokeObjectURL(url);
-            showStatus("CONFIG SAVED");
-        };
-
-        els.importJsonBtn.onclick = () => els.jsonFileInput.click();
-        els.jsonFileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    applyData(data);
-                    showStatus("CONFIG LOADED (PLEASE RE-UPLOAD IMAGE)");
-                } catch (err) { showStatus("LOAD FAILED"); }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        };
-
-        function applyData(data) {
-            if (data.brandName) els.brandNameInput.value = data.brandName;
-            if (data.slogan) els.sloganInput.value = data.slogan;
-            if (data.sloganSize) {
-                els.sloganSizeInput.value = data.sloganSize;
-                els.sloganSizeDisplay.innerText = data.sloganSize + "pt";
-            }
-            if (data.sloganFont) {
-                els.sloganFontSelect.value = data.sloganFont;
-                document.documentElement.style.setProperty('--slogan-font', data.sloganFont);
-            }
-
-            if (data.codeNameLabel) els.codeNameLabelInput.value = data.codeNameLabel;
-            if (data.codeName) els.codeNameInput.value = data.codeName;
-
-            if (data.mfgCodeLabel) els.mfgCodeLabelInput.value = data.mfgCodeLabel;
-            if (data.mfgCode) els.mfgCodeInput.value = data.mfgCode;
-            if (data.ownerLabel) els.ownerLabelInput.value = data.ownerLabel;
-            if (data.owner) els.ownerInput.value = data.owner;
-            if (data.keySwitchLabel) els.keySwitchLabelInput.value = data.keySwitchLabel;
-            if (data.keySwitch) els.keySwitchInput.value = data.keySwitch;
-            if (data.keyCapsLabel) els.keyCapsLabelInput.value = data.keyCapsLabel;
-            if (data.keyCaps) els.keyCapsInput.value = data.keyCaps;
-
-            if (data.imgX) els.imgPosX.value = data.imgX;
-            if (data.imgY) els.imgPosY.value = data.imgY;
-            if (data.imgS) els.imgScale.value = data.imgS;
-            if (data.imgM !== undefined) els.imgMultiply.checked = data.imgM;
-
-            if (data.accentColor) updateTheme(data.accentColor);
-
-            syncUI();
-            syncImageTransform();
-        }
-
-        els.btnExport.onclick = async () => {
-            if (typeof html2canvas === 'undefined') return showStatus("INITIALIZING LIB...");
-            els.btnExport.disabled = true;
-            const originalText = els.btnExport.innerHTML;
-            els.btnExport.innerHTML = '<span class="loader"></span> RENDERING...';
-
-            try {
-                if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
-                const cardRect = els.card.getBoundingClientRect();
-
-                const options = {
-                    scale: 6, useCORS: true, backgroundColor: "#fdfdfd",
-                    width: cardRect.width, height: cardRect.height, scrollX: 0, scrollY: -window.scrollY,
-                    onclone: (clonedDoc) => {
-                        const c = clonedDoc.getElementById('productCard');
-                        if (c) {
-                            c.style.boxShadow = 'none'; c.style.transform = 'none';
-                            c.style.overflow = 'hidden'; // Keep sketch clean
-                        }
-                    }
-                };
-
-                const canvas = await html2canvas(els.card, options);
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
-                const link = document.createElement('a');
-                link.download = getFileName('png');
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showStatus("EXPORT COMPLETE");
-            } catch (err) {
-                console.error("Export failed:", err);
-                showStatus("EXPORT FAILED");
-            } finally {
-                els.btnExport.disabled = false;
-                els.btnExport.innerHTML = originalText;
-            }
-        };
-
-        // Context: Responsive & Init
-        function adjustCardScale() {
-            const card = els.card;
-            const container = document.getElementById('captureArea');
-            const screenWidth = window.innerWidth;
-            const cardWidth = 344;
-
-            // コンテナのパディング等を考慮した利用可能幅
-            const availableWidth = container.clientWidth - 32;
-            const currentCardWidth = 344; // Base width
-
-            // 常にスケール計算を行う（拡大・縮小両対応）
-            let scale = availableWidth / currentCardWidth;
-
-            // ただし、モバイルなど狭い画面では縮小のみ、広い画面では拡大も許可するが上限を設ける
-            // ここではシンプルに、利用可能幅に合わせてフィットさせる
-            // 拡大しすぎを防ぐため最大スケールを制限（例: 2.5倍）
-            scale = Math.min(scale, 2.5);
-
-            card.style.transform = `scale(${scale})`;
-            card.style.transformOrigin = 'center top';
-
-            // スケール後の高さをコンテナに反映 (影や余白のために少しバッファを追加)
-            const height = (currentCardWidth * (55 / 91) * scale) + 50;
-            container.style.height = `${height}px`;
-
-            // デスクトップ表示（グリッドレイアウト）の場合、margin-bottomの調整は不要または別途CSSで制御
-            if (window.innerWidth < 1024) {
-                container.style.marginBottom = '1.5rem';
-            } else {
-                container.style.marginBottom = '0';
-            }
-        }
-
-        window.addEventListener('resize', adjustCardScale);
-        window.addEventListener('load', adjustCardScale);
-        document.fonts.ready.then(adjustCardScale);
-
-        initSwatches();
-        syncUI();
     </script>
 </body>
 
