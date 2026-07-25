@@ -77,7 +77,7 @@
             font-size: 12pt;
             font-weight: 700;
             color: var(--accent-color);
-            line-height: 1;
+            line-height: 1.15;
             text-align: right;
             width: 34mm;
         }
@@ -86,7 +86,7 @@
             display: flex;
             align-items: center;
             gap: 2.5mm;
-            margin: 2.2mm 0 1.8mm;
+            margin: auto 0;
         }
 
         .bp-port {
@@ -137,6 +137,10 @@
             padding-top: 2mm;
         }
 
+        .bp-cell {
+            min-width: 0;
+        }
+
         .bp-cell i {
             display: block;
             font-style: normal;
@@ -151,7 +155,8 @@
             font-family: 'Roboto Mono', monospace;
             font-size: 6pt;
             font-weight: 700;
-            line-height: 1.2;
+            --fit-lh: 1.2;
+            --fit-lines: 3;
         }
 
         /* ミシン目 */
@@ -265,19 +270,19 @@
 
                     <div class="bp-route">
                         <div class="bp-port">
-                            <i id="displayKeySwitchLabel">SWITCH</i><b id="displayKeySwitch" class="ck-fit">Cherry MX Red</b>
+                            <i id="displayKeySwitchLabel">SWITCH</i><b id="displayKeySwitch" class="ck-fit ck-fit-wrap">Cherry MX Red</b>
                         </div>
                         <div class="bp-arrow"></div>
                         <div class="bp-port" style="text-align:right">
-                            <i id="displayKeyCapsLabel">KEYCAPS</i><b id="displayKeyCaps" class="ck-fit">PBT Double-shot</b>
+                            <i id="displayKeyCapsLabel">KEYCAPS</i><b id="displayKeyCaps" class="ck-fit ck-fit-wrap">PBT Double-shot</b>
                         </div>
                     </div>
 
                     <div class="bp-grid">
-                        <div class="bp-cell"><i id="displayCodeNameLabel">MODEL</i><b class="ck-fit"
+                        <div class="bp-cell"><i id="displayCodeNameLabel">MODEL</i><b class="ck-fit ck-fit-wrap"
                                 id="displayCodeName">AroundFortyRB</b></div>
-                        <div class="bp-cell"><i id="displayOwnerLabel">OWNER</i><b id="displayOwner" class="ck-fit">@user</b></div>
-                        <div class="bp-cell"><i id="displayMfgCodeLabel">MFG</i><b class="ck-fit" id="displayMfgCode">02AFRB</b></div>
+                        <div class="bp-cell"><i id="displayOwnerLabel">OWNER</i><b id="displayOwner" class="ck-fit ck-fit-wrap">@user</b></div>
+                        <div class="bp-cell"><i id="displayMfgCodeLabel">MFG</i><b class="ck-fit ck-fit-wrap" id="displayMfgCode">02AFRB</b></div>
                     </div>
                 </div>
 

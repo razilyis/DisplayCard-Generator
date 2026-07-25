@@ -120,6 +120,8 @@
             display: flex;
             flex-direction: column;
             background-color: rgba(0, 51, 102, 0.8);
+            /* 値が2行3行になっても縮まず、必ず枠内に収まるようにする */
+            flex-shrink: 0;
         }
 
         .tb-row {
@@ -132,6 +134,7 @@
         }
 
         .tb-cell {
+            min-width: 0;
             padding: 3px 5px;
             border-right: 1px solid var(--grid-line);
             display: flex;
@@ -157,9 +160,9 @@
             font-size: 6pt;
             font-weight: bold;
             text-transform: uppercase;
-            line-height: 1.4;
-            white-space: nowrap;
-            overflow: visible;
+            /* 折り返しと行数は .ck-fit-wrap 側で制御する（nowrap を書くと打ち消してしまう） */
+            --fit-lh: 1.3;
+            --fit-lines: 2;
         }
 
         /* Dynamic Colors */
@@ -366,12 +369,13 @@
                 <div class="z-10 flex flex-col h-full justify-between relative">
 
                     <!-- Header -->
-                    <div class="flex justify-between items-start">
-                        <div>
+                    <div class="flex justify-between items-start gap-2 shrink-0">
+                        <div class="min-w-0">
                             <p class="text-[6px] opacity-70 mb-1">PROJECT_TITLE:</p>
                             <h1
-                                class="text-2xl font-bold tracking-tight uppercase leading-none border-b border-white pb-1 mb-1 inline-block">
-                                <span id="displayBrandName">AroundForty</span>
+                                class="text-2xl font-bold tracking-tight uppercase leading-none border-b border-white pb-1 mb-1 block max-w-full">
+                                <span class="ck-fit ck-fit-wrap" data-fit-min="0.4" data-fit-solo="0.45"
+                                    style="--fit-lines:2;--fit-lh:1.05" id="displayBrandName">AroundForty</span>
                             </h1>
                             <p class="text-[6px] dynamic-text">REV. 2.0 // SCHEMATIC_VIEW</p>
                         </div>
@@ -384,7 +388,8 @@
                     </div>
 
                     <!-- Middle: Description with Dimension Lines -->
-                    <div class="flex-grow flex items-center relative py-2 pl-4">
+                    <div class="flex-grow flex items-center relative py-1 pl-4 min-h-0 overflow-hidden"
+                        style="min-height:7mm">
                         <!-- Vertical Dimension Line -->
                         <div
                             class="absolute left-0 top-4 bottom-4 w-px bg-white opacity-40 flex flex-col justify-center items-center">
@@ -394,7 +399,8 @@
                                 class="bg-[#003366] py-1 text-[4px] text-white rotate-90 whitespace-nowrap">SPEC_DETAIL</span>
                         </div>
 
-                        <div id="displaySlogan" class="text-[8pt] leading-tight opacity-90 whitespace-pre-wrap">DESIGNED
+                        <div id="displaySlogan" class="ck-fit ck-fit-box text-[8pt] opacity-90 whitespace-pre-wrap"
+                            data-fit-min="0.5" style="max-height:100%">DESIGNED
                             FOR THE MATURE MIND.
                             PRECISION ENGINEERED.</div>
                     </div>
@@ -405,31 +411,31 @@
                         <div class="tb-row">
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayCodeNameLabel">MODEL_ID</span>
-                                <span class="tb-value dynamic-text" id="displayCodeName">AroundFortyRB</span>
+                                <span class="tb-value dynamic-text ck-fit ck-fit-wrap" id="displayCodeName">AroundFortyRB</span>
                             </div>
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayMfgCodeLabel">MFG_CODE</span>
-                                <span class="tb-value" id="displayMfgCode">02AFRB</span>
+                                <span class="tb-value ck-fit ck-fit-wrap" id="displayMfgCode">02AFRB</span>
                             </div>
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayOwnerLabel">OWNER</span>
-                                <span class="tb-value" id="displayOwner">@USER</span>
+                                <span class="tb-value ck-fit ck-fit-wrap" id="displayOwner">@USER</span>
                             </div>
                         </div>
                         <!-- Row 2 -->
                         <div class="tb-row">
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayKeySwitchLabel">SWITCH</span>
-                                <span class="tb-value" id="displayKeySwitch">CHERRY MX RED</span>
+                                <span class="tb-value ck-fit ck-fit-wrap" id="displayKeySwitch">CHERRY MX RED</span>
                             </div>
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayKeyCapsLabel">KEYCAPS</span>
-                                <span class="tb-value" id="displayKeyCaps">PBT DOUBLE-SHOT</span>
+                                <span class="tb-value ck-fit ck-fit-wrap" id="displayKeyCaps">PBT DOUBLE-SHOT</span>
                             </div>
                             <!-- X Account -->
                             <div class="tb-cell w-1/3">
                                 <span class="tb-label" id="displayXLabel">X_ID</span>
-                                <span class="tb-value" id="displayXValue">@USER_ID</span>
+                                <span class="tb-value ck-fit ck-fit-wrap" id="displayXValue">@USER_ID</span>
                             </div>
                         </div>
                     </div>

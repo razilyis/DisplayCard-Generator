@@ -92,6 +92,9 @@
         .nb-badge b {
             font-family: var(--title-font);
             font-size: 7pt;
+            --fit-lh: 1.1;
+            --fit-lines: 3;
+            max-width: 10mm;
         }
 
         .nb-badge span {
@@ -143,7 +146,8 @@
             display: block;
             font-family: 'DM Mono', monospace;
             font-size: 5.8pt;
-            line-height: 1.15;
+            --fit-lh: 1.15;
+            --fit-lines: 3;
         }
 
         .nb-chip:nth-child(1) {
@@ -172,9 +176,9 @@
         <div id="captureArea">
             <div class="card" id="productCard">
                 <div class="nb-top">
-                    <div class="nb-brand ck-fit" id="displayBrandName">AroundForty</div>
+                    <div class="nb-brand ck-fit ck-fit-wrap" data-fit-solo="0.45" style="--fit-lines:2;--fit-lh:1.05" id="displayBrandName">AroundForty</div>
                     <div class="nb-badge">
-                        <b class="ck-fit" id="displayMfgCode">02AFRB</b>
+                        <b class="ck-fit ck-fit-wrap" style="--fit-lines:2" id="displayMfgCode">02AFRB</b>
                         <span id="displayMfgCodeLabel">MFG</span>
                     </div>
                 </div>
@@ -182,13 +186,13 @@
                 <div class="nb-slogan" id="displaySlogan">DESIGNED FOR THE MATURE MIND.<br>MADE BY HAND, TWICE.</div>
 
                 <div class="nb-chips">
-                    <div class="nb-chip"><i id="displayCodeNameLabel">MODEL</i><b id="displayCodeName" class="ck-fit">AroundFortyRB</b>
+                    <div class="nb-chip"><i id="displayCodeNameLabel">MODEL</i><b id="displayCodeName" class="ck-fit ck-fit-wrap">AroundFortyRB</b>
                     </div>
-                    <div class="nb-chip"><i id="displayKeySwitchLabel">SWITCH</i><b id="displayKeySwitch" class="ck-fit">Cherry MX
+                    <div class="nb-chip"><i id="displayKeySwitchLabel">SWITCH</i><b id="displayKeySwitch" class="ck-fit ck-fit-wrap">Cherry MX
                             Red</b></div>
-                    <div class="nb-chip"><i id="displayKeyCapsLabel">KEYCAPS</i><b id="displayKeyCaps" class="ck-fit">PBT
+                    <div class="nb-chip"><i id="displayKeyCapsLabel">KEYCAPS</i><b id="displayKeyCaps" class="ck-fit ck-fit-wrap">PBT
                             Double-shot</b></div>
-                    <div class="nb-chip"><i id="displayOwnerLabel">OWNER</i><b id="displayOwner" class="ck-fit">@user</b></div>
+                    <div class="nb-chip"><i id="displayOwnerLabel">OWNER</i><b id="displayOwner" class="ck-fit ck-fit-wrap">@user</b></div>
                 </div>
             </div>
         </div>

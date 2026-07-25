@@ -134,6 +134,8 @@
             font-weight: 800;
             line-height: 1.06;
             letter-spacing: 0;
+            /* 文字数が増えても札の高さに収める */
+            max-height: 45mm;
         }
 
         .wa-tate .ch {
@@ -148,6 +150,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            max-height: 45mm;
             font-size: 4.6pt;
             letter-spacing: 0.1em;
             color: #8c8069;
@@ -182,21 +185,21 @@
                         <div class="wa-slogan" id="displaySlogan">四十路のための道具。<br>手に馴染むまで、幾度も削る。</div>
                     </div>
                     <div class="wa-specs">
-                        <div class="wa-spec"><i id="displayCodeNameLabel">型式</i><b id="displayCodeName" class="ck-fit">AroundFortyRB</b>
+                        <div class="wa-spec"><i id="displayCodeNameLabel">型式</i><b id="displayCodeName" class="ck-fit ck-fit-wrap">AroundFortyRB</b>
                         </div>
-                        <div class="wa-spec"><i id="displayKeySwitchLabel">軸</i><b id="displayKeySwitch" class="ck-fit">Cherry MX Red</b>
+                        <div class="wa-spec"><i id="displayKeySwitchLabel">軸</i><b id="displayKeySwitch" class="ck-fit ck-fit-wrap">Cherry MX Red</b>
                         </div>
-                        <div class="wa-spec"><i id="displayKeyCapsLabel">キーキャップ</i><b id="displayKeyCaps" class="ck-fit">PBT
+                        <div class="wa-spec"><i id="displayKeyCapsLabel">キーキャップ</i><b id="displayKeyCaps" class="ck-fit ck-fit-wrap">PBT
                                 Double-shot</b></div>
-                        <div class="wa-spec"><i id="displayOwnerLabel">作</i><b id="displayOwner" class="ck-fit">@user</b></div>
-                        <div class="wa-spec"><i id="displayMfgCodeLabel">製番</i><b class="ck-fit" id="displayMfgCode">02AFRB</b></div>
+                        <div class="wa-spec"><i id="displayOwnerLabel">作</i><b id="displayOwner" class="ck-fit ck-fit-wrap">@user</b></div>
+                        <div class="wa-spec"><i id="displayMfgCodeLabel">製番</i><b class="ck-fit ck-fit-wrap" id="displayMfgCode">02AFRB</b></div>
                     </div>
                 </div>
 
                 <div class="wa-side">
                     <div class="wa-seal" id="displaySeal">天下一<br>参加</div>
-                    <div class="wa-kana" id="displayKana"></div>
-                    <div class="wa-tate" id="displayBrandName"></div>
+                    <div class="wa-kana ck-fit ck-fit-box" data-fit-min="0.35" id="displayKana"></div>
+                    <div class="wa-tate ck-fit ck-fit-box" data-fit-min="0.28" id="displayBrandName"></div>
                 </div>
             </div>
         </div>

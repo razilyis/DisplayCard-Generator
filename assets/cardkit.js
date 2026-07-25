@@ -178,7 +178,15 @@
             var display = $(r.display);
             if (display) display.innerText = v + (r.unit || '');
             var target = $(r.target);
-            if (target && r.style) target.style[r.style] = v + (r.unit || '');
+            if (target && r.style) {
+                target.style[r.style] = v + (r.unit || '');
+                // スライダで文字サイズを決める欄が .ck-fit でもある場合、
+                // 指定された値を autofit の基準サイズにする（そうしないと
+                // autofit が初回のサイズに戻してしまい、スライダが効かなくなる）
+                if (r.style === 'fontSize' && target.classList.contains('ck-fit')) {
+                    target.dataset.ckBase = parseFloat(getComputedStyle(target).fontSize);
+                }
+            }
         });
         if (cfg.onSync) cfg.onSync(this);
         this.autofit();
@@ -186,8 +194,19 @@
 
     /*
      * .ck-fit を付けた要素は、入力が長すぎて枠からはみ出すときだけ文字を縮める。
-     * 名刺サイズのカードは横幅が固定なので、これが無いと長い型番でレイアウトが崩れる。
-     * data-fit-min で下限（元サイズに対する比率）を指定できる（既定 0.55）。
+     * 名刺サイズのカードは横幅が固定なので、これが無いと
+     * 「Gateron Pro Yellow 2.0 (lubed, 67g)」のような実在する長さでレイアウトが崩れる。
+     *
+     *   .ck-fit           … 1行のまま横幅に合わせて縮める
+     *   .ck-fit-wrap      … 指定行数まで折り返し、その高さに収まるまで縮める
+     *                       （--fit-lines で行数、既定 2）
+     *   .ck-fit-box       … 要素に割り当てられた高さに収まるまで縮める
+     *                       （行数が入力次第で変わるブロック用）
+     *
+     * 折り返せる方が有利なのは、2行使えば同じ読みやすさで約2倍の文字数が入るため。
+     * 1行のまま縮め続けると 3pt 台になり、印刷すると読めなくなる。
+     *
+     * data-fit-min で下限（元サイズに対する比率／既定 0.62）を指定できる。
      */
     CardKit.prototype.autofit = function () {
         document.querySelectorAll('.ck-fit').forEach(function (el) {
@@ -197,13 +216,42 @@
                 if (!base) return;
                 el.dataset.ckBase = base;
             }
-            var min = base * (parseFloat(el.dataset.fitMin) || 0.55);
-            var size = base;
+            var min = base * (parseFloat(el.dataset.fitMin) || 0.62);
+            var canWrap = el.classList.contains('ck-fit-wrap');
+            var wrap = canWrap || el.classList.contains('ck-fit-box');
+            var size, i;
+
+            // 折り返せる要素でも、まずは1行のまま入らないか試す。
+            // いきなり折り返すと「2行に収まった時点で縮小をやめる」ため、
+            // 見出しが縮まずに改行されてしまう（例: 駅名が2行になる）。
+            // data-fit-solo は「1行を保つために何割まで縮めてよいか」（既定 0.8）。
+            if (canWrap) {
+                // data-fit-solo は「1行を保つためにどこまで縮めてよいか」を単独で決める。
+                // 折り返し時の下限(data-fit-min)とは別物なので、そちらで頭打ちにしない。
+                var soloMin = base * (parseFloat(el.dataset.fitSolo) || 0.8);
+                el.style.whiteSpace = 'nowrap';
+                size = base;
+                el.style.fontSize = size + 'px';
+                var soloFits = false;
+                for (i = 0; i < 30; i++) {
+                    if (el.scrollWidth <= el.clientWidth + 0.5) { soloFits = true; break; }
+                    if (size <= soloMin) break;
+                    size = Math.max(soloMin, size * 0.94);
+                    el.style.fontSize = size + 'px';
+                }
+                if (soloFits) return;   // 1行で収まったのでここまで
+                el.style.whiteSpace = ''; // 収まらないので折り返しに戻す
+            }
+
+            size = base;
             el.style.fontSize = size + 'px';
             // 1px ずつではなく比率で詰めるので、長い文字列でも数回で収束する
-            for (var i = 0; i < 24 && size > min; i++) {
-                if (el.scrollWidth <= el.clientWidth + 0.5) break;
-                size = Math.max(min, size * 0.93);
+            for (i = 0; i < 30 && size > min; i++) {
+                var fits = wrap
+                    ? el.scrollHeight <= el.clientHeight + 0.5
+                    : el.scrollWidth <= el.clientWidth + 0.5;
+                if (fits) break;
+                size = Math.max(min, size * 0.94);
                 el.style.fontSize = size + 'px';
             }
         });

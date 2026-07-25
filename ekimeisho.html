@@ -70,13 +70,16 @@
             display: block;
             font-size: 6pt;
             font-weight: 700;
-            line-height: 1.25;
+            --fit-lh: 1.25;
+            --fit-lines: 2;
         }
 
         .ek-side i {
             display: block;
             font-style: normal;
             font-family: 'Barlow', sans-serif;
+            --fit-lh: 1.25;
+            --fit-lines: 3;
             font-size: 4pt;
             letter-spacing: 0.06em;
             text-transform: uppercase;
@@ -181,25 +184,25 @@
 
                 <div class="ek-badge">
                     <span class="ek-num ck-fit" id="displayStationNo">AF40</span>
-                    <span class="ek-line ck-fit" id="displayLineName">AROUNDFORTY LINE</span>
+                    <span class="ek-line ck-fit ck-fit-wrap" style="--fit-lines:2" id="displayLineName">AROUNDFORTY LINE</span>
                 </div>
 
                 <div class="ek-main">
                     <div class="ek-side">
                         <div class="ek-arrow">←</div>
-                        <b class="ck-fit" id="displayPrev">きーすいっち</b>
-                        <i class="ck-fit" id="displayPrevRomaji">Cherry MX Red</i>
+                        <b class="ck-fit ck-fit-wrap" id="displayPrev">きーすいっち</b>
+                        <i class="ck-fit ck-fit-wrap" id="displayPrevRomaji">Cherry MX Red</i>
                     </div>
 
                     <div class="ek-center">
-                        <div class="ek-name ck-fit" id="displayBrandName">あらうんどふぉーてぃ</div>
+                        <div class="ek-name ck-fit ck-fit-wrap" data-fit-solo="0.45" style="--fit-lines:2;--fit-lh:1.1" id="displayBrandName">あらうんどふぉーてぃ</div>
                         <div class="ek-romaji ck-fit" id="displayRomaji">AroundForty</div>
                     </div>
 
                     <div class="ek-side">
                         <div class="ek-arrow">→</div>
-                        <b class="ck-fit" id="displayNext">きーきゃっぷ</b>
-                        <i class="ck-fit" id="displayNextRomaji">PBT Double-shot</i>
+                        <b class="ck-fit ck-fit-wrap" id="displayNext">きーきゃっぷ</b>
+                        <i class="ck-fit ck-fit-wrap" id="displayNextRomaji">PBT Double-shot</i>
                     </div>
                 </div>
 

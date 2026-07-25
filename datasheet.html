@@ -182,7 +182,8 @@
             display: block;
             font-size: 5.6pt;
             font-weight: 700;
-            line-height: 1.25;
+            --fit-lh: 1.25;
+            --fit-lines: 3;
         }
     </style>
 </head>
@@ -208,11 +209,11 @@
             <div class="card" id="productCard">
                 <div class="ds-head">
                     <div style="min-width:0">
-                        <div class="ds-part ck-fit" id="displayBrandName">AroundForty</div>
-                        <div class="ds-desc ck-fit" id="displaySubtitle">40% SPLIT MECHANICAL KEYBOARD</div>
+                        <div class="ds-part ck-fit ck-fit-wrap" data-fit-solo="0.45" style="--fit-lines:2;--fit-lh:1.1" id="displayBrandName">AroundForty</div>
+                        <div class="ds-desc ck-fit ck-fit-wrap" style="--fit-lines:2" id="displaySubtitle">40% SPLIT MECHANICAL KEYBOARD</div>
                     </div>
                     <div class="ds-rev">
-                        <b class="ck-fit" id="displayCodeName">AroundFortyRB</b>
+                        <b class="ck-fit ck-fit-wrap" id="displayCodeName">AroundFortyRB</b>
                         <i id="displayCodeNameLabel">MODEL</i>
                         <b class="ck-fit" id="displayRev" style="font-size:5.4pt;color:#14181D">Rev. 2.0</b>
                     </div>
@@ -237,13 +238,13 @@
                 </div>
 
                 <div class="ds-table">
-                    <div class="ds-cell"><i id="displayKeySwitchLabel">SWITCH</i><b class="ck-fit"
+                    <div class="ds-cell"><i id="displayKeySwitchLabel">SWITCH</i><b class="ck-fit ck-fit-wrap"
                             id="displayKeySwitch">Cherry MX Red</b></div>
-                    <div class="ds-cell"><i id="displayKeyCapsLabel">KEYCAPS</i><b class="ck-fit"
+                    <div class="ds-cell"><i id="displayKeyCapsLabel">KEYCAPS</i><b class="ck-fit ck-fit-wrap"
                             id="displayKeyCaps">PBT Double-shot</b></div>
-                    <div class="ds-cell"><i id="displayOwnerLabel">OWNER</i><b class="ck-fit"
+                    <div class="ds-cell"><i id="displayOwnerLabel">OWNER</i><b class="ck-fit ck-fit-wrap"
                             id="displayOwner">@user</b></div>
-                    <div class="ds-cell"><i id="displayMfgCodeLabel">MFG</i><b class="ck-fit"
+                    <div class="ds-cell"><i id="displayMfgCodeLabel">MFG</i><b class="ck-fit ck-fit-wrap"
                             id="displayMfgCode">02AFRB</b></div>
                 </div>
             </div>

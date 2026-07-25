@@ -153,6 +153,33 @@ body {
        scrollWidth は overflow の指定に関係なくはみ出し量を返すため、これで判定できる。 */
 }
 
+/*
+ * 指定行数まで折り返してから縮める版。
+ * max-height を em で持たせているので、文字を縮めても「N行ぶんの高さ」を保つ。
+ * スイッチ名・キーキャップ名のように長くなりがちな値はこちらを使う。
+ */
+.ck-fit-wrap {
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: var(--fit-lh, 1.25);
+    max-height: calc(var(--fit-lines, 2) * var(--fit-lh, 1.25) * 1em);
+    /* overflow: hidden は付けないこと。html2canvas 1.4.1 が高さ auto + max-height の
+       要素のクリップ範囲を誤り、書き出し時だけ文字が途中で切れる。
+       clientHeight は overflow の指定に関係なく max-height で頭打ちになるので、
+       これが無くても「N行に収まったか」の判定はできる。 */
+}
+
+/*
+ * 行数ではなく「要素に割り当てられた高さ」に収まるまで縮める版。
+ * 行数が入力次第で変わるブロック（コードエディタ風の本文など）に使う。
+ */
+.ck-fit-box {
+    white-space: normal;
+    max-height: none;
+    min-height: 0;
+    /* overflow: hidden を付けない理由は .ck-fit-wrap と同じ */
+}
+
 /* 中央に置く（回転させたスタンプなど）変種 */
 .ck-watermark--center>* {
     right: auto;

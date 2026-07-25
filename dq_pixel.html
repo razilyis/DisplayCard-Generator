@@ -135,7 +135,7 @@
         }
 
         #displaySlogan {
-            line-height: 1.5;
+            --fit-lh: 1.5;
         }
 
         /* Cursor Animation */
@@ -303,15 +303,15 @@
                     <div class="status-body">
                         <div class="status-row">
                             <span class="label" id="displayCodeNameLabel">しょくぎょう</span>
-                            <span class="value" id="displayCodeName">AroundFortyRB</span>
+                            <span class="value ck-fit" id="displayCodeName">AroundFortyRB</span>
                         </div>
                         <div class="status-row">
                             <span class="label" id="displayMfgCodeLabel">せいぞうNo</span>
-                            <span class="value" id="displayMfgCode">02AFRB</span>
+                            <span class="value ck-fit" id="displayMfgCode">02AFRB</span>
                         </div>
                         <div class="status-row">
                             <span class="label" id="displayOwnerLabel">オーナー</span>
-                            <span class="value" id="displayOwner">勇者ユーザー</span>
+                            <span class="value ck-fit" id="displayOwner">勇者ユーザー</span>
                         </div>
 
                         <!-- Spacing -->
@@ -321,12 +321,12 @@
                         <div class="status-row">
                             <span class="equip-mark">E</span>
                             <span class="label" style="min-width: 4em;" id="displayKeySwitchLabel">ぶき</span>
-                            <span class="value" id="displayKeySwitch">赤軸スイッチ</span>
+                            <span class="value ck-fit" id="displayKeySwitch">赤軸スイッチ</span>
                         </div>
                         <div class="status-row">
                             <span class="equip-mark">E</span>
                             <span class="label" style="min-width: 4em;" id="displayKeyCapsLabel">ぼうぐ</span>
-                            <span class="value" id="displayKeyCaps">PBTキーキャップ</span>
+                            <span class="value ck-fit" id="displayKeyCaps">PBTキーキャップ</span>
                         </div>
                     </div>
 
@@ -341,7 +341,8 @@
 
                 <!-- Message Window (Flex grow to fill space) -->
                 <div class="msg-window">
-                    <p id="displaySlogan" class="leading-relaxed whitespace-pre-wrap text-[10px]">大人のための道具。
+                    <p id="displaySlogan" class="ck-fit ck-fit-box whitespace-pre-wrap text-[10px]"
+                        data-fit-min="0.5" style="max-height:100%">大人のための道具。
                         精密に設計されたキーボードだ。</p>
                     <span class="animate-pulse absolute bottom-1 right-2 text-[10px]">▼</span>
                 </div>

@@ -161,8 +161,10 @@
             letter-spacing: 0.08em;
             border: 0.25mm solid var(--ink);
             padding: 0.4mm 0.8mm;
-            white-space: nowrap;
             min-width: 0;
+            max-width: 17mm;
+            --fit-lh: 1.2;
+            --fit-lines: 3;
         }
 
         .cs-window {
@@ -247,7 +249,7 @@
                     <div class="cs-right">
                         <div class="cs-side">
                             <b class="ck-fit" id="displaySide">SIDE A</b>
-                            <span class="cs-type ck-fit" id="displayType">TYPE II · HIGH</span>
+                            <span class="cs-type ck-fit ck-fit-wrap" id="displayType">TYPE II · HIGH</span>
                         </div>
 
                         <div class="cs-window">
