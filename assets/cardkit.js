@@ -151,6 +151,7 @@
         this.accentColor = (cfg.accent && cfg.accent.default) || '#E60012';
         this.presetId = cfg.presets ? cfg.presets.list[0].id : null;
         this.imageData = '';
+        this.zoomFactor = 1.3;
         this._init();
     }
 
@@ -485,7 +486,7 @@
     };
 
     CardKit.prototype.setZoom = function (zoomMult) {
-        this.zoomFactor = parseFloat(zoomMult) || 1.0;
+        this.zoomFactor = parseFloat(zoomMult) || 1.3;
         var self = this;
         document.querySelectorAll('.ck-zoom-btn').forEach(function (btn) {
             btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.zoom) - self.zoomFactor) < 0.05);
@@ -501,9 +502,9 @@
         bar.innerHTML = 
             '<span>🔍 プレビュー倍率 / Zoom</span>' +
             '<div style="display:flex;gap:4px">' +
-            '<button data-zoom="1.0" class="ck-zoom-btn active">標準</button>' +
-            '<button data-zoom="1.25" class="ck-zoom-btn">1.25× 大</button>' +
-            '<button data-zoom="1.5" class="ck-zoom-btn">1.5× 特大</button>' +
+            '<button data-zoom="1.0" class="ck-zoom-btn">1.0× 中</button>' +
+            '<button data-zoom="1.3" class="ck-zoom-btn active">1.3× 大</button>' +
+            '<button data-zoom="1.6" class="ck-zoom-btn">1.6× 特大</button>' +
             '<button data-zoom="2.0" class="ck-zoom-btn">2.0× 超大</button>' +
             '</div>';
         area.insertBefore(bar, area.firstChild);
