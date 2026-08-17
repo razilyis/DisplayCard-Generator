@@ -1,0 +1,20 @@
+{
+  "theme": "CASSETTE",
+  "version": "2.0",
+  "widthMm": 152,
+  "heightMm": 102,
+  "accentColor": "#e4572e",
+  "brandName": "AroundForty",
+  "mfgCode": "02AFRB",
+  "codeName": "AroundFortyRB",
+  "slogan": "recorded at 天下一キーボードわいわい会 vol.12",
+  "label1": "SWITCH",
+  "val1": "Cherry MX Red",
+  "label2": "TRACKBALL",
+  "val2": "PMW3610 (慣性スクロール・ZMK v0.4 適合)",
+  "label3": "BATTERY / POWER",
+  "val3": "Standard LiPo 充電池",
+  "label4": "OWNER",
+  "val4": "@razilyis",
+  "exportedAt": "2026-08-18T00:54:00.000Z"
+}

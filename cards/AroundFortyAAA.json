@@ -1,0 +1,20 @@
+{
+  "theme": "CARTRIDGE",
+  "version": "2.0",
+  "widthMm": 152,
+  "heightMm": 102,
+  "accentColor": "#e60012",
+  "brandName": "AroundForty",
+  "mfgCode": "AF-AAA-2026",
+  "codeName": "AroundFortyAAA",
+  "slogan": "天下一キーボードわいわい会 vol.12",
+  "label1": "SWITCH / キースイッチ",
+  "val1": "Cherry MX Red / Low Profile",
+  "label2": "TRACKBALL / トラックボール",
+  "val2": "PMW3610 左右デュアル (慣性スクロール搭載)",
+  "label3": "POWER / 電源管理",
+  "val3": "単四Ni-MH電池 1本 (TPS61021A 昇圧)",
+  "label4": "BUILDER / 製作者",
+  "val4": "@razilyis",
+  "exportedAt": "2026-08-18T00:54:00.000Z"
+}

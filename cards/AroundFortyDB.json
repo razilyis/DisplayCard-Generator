@@ -1,0 +1,20 @@
+{
+  "theme": "CYBER_HUD",
+  "version": "2.0",
+  "widthMm": 152,
+  "heightMm": 102,
+  "accentColor": "#00ffcc",
+  "brandName": "ONLINE",
+  "mfgCode": "SYS.ID // AF-DB-2026",
+  "codeName": "AroundFortyDB",
+  "slogan": "recorded at 天下一キーボードわいわい会 vol.12",
+  "label1": "SWITCH / キースイッチ",
+  "val1": "Cherry MX Red",
+  "label2": "TRACKBALL / トラックボール",
+  "val2": "PMW3610 左右デュアル (慣性スクロール搭載)",
+  "label3": "MCU & POWER",
+  "val3": "XIAO BLE (nRF52840) + LiPo 充電池",
+  "label4": "OPERATOR",
+  "val4": "@razilyis",
+  "exportedAt": "2026-08-18T00:54:00.000Z"
+}
