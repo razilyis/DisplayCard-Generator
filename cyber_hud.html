@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator [CYBER_HUD]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #00ffcc;
+            --bg-color: #080d14;
+            --main-font: 'Orbitron', sans-serif;
+        }
+
+        body {
+            --ui-bg: #090c10;
+            --ui-panel: #131922;
+            --ui-panel-2: #090c10;
+            --ui-border: #212d3d;
+            --ui-text: #d8e5f8;
+            --ui-muted: #647b97;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #000;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            color: #d0e2ff;
+            padding: 5mm 6mm;
+            font-family: var(--main-font);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15), inset 0 0 0 1px rgba(0, 255, 204, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-image: 
+                linear-gradient(rgba(0, 255, 204, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.04) 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+
+        /* HUD の四角いコーナーブラケット */
+        .hud-corner {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--accent-color);
+            border-style: solid;
+        }
+
+        .hud-top-left { top: 3mm; left: 3mm; border-width: 2px 0 0 2px; }
+        .hud-top-right { top: 3mm; right: 3mm; border-width: 2px 2px 0 0; }
+        .hud-bottom-left { bottom: 3mm; left: 3mm; border-width: 0 0 2px 2px; }
+        .hud-bottom-right { bottom: 3mm; right: 3mm; border-width: 0 2px 2px 0; }
+
+        .hud-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+            padding-bottom: 1.5mm;
+        }
+
+        .hud-sys-id {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 7.5pt;
+            color: var(--accent-color);
+            letter-spacing: 0.1em;
+        }
+
+        .hud-status {
+            background: rgba(0, 255, 204, 0.15);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            font-size: 6pt;
+            padding: 1px 5px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        .hud-title-box {
+            margin: 2mm 0;
+        }
+
+        .hud-title {
+            font-size: 16pt;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            text-shadow: 0 0 10px var(--accent-color);
+            line-height: 1.1;
+        }
+
+        .hud-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 7.5pt;
+            color: #799bbb;
+            margin-top: 1mm;
+        }
+
+        .hud-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5mm 4mm;
+            background: rgba(0, 15, 30, 0.7);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            padding: 2.5mm 3.5mm;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .hud-item-label {
+            font-size: 6pt;
+            color: #4e7099;
+            display: block;
+            letter-spacing: 0.1em;
+        }
+
+        .hud-item-val {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #e6f3ff;
+            letter-spacing: 0.03em;
+        }
+
+        .dynamic-text { color: var(--accent-color) !important; }
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-border { border-color: var(--accent-color) !important; }
+    </style>
+</head>
+
+<body>
+    <div class="app-wrap">
+        <div class="preview-area">
+            <div class="card" id="productCard">
+                <div class="hud-corner hud-top-left"></div>
+                <div class="hud-corner hud-top-right"></div>
+                <div class="hud-corner hud-bottom-left"></div>
+                <div class="hud-corner hud-bottom-right"></div>
+
+                <div>
+                    <div class="hud-header">
+                        <span class="hud-sys-id" id="displayMfgCode">SYS.ID // 040-AF</span>
+                        <span class="hud-status" id="displayBrandName">ONLINE</span>
+                    </div>
+
+                    <div class="hud-title-box">
+                        <div class="hud-title ck-fit" id="displayCodeName">AroundForty</div>
+                        <div class="hud-sub ck-fit" id="displaySlogan">recorded at 天下一キーボードわいわい会 vol.12</div>
+                    </div>
+                </div>
+
+                <div class="hud-grid">
+                    <div>
+                        <span class="hud-item-label" id="displayLabel1">ACTUATOR / SWITCH</span>
+                        <span class="hud-item-val ck-fit" id="displayVal1">Cherry MX Red</span>
+                    </div>
+                    <div>
+                        <span class="hud-item-label" id="displayLabel2">CAP SET</span>
+                        <span class="hud-item-val ck-fit" id="displayVal2">PBT Double-shot</span>
+                    </div>
+                    <div>
+                        <span class="hud-item-label" id="displayLabel3">PROTOCOL</span>
+                        <span class="hud-item-val ck-fit" id="displayVal3">ZMK Firmware v0.4</span>
+                    </div>
+                    <div>
+                        <span class="hud-item-label" id="displayLabel4">OPERATOR</span>
+                        <span class="hud-item-val ck-fit" id="displayVal4">@user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集 [CYBER_HUD]</label>
+            <div class="ck-field">
+                <label class="ck-label" for="mfgCodeInput">システムID / Sys ID</label>
+                <input type="text" id="mfgCodeInput" class="ck-input" value="SYS.ID // 040-AF">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="brandNameInput">ステータス / Status</label>
+                <input type="text" id="brandNameInput" class="ck-input" value="ONLINE">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="codeNameInput">ユニット名 / Unit Title</label>
+                <input type="text" id="codeNameInput" class="ck-input" value="AroundForty">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="sloganInput">サブタイトル / Slogan</label>
+                <input type="text" id="sloganInput" class="ck-input" value="recorded at 天下一キーボードわいわい会 vol.12">
+            </div>
+
+            <div class="ck-field">
+                <div class="ck-section-head"><label class="ck-label">ネオンカラー / HUD Neon</label></div>
+                <div class="color-swatch-grid" id="swatchGrid"></div>
+            </div>
+
+            <div class="ck-field">
+                <label class="ck-label">項目1 (ラベル / 内容)</label>
+                <input type="text" id="label1Input" class="ck-input" value="ACTUATOR / SWITCH" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val1Input" class="ck-input" value="Cherry MX Red">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目2 (ラベル / 内容)</label>
+                <input type="text" id="label2Input" class="ck-input" value="CAP SET" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val2Input" class="ck-input" value="PBT Double-shot">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目3 (ラベル / 内容)</label>
+                <input type="text" id="label3Input" class="ck-input" value="PROTOCOL" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val3Input" class="ck-input" value="ZMK Firmware v0.4">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目4 (ラベル / 内容)</label>
+                <input type="text" id="label4Input" class="ck-input" value="OPERATOR" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val4Input" class="ck-input" value="@user">
+            </div>
+
+            <div style="margin-top:1.5rem">
+                <button id="btnExport" class="ck-btn ck-btn-primary" style="width:100%">高画質PNGで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'CYBER_HUD',
+            exportBg: '#080d14',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'label1Input', target: 'displayLabel1', key: 'label1' },
+                { input: 'val1Input', target: 'displayVal1', key: 'val1' },
+                { input: 'label2Input', target: 'displayLabel2', key: 'label2' },
+                { input: 'val2Input', target: 'displayVal2', key: 'val2' },
+                { input: 'label3Input', target: 'displayLabel3', key: 'label3' },
+                { input: 'val3Input', target: 'displayVal3', key: 'val3' },
+                { input: 'label4Input', target: 'displayLabel4', key: 'label4' },
+                { input: 'val4Input', target: 'displayVal4', key: 'val4' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#00ffcc',
+                swatches: [
+                    { hex: '#00ffcc', label: 'CYAN' }, { hex: '#ff0055', label: 'MAGENTA' },
+                    { hex: '#ffe600', label: 'YELLOW' }, { hex: '#33ff00', label: 'GREEN' },
+                    { hex: '#aa00ff', label: 'VIOLET' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

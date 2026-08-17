@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator [KEYCAP_BOX]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #3b82f6;
+            --bg-color: #1e293b;
+            --main-font: 'Inter', sans-serif;
+        }
+
+        body {
+            --ui-bg: #0f172a;
+            --ui-panel: #1e293b;
+            --ui-panel-2: #0f172a;
+            --ui-border: #334155;
+            --ui-text: #f8fafc;
+            --ui-muted: #94a3b8;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #fff;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            color: #f8fafc;
+            padding: 6mm 7mm;
+            font-family: var(--main-font);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .box-stripe-top {
+            height: 3mm;
+            background: var(--accent-color);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1mm;
+        }
+
+        .brand-logo {
+            font-size: 8pt;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .kit-count {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 6.5pt;
+            font-family: 'JetBrains Mono', monospace;
+            color: #cbd5e1;
+        }
+
+        .title-group {
+            margin: 2mm 0;
+        }
+
+        .box-title {
+            font-size: 16pt;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .box-slogan {
+            font-size: 7.5pt;
+            color: #94a3b8;
+            margin-top: 1mm;
+        }
+
+        .color-palette-bar {
+            display: flex;
+            align-items: center;
+            gap: 2mm;
+            margin: 2.5mm 0;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1.5mm 3mm;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .swatch-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .box-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5mm 3mm;
+            font-family: 'JetBrains Mono', monospace;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2mm;
+        }
+
+        .box-item-label {
+            font-size: 5.5pt;
+            color: #64748b;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .box-item-val {
+            font-size: 7.5pt;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .dynamic-text { color: var(--accent-color) !important; }
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-border { border-color: var(--accent-color) !important; }
+    </style>
+</head>
+
+<body>
+    <div class="app-wrap">
+        <div class="preview-area">
+            <div class="card" id="productCard">
+                <div class="box-stripe-top"></div>
+
+                <div class="box-header">
+                    <span class="brand-logo ck-fit" id="displayBrandName">CUSTOM KEYCAPS</span>
+                    <span class="kit-count" id="displayMfgCode">BASE KIT / 40%</span>
+                </div>
+
+                <div class="title-group">
+                    <div class="box-title ck-fit" id="displayCodeName">AroundForty</div>
+                    <div class="box-slogan ck-fit" id="displaySlogan">天下一キーボードわいわい会 vol.12</div>
+                </div>
+
+                <div class="color-palette-bar">
+                    <span class="text-[6pt] text-slate-400 font-mono">COLORWAY:</span>
+                    <div class="swatch-circle" style="background:#3b82f6"></div>
+                    <div class="swatch-circle" style="background:#0f172a"></div>
+                    <div class="swatch-circle" style="background:#cbd5e1"></div>
+                </div>
+
+                <div class="box-grid">
+                    <div>
+                        <span class="box-item-label" id="displayLabel1">PROFILE / PROFILE</span>
+                        <span class="box-item-val ck-fit" id="displayVal1">Cherry Profile</span>
+                    </div>
+                    <div>
+                        <span class="box-item-label" id="displayLabel2">MATERIAL / MATERIAL</span>
+                        <span class="box-item-val ck-fit" id="displayVal2">PBT Double-shot</span>
+                    </div>
+                    <div>
+                        <span class="box-item-label" id="displayLabel3">SWITCHES</span>
+                        <span class="box-item-val ck-fit" id="displayVal3">Cherry MX Red</span>
+                    </div>
+                    <div>
+                        <span class="box-item-label" id="displayLabel4">DESIGNER</span>
+                        <span class="box-item-val ck-fit" id="displayVal4">@user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集 [KEYCAP_BOX]</label>
+            <div class="ck-field">
+                <label class="ck-label" for="brandNameInput">ブランド / Brand</label>
+                <input type="text" id="brandNameInput" class="ck-input" value="CUSTOM KEYCAPS">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="mfgCodeInput">キット種別 / Kit Type</label>
+                <input type="text" id="mfgCodeInput" class="ck-input" value="BASE KIT / 40%">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="codeNameInput">キーボード名 / Title</label>
+                <input type="text" id="codeNameInput" class="ck-input" value="AroundForty">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="sloganInput">サブタイトル / Slogan</label>
+                <input type="text" id="sloganInput" class="ck-input" value="天下一キーボードわいわい会 vol.12">
+            </div>
+
+            <div class="ck-field">
+                <div class="ck-section-head"><label class="ck-label">テーマカラー / Box Theme</label></div>
+                <div class="color-swatch-grid" id="swatchGrid"></div>
+            </div>
+
+            <div class="ck-field">
+                <label class="ck-label">項目1 (項目名 / 内容)</label>
+                <input type="text" id="label1Input" class="ck-input" value="PROFILE" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val1Input" class="ck-input" value="Cherry Profile">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目2 (項目名 / 内容)</label>
+                <input type="text" id="label2Input" class="ck-input" value="MATERIAL" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val2Input" class="ck-input" value="PBT Double-shot">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目3 (項目名 / 内容)</label>
+                <input type="text" id="label3Input" class="ck-input" value="SWITCHES" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val3Input" class="ck-input" value="Cherry MX Red">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目4 (項目名 / 内容)</label>
+                <input type="text" id="label4Input" class="ck-input" value="DESIGNER" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val4Input" class="ck-input" value="@user">
+            </div>
+
+            <div style="margin-top:1.5rem">
+                <button id="btnExport" class="ck-btn ck-btn-primary" style="width:100%">高画質PNGで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'KEYCAP_BOX',
+            exportBg: '#1e293b',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'label1Input', target: 'displayLabel1', key: 'label1' },
+                { input: 'val1Input', target: 'displayVal1', key: 'val1' },
+                { input: 'label2Input', target: 'displayLabel2', key: 'label2' },
+                { input: 'val2Input', target: 'displayVal2', key: 'val2' },
+                { input: 'label3Input', target: 'displayLabel3', key: 'label3' },
+                { input: 'val3Input', target: 'displayVal3', key: 'val3' },
+                { input: 'label4Input', target: 'displayLabel4', key: 'label4' },
+                { input: 'val4Input', target: 'displayVal4', key: 'val4' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#3b82f6',
+                swatches: [
+                    { hex: '#3b82f6', label: 'BLUE' }, { hex: '#ec4899', label: 'PINK' },
+                    { hex: '#10b981', label: 'EMERALD' }, { hex: '#f59e0b', label: 'AMBER' },
+                    { hex: '#8b5cf6', label: 'PURPLE' }, { hex: '#ef4444', label: 'RED' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

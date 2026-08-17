@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator [MUSEUM]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Shippori+Mincho:wght@500;700;800&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #d4af37;
+            --bg-color: #171513;
+            --main-font: 'Shippori Mincho', serif;
+        }
+
+        body {
+            --ui-bg: #141210;
+            --ui-panel: #201d1a;
+            --ui-panel-2: #141210;
+            --ui-border: #38332e;
+            --ui-text: #e8e3dc;
+            --ui-muted: #968c83;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #000;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            color: #f3efe6;
+            padding: 7mm 8mm;
+            font-family: var(--main-font);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-image: radial-gradient(circle at 50% 30%, rgba(40, 35, 30, 0.8) 0%, rgba(20, 18, 15, 1) 100%);
+        }
+
+        .gold-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            margin: 2.5mm 0;
+            width: 100%;
+        }
+
+        .exhibit-no {
+            font-family: 'Cinzel', serif;
+            font-size: 7.5pt;
+            letter-spacing: 0.25em;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .artist-name {
+            font-size: 8.5pt;
+            color: #b5ac9e;
+            margin-top: 1mm;
+        }
+
+        .work-title {
+            font-size: 15pt;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            line-height: 1.25;
+            margin: 1.5mm 0 0.5mm;
+        }
+
+        .work-slogan {
+            font-size: 7.5pt;
+            color: #9c9285;
+            font-style: italic;
+        }
+
+        .meta-table {
+            margin-top: 3mm;
+            display: flex;
+            flex-direction: column;
+            gap: 1mm;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 2.5mm;
+        }
+
+        .meta-row {
+            display: flex;
+            font-size: 7.5pt;
+            line-height: 1.3;
+        }
+
+        .meta-key {
+            width: 25mm;
+            color: #8c8275;
+            font-size: 6.5pt;
+            letter-spacing: 0.05em;
+        }
+
+        .meta-val {
+            flex: 1;
+            color: #e3ded5;
+        }
+
+        .dynamic-text { color: var(--accent-color) !important; }
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-border { border-color: var(--accent-color) !important; }
+    </style>
+</head>
+
+<body>
+    <div class="app-wrap">
+        <div class="preview-area">
+            <div class="card" id="productCard">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="exhibit-no" id="displayMfgCode">EXHIBIT #040</span>
+                        <span class="artist-name ck-fit" id="displayBrandName">@user</span>
+                    </div>
+
+                    <div class="gold-line"></div>
+
+                    <div class="work-title ck-fit" id="displayCodeName">AroundForty</div>
+                    <div class="work-slogan ck-fit" id="displaySlogan">天下一キーボードわいわい会 vol.12</div>
+                </div>
+
+                <div class="meta-table">
+                    <div class="meta-row">
+                        <span class="meta-key" id="displayLabel1">キースイッチ</span>
+                        <span class="meta-val ck-fit" id="displayVal1">Cherry MX Red</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-key" id="displayLabel2">キーキャップ</span>
+                        <span class="meta-val ck-fit" id="displayVal2">PBT Double-shot</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-key" id="displayLabel3">制作年 / 仕様</span>
+                        <span class="meta-val ck-fit" id="displayVal3">2026年 · 40% Split Ergonomic</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集 [MUSEUM]</label>
+            <div class="ck-field">
+                <label class="ck-label" for="mfgCodeInput">展示番号 / Exhibit No.</label>
+                <input type="text" id="mfgCodeInput" class="ck-input" value="EXHIBIT #040">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="brandNameInput">作者名 / Artist</label>
+                <input type="text" id="brandNameInput" class="ck-input" value="@user">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="codeNameInput">作品名 / Title</label>
+                <input type="text" id="codeNameInput" class="ck-input" value="AroundForty">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="sloganInput">解説・展覧会名 / Slogan</label>
+                <input type="text" id="sloganInput" class="ck-input" value="天下一キーボードわいわい会 vol.12">
+            </div>
+
+            <div class="ck-field">
+                <div class="ck-section-head"><label class="ck-label">アクセントゴールド / Accent</label></div>
+                <div class="color-swatch-grid" id="swatchGrid"></div>
+            </div>
+
+            <div class="ck-field">
+                <label class="ck-label">項目1 (項目名 / 内容)</label>
+                <input type="text" id="label1Input" class="ck-input" value="キースイッチ" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val1Input" class="ck-input" value="Cherry MX Red">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目2 (項目名 / 内容)</label>
+                <input type="text" id="label2Input" class="ck-input" value="キーキャップ" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val2Input" class="ck-input" value="PBT Double-shot">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目3 (項目名 / 内容)</label>
+                <input type="text" id="label3Input" class="ck-input" value="制作年 / 仕様" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val3Input" class="ck-input" value="2026年 · 40% Split Ergonomic">
+            </div>
+
+            <div style="margin-top:1.5rem">
+                <button id="btnExport" class="ck-btn ck-btn-primary" style="width:100%">高画質PNGで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'MUSEUM',
+            exportBg: '#171513',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'label1Input', target: 'displayLabel1', key: 'label1' },
+                { input: 'val1Input', target: 'displayVal1', key: 'val1' },
+                { input: 'label2Input', target: 'displayLabel2', key: 'label2' },
+                { input: 'val2Input', target: 'displayVal2', key: 'val2' },
+                { input: 'label3Input', target: 'displayLabel3', key: 'label3' },
+                { input: 'val3Input', target: 'displayVal3', key: 'val3' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#d4af37',
+                swatches: [
+                    { hex: '#d4af37', label: 'GOLD' }, { hex: '#e6e6e6', label: 'SILVER' },
+                    { hex: '#b87333', label: 'COPPER' }, { hex: '#40e0d0', label: 'TURQUOISE' },
+                    { hex: '#ff4500', label: 'RUBY' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

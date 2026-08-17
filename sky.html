@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator [SKY]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #ff7e5f;
+            --bg-color: #1a1c29;
+            --main-font: 'Inter', sans-serif;
+        }
+
+        body {
+            --ui-bg: #11131f;
+            --ui-panel: #1e2133;
+            --ui-panel-2: #11131f;
+            --ui-border: #2e334d;
+            --ui-text: #f1f5f9;
+            --ui-muted: #94a3b8;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #fff;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            color: #f8fafc;
+            padding: 6mm 7mm;
+            font-family: var(--main-font);
+            box-shadow: 0 15px 35px rgba(255, 126, 95, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-image: linear-gradient(135deg, #2b5876 0%, #4e4376 50%, #feb47b 100%);
+        }
+
+        /* 太陽・光輪グラデーション */
+        .sky-sun {
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-color) 0%, rgba(254, 180, 123, 0.4) 40%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .sky-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            padding-bottom: 2mm;
+            position: relative;
+            z-index: 2;
+        }
+
+        .flight-code {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 7.5pt;
+            letter-spacing: 0.15em;
+            color: #ffffff;
+        }
+
+        .sky-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 6.5pt;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .sky-title-box {
+            margin: 2mm 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .sky-title {
+            font-size: 17pt;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            line-height: 1.1;
+        }
+
+        .sky-sub {
+            font-size: 7.5pt;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 1mm;
+            font-weight: 600;
+        }
+
+        .sky-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5mm 4mm;
+            background: rgba(15, 20, 35, 0.45);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2.5mm 3.5mm;
+            border-radius: 6px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .sky-item-label {
+            font-size: 5.5pt;
+            color: rgba(255, 255, 255, 0.65);
+            display: block;
+            letter-spacing: 0.08em;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .sky-item-val {
+            font-size: 8pt;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .dynamic-text { color: var(--accent-color) !important; }
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-border { border-color: var(--accent-color) !important; }
+    </style>
+</head>
+
+<body>
+    <div class="app-wrap">
+        <div class="preview-area">
+            <div class="card" id="productCard">
+                <div class="sky-sun"></div>
+
+                <div class="sky-header">
+                    <span class="flight-code" id="displayMfgCode">ALT: 40,000FT // FL400</span>
+                    <span class="sky-badge" id="displayBrandName">SUNSET</span>
+                </div>
+
+                <div class="sky-title-box">
+                    <div class="sky-title ck-fit" id="displayCodeName">AroundForty</div>
+                    <div class="sky-sub ck-fit" id="displaySlogan">recorded at 天下一キーボードわいわい会 vol.12</div>
+                </div>
+
+                <div class="sky-grid">
+                    <div>
+                        <span class="sky-item-label" id="displayLabel1">SWITCH</span>
+                        <span class="sky-item-val ck-fit" id="displayVal1">Cherry MX Red</span>
+                    </div>
+                    <div>
+                        <span class="sky-item-label" id="displayLabel2">KEYCAPS</span>
+                        <span class="sky-item-val ck-fit" id="displayVal2">PBT Double-shot</span>
+                    </div>
+                    <div>
+                        <span class="sky-item-label" id="displayLabel3">LAYOUT</span>
+                        <span class="sky-item-val ck-fit" id="displayVal3">40% Split Ergonomic</span>
+                    </div>
+                    <div>
+                        <span class="sky-item-label" id="displayLabel4">PILOT</span>
+                        <span class="sky-item-val ck-fit" id="displayVal4">@user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集 [SKY]</label>
+            <div class="ck-field">
+                <label class="ck-label" for="mfgCodeInput">高度・コード / Flight Alt</label>
+                <input type="text" id="mfgCodeInput" class="ck-input" value="ALT: 40,000FT // FL400">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="brandNameInput">バッジ / Badge</label>
+                <input type="text" id="brandNameInput" class="ck-input" value="SUNSET">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="codeNameInput">キーボード名 / Title</label>
+                <input type="text" id="codeNameInput" class="ck-input" value="AroundForty">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="sloganInput">サブタイトル / Slogan</label>
+                <input type="text" id="sloganInput" class="ck-input" value="recorded at 天下一キーボードわいわい会 vol.12">
+            </div>
+
+            <div class="ck-field">
+                <div class="ck-section-head"><label class="ck-label">サンセットカラー / Sunset Accent</label></div>
+                <div class="color-swatch-grid" id="swatchGrid"></div>
+            </div>
+
+            <div class="ck-field">
+                <label class="ck-label">項目1 (ラベル / 内容)</label>
+                <input type="text" id="label1Input" class="ck-input" value="SWITCH" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val1Input" class="ck-input" value="Cherry MX Red">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目2 (ラベル / 内容)</label>
+                <input type="text" id="label2Input" class="ck-input" value="KEYCAPS" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val2Input" class="ck-input" value="PBT Double-shot">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目3 (ラベル / 内容)</label>
+                <input type="text" id="label3Input" class="ck-input" value="LAYOUT" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val3Input" class="ck-input" value="40% Split Ergonomic">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目4 (ラベル / 内容)</label>
+                <input type="text" id="label4Input" class="ck-input" value="PILOT" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val4Input" class="ck-input" value="@user">
+            </div>
+
+            <div style="margin-top:1.5rem">
+                <button id="btnExport" class="ck-btn ck-btn-primary" style="width:100%">高画質PNGで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'SKY',
+            exportBg: '#1a1c29',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'label1Input', target: 'displayLabel1', key: 'label1' },
+                { input: 'val1Input', target: 'displayVal1', key: 'val1' },
+                { input: 'label2Input', target: 'displayLabel2', key: 'label2' },
+                { input: 'val2Input', target: 'displayVal2', key: 'val2' },
+                { input: 'label3Input', target: 'displayLabel3', key: 'label3' },
+                { input: 'val3Input', target: 'displayVal3', key: 'val3' },
+                { input: 'label4Input', target: 'displayLabel4', key: 'label4' },
+                { input: 'val4Input', target: 'displayVal4', key: 'val4' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#ff7e5f',
+                swatches: [
+                    { hex: '#ff7e5f', label: 'SUNSET GOLD' }, { hex: '#ff007f', label: 'TWILIGHT PINK' },
+                    { hex: '#38bdf8', label: 'DAY SKY BLUE' }, { hex: '#a855f7', label: 'DUSK PURPLE' },
+                    { hex: '#f59e0b', label: 'AFTERGLOW' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

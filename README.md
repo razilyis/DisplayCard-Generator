@@ -8,7 +8,7 @@ https://razilyis.github.io/DisplayCard-Generator/
 
 2026年2月8日開催の天下一キーボードわいわい会 Vol.10に向けて作成しました。
 
-## テーマ（15種類）
+## テーマ（22種類）
 
 | ファイル | テーマ | 特徴 |
 | --- | --- | --- |
@@ -27,6 +27,13 @@ https://razilyis.github.io/DisplayCard-Generator/
 | `datasheet.html` | Datasheet | ICの仕様書風 |
 | `oshinagaki.html` | お品書き | 即売会向け。頒布物と価格、スペース番号 |
 | `ekimeisho.html` | 駅名標 | JR風サインボード |
+| `cartridge.html` | Cartridge | レトロゲームカセット風ラベル |
+| `museum.html` | Museum | 美術館・博物館キャプション解説版 |
+| `cyber_hud.html` | Cyber HUD | SF HUD・攻殻風ターゲット画面 |
+| `keycap_box.html` | Keycap Box | 高級キーキャップ箱パッケージ |
+| `space.html` | Space | 宇宙・星空・星雲グラデーション |
+| `ocean.html` | Ocean | 海・深海・コバルト〜ターコイズ水光 |
+| `sky.html` | Sky | 空・黄昏・サンセットグラデーション |
 
 ## 印刷について
 
