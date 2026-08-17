@@ -47,7 +47,6 @@
                 radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25) 0%, transparent 45%);
         }
 
-        /* 星々（パーティクル風背景） */
         .stars {
             position: absolute;
             inset: 0;
@@ -146,8 +145,23 @@
 </head>
 
 <body>
-    <div class="app-wrap">
-        <div class="preview-area">
+    <div class="w-full max-w-6xl flex justify-between items-center mb-6 px-4">
+        <a href="index.html" class="text-xs font-bold text-violet-400 hover:text-white transition">← MENU</a>
+        <h1 class="text-lg font-black text-violet-400 tracking-tight uppercase">Space Generator</h1>
+        <div class="w-16"></div>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel bg-[#111827] p-3 rounded-xl border border-violet-900/50 shadow-sm w-full">
+            <label class="block text-[9px] font-bold text-violet-400 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="bg-[#030712] border border-violet-500 text-violet-400 text-[10px] py-2 rounded font-bold hover:bg-[#1f2937] transition flex items-center justify-center gap-1"><span>📥 設定をJSONで保存</span></button>
+                <button id="importJsonBtn" class="bg-[#030712] border border-emerald-500 text-emerald-400 text-[10px] py-2 rounded font-bold hover:bg-[#1f2937] transition flex items-center justify-center gap-1"><span>📤 設定を読み込む</span></button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <div id="captureArea" class="preview-area">
             <div class="card" id="productCard">
                 <div class="stars"></div>
 

@@ -146,7 +146,7 @@
         this.heightMm = cfg.heightMm || 55;
         this.dpi = cfg.dpi || 600;
         this.card = $(cfg.card || 'productCard');
-        this.area = $(cfg.captureArea || 'captureArea');
+        this.area = $(cfg.captureArea || 'captureArea') || document.querySelector('.preview-area') || document.querySelector('#captureArea');
         this.statusEl = $(cfg.status || 'exportStatus');
         this.accentColor = (cfg.accent && cfg.accent.default) || '#E60012';
         this.presetId = cfg.presets ? cfg.presets.list[0].id : null;

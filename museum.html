@@ -115,8 +115,23 @@
 </head>
 
 <body>
-    <div class="app-wrap">
-        <div class="preview-area">
+    <div class="w-full max-w-6xl flex justify-between items-center mb-6 px-4">
+        <a href="index.html" class="text-xs font-bold text-amber-500/70 hover:text-amber-400 transition">← MENU</a>
+        <h1 class="text-lg font-black text-amber-400 tracking-tight uppercase">Museum Caption Generator</h1>
+        <div class="w-16"></div>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel bg-[#201d1a] p-3 rounded-xl border border-amber-900/40 shadow-sm w-full">
+            <label class="block text-[9px] font-bold text-amber-400 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="bg-[#141210] border border-amber-500 text-amber-400 text-[10px] py-2 rounded font-bold hover:bg-[#282420] transition flex items-center justify-center gap-1"><span>📥 設定をJSONで保存</span></button>
+                <button id="importJsonBtn" class="bg-[#141210] border border-emerald-500 text-emerald-400 text-[10px] py-2 rounded font-bold hover:bg-[#282420] transition flex items-center justify-center gap-1"><span>📤 設定を読み込む</span></button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <div id="captureArea" class="preview-area">
             <div class="card" id="productCard">
                 <div>
                     <div class="flex items-center justify-between">

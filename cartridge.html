@@ -45,7 +45,6 @@
             justify-content: space-between;
         }
 
-        /* カセット上部の凹みリッジライン */
         .cart-notch {
             position: absolute;
             top: 0;
@@ -70,7 +69,6 @@
             border-top: 6px solid rgba(0, 0, 0, 0.25);
         }
 
-        /* カセットステッカー領域 */
         .sticker-area {
             margin-top: 4mm;
             background: #ffffff;
@@ -160,8 +158,23 @@
 </head>
 
 <body>
-    <div class="app-wrap">
-        <div class="preview-area">
+    <div class="w-full max-w-6xl flex justify-between items-center mb-6 px-4">
+        <a href="index.html" class="text-xs font-bold text-gray-400 hover:text-white transition">← MENU</a>
+        <h1 class="text-lg font-black text-white tracking-tight uppercase">Cartridge Generator</h1>
+        <div class="w-16"></div>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel bg-[#2a2d34] p-3 rounded-xl border border-gray-700 shadow-sm w-full">
+            <label class="block text-[9px] font-bold text-red-400 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="bg-[#1e2025] border border-red-500 text-red-400 text-[10px] py-2 rounded font-bold hover:bg-[#333] transition flex items-center justify-center gap-1"><span>📥 設定をJSONで保存</span></button>
+                <button id="importJsonBtn" class="bg-[#1e2025] border border-blue-500 text-blue-400 text-[10px] py-2 rounded font-bold hover:bg-[#333] transition flex items-center justify-center gap-1"><span>📤 設定を読み込む</span></button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <div id="captureArea" class="preview-area">
             <div class="card" id="productCard">
                 <div class="cart-notch">
                     <div class="cart-arrow"></div>
