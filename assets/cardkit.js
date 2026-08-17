@@ -341,8 +341,17 @@
         el.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + s + ')';
         if (img.multiply) {
             var chk = $(img.multiply);
-            el.style.mixBlendMode = (chk && chk.checked) ? 'multiply' : 'normal';
-        }
+        this.fit();
+    };
+
+    CardKit.prototype.buildSizeSelector = function () {
+        var sel = $('cardSizeSelect');
+        var self = this;
+        if (!sel) return;
+        sel.onchange = function () {
+            var parts = sel.value.split('x');
+            self.setSize(parts[0], parts[1]);
+        };
     };
 
     CardKit.prototype.setImage = function (dataUrl) {
@@ -375,7 +384,13 @@
 
     /* ---- JSON 保存 / 読込 ---- */
     CardKit.prototype.collect = function () {
-        var cfg = this.cfg, data = { theme: cfg.theme, version: 2 };
+        var cfg = this.cfg, self = this;
+        var data = { 
+            theme: cfg.theme, 
+            version: 2,
+            widthMm: this.widthMm,
+            heightMm: this.heightMm
+        };
         (cfg.fields || []).forEach(function (f) {
             var input = $(f.input);
             if (input) data[f.key || f.input] = input.value;
@@ -570,9 +585,54 @@
         }
     };
 
+    CardKit.prototype._buildSizeSelector = function () {
+        var self = this;
+        var select = $('cardSizeSelect');
+        if (!select) {
+            var panel = document.querySelector('.editor-panel');
+            if (!panel) return;
+            var field = document.createElement('div');
+            field.className = 'ck-field';
+            field.style.marginBottom = '1.25rem';
+            field.style.borderBottom = '1px solid var(--ui-border, rgba(255,255,255,0.15))';
+            field.style.paddingBottom = '0.85rem';
+            field.innerHTML = 
+                '<label class="ck-label" for="cardSizeSelect" style="display:flex;align-items:center;justify-content:space-between;font-weight:700">' +
+                '<span>📐 印刷サイズ / Card Size</span>' +
+                '<span style="font-size:9.5px;opacity:0.85" id="cardSizeDimDisplay">91 × 55 mm</span>' +
+                '</label>' +
+                '<select id="cardSizeSelect" class="ck-input" style="width:100%;margin-top:4px;padding:6px;font-weight:700;cursor:pointer">' +
+                '<option value="91x55" selected>名刺サイズ (91 × 55 mm)</option>' +
+                '<option value="127x89">写真 L判 (127 × 89 mm)</option>' +
+                '<option value="152x102">KGサイズ / はがき (152 × 102 mm) — L判より大きめ</option>' +
+                '<option value="178x127">写真 2L判 (178 × 127 mm)</option>' +
+                '<option value="210x148">A5サイズ (210 × 148 mm) — A4の半分</option>' +
+                '<option value="297x210">A4サイズ (297 × 210 mm) — 全面</option>' +
+                '</select>';
+            var firstLabel = panel.querySelector('.ck-label');
+            if (firstLabel && firstLabel.parentNode === panel) {
+                panel.insertBefore(field, firstLabel.nextSibling);
+            } else {
+                panel.insertBefore(field, panel.firstChild);
+            }
+            select = $('cardSizeSelect');
+        }
+
+        if (select) {
+            select.addEventListener('change', function (e) {
+                var parts = e.target.value.split('x');
+                if (parts.length === 2) {
+                    self.setSize(parts[0], parts[1]);
+                }
+            });
+        }
+    };
+
     /* ---- 初期化 ---- */
     CardKit.prototype._init = function () {
         var self = this, cfg = this.cfg;
+
+        this._buildSizeSelector();
 
         var syncHandler = function () { self.sync(); };
         (cfg.fields || []).forEach(function (f) {
