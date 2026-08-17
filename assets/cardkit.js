@@ -519,13 +519,27 @@
     CardKit.prototype.fit = function () {
         var card = this.card, area = this.area;
         if (!card || !area) return;
+
+        var avail = area.clientWidth;
+        if (avail < 50) {
+            var self = this;
+            if (!this._retryFitTimer) {
+                this._retryFitTimer = setTimeout(function () {
+                    self._retryFitTimer = null;
+                    self.fit();
+                }, 50);
+            }
+            return;
+        }
+
         card.style.transform = 'none';
         var rect = card.getBoundingClientRect();
         var natW = rect.width, natH = rect.height;
         if (!natW) return;
-        var pad = this.cfg.fitPadding === undefined ? 16 : this.cfg.fitPadding;
-        var avail = area.clientWidth - pad;
-        var autoScale = Math.min(avail / natW, this.cfg.maxScale || 4.0);
+
+        var pad = this.cfg.fitPadding === undefined ? 24 : this.cfg.fitPadding;
+        var usable = Math.max(avail - pad, 100);
+        var autoScale = Math.min(usable / natW, this.cfg.maxScale || 4.0);
         autoScale = Math.max(autoScale, 0.2);
 
         var userZoom = parseFloat(this.zoomFactor) || 1.0;
@@ -763,9 +777,12 @@
             cancelAnimationFrame(self._fitRaf);
             self._fitRaf = requestAnimationFrame(function () { self.autofit(); self.fit(); });
         };
-        window.addEventListener('resize', refit);
-        window.addEventListener('load', refit);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+        if (typeof ResizeObserver !== 'undefined' && this.area) {
+            try {
+                var ro = new ResizeObserver(function () { refit(); });
+                ro.observe(this.area);
+            } catch (err) {}
+        }
 
         if (cfg.image) this.applyImageTransform();
         this.sync();
