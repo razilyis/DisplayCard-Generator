@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisplayCard Generator [NORDIC]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+JP:wght@400;700&family=Space+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/cardkit.css">
+    <style>
+        :root {
+            --accent-color: #6b8e76;
+            --bg-color: #f4f1ea;
+            --main-font: 'Outfit', sans-serif;
+        }
+
+        body {
+            --ui-bg: #e8e3d9;
+            --ui-panel: #ffffff;
+            --ui-panel-2: #f4f1ea;
+            --ui-border: #d5cebf;
+            --ui-text: #2d332d;
+            --ui-muted: #7c857c;
+            --ui-accent: var(--accent-color);
+            --ui-accent-text: #fff;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            color: #2d332d;
+            padding: 7mm 8mm;
+            font-family: var(--main-font);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .nordic-blob {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 130px;
+            height: 130px;
+            border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+            background: var(--accent-color);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .nordic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nordic-brand {
+            font-size: 8.5pt;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .nordic-tag {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 6.5pt;
+            font-weight: 600;
+            color: #555e55;
+        }
+
+        .nordic-title-box {
+            margin: 2.5mm 0 1.5mm;
+        }
+
+        .nordic-title {
+            font-size: 17pt;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #1e241e;
+            line-height: 1.1;
+        }
+
+        .nordic-sub {
+            font-size: 7.5pt;
+            color: #687268;
+            margin-top: 1mm;
+            font-weight: 600;
+        }
+
+        .nordic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2mm 4mm;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 2.5mm 3.5mm;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .nordic-item-label {
+            font-size: 5.5pt;
+            color: #8c968c;
+            display: block;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .nordic-item-val {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #242b24;
+        }
+
+        .dynamic-text { color: var(--accent-color) !important; }
+        .dynamic-bg { background-color: var(--accent-color) !important; }
+        .dynamic-border { border-color: var(--accent-color) !important; }
+    </style>
+</head>
+
+<body>
+    <div class="w-full max-w-6xl flex justify-between items-center mb-6 px-4">
+        <a href="index.html" class="text-xs font-bold text-emerald-800/70 hover:text-emerald-900 transition">← MENU</a>
+        <h1 class="text-lg font-black text-emerald-900 tracking-tight uppercase">Nordic Style Generator</h1>
+        <div class="w-16"></div>
+    </div>
+
+    <div class="tool-container">
+        <div class="file-system-panel bg-[#ffffff] p-3 rounded-xl border border-[#d5cebf] shadow-sm w-full">
+            <label class="block text-[9px] font-bold text-emerald-800 uppercase tracking-widest mb-2">📄 ファイル保存レコード</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportJsonBtn" class="bg-[#f4f1ea] border border-emerald-700 text-emerald-800 text-[10px] py-2 rounded font-bold hover:bg-[#e8e3d9] transition flex items-center justify-center gap-1"><span>📥 設定をJSONで保存</span></button>
+                <button id="importJsonBtn" class="bg-[#f4f1ea] border border-blue-600 text-blue-700 text-[10px] py-2 rounded font-bold hover:bg-[#e8e3d9] transition flex items-center justify-center gap-1"><span>📤 設定を読み込む</span></button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <div id="captureArea" class="preview-area">
+            <div class="card" id="productCard">
+                <div class="nordic-blob"></div>
+
+                <div>
+                    <div class="nordic-header">
+                        <span class="nordic-brand ck-fit" id="displayBrandName">HYGGE DESIGN</span>
+                        <span class="nordic-tag" id="displayMfgCode">NORDIC // #040</span>
+                    </div>
+
+                    <div class="nordic-title-box">
+                        <div class="nordic-title ck-fit" id="displayCodeName">AroundForty</div>
+                        <div class="nordic-sub ck-fit" id="displaySlogan">recorded at 天下一キーボードわいわい会 vol.12</div>
+                    </div>
+                </div>
+
+                <div class="nordic-grid">
+                    <div>
+                        <span class="nordic-item-label" id="displayLabel1">SWITCH</span>
+                        <span class="nordic-item-val ck-fit" id="displayVal1">Cherry MX Red</span>
+                    </div>
+                    <div>
+                        <span class="nordic-item-label" id="displayLabel2">KEYCAPS</span>
+                        <span class="nordic-item-val ck-fit" id="displayVal2">PBT Double-shot</span>
+                    </div>
+                    <div>
+                        <span class="nordic-item-label" id="displayLabel3">SPEC</span>
+                        <span class="nordic-item-val ck-fit" id="displayVal3">40% Split Ergonomic</span>
+                    </div>
+                    <div>
+                        <span class="nordic-item-label" id="displayLabel4">CREATOR</span>
+                        <span class="nordic-item-val ck-fit" id="displayVal4">@user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-panel ck-panel">
+            <label class="ck-label" style="margin-bottom:1rem">🎨 カードを編集 [NORDIC]</label>
+            <div class="ck-field">
+                <label class="ck-label" for="brandNameInput">ブランド / Brand</label>
+                <input type="text" id="brandNameInput" class="ck-input" value="HYGGE DESIGN">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="mfgCodeInput">コード / Code</label>
+                <input type="text" id="mfgCodeInput" class="ck-input" value="NORDIC // #040">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="codeNameInput">キーボード名 / Title</label>
+                <input type="text" id="codeNameInput" class="ck-input" value="AroundForty">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label" for="sloganInput">サブタイトル / Slogan</label>
+                <input type="text" id="sloganInput" class="ck-input" value="recorded at 天下一キーボードわいわい会 vol.12">
+            </div>
+
+            <div class="ck-field">
+                <div class="ck-section-head"><label class="ck-label">アースカラー / Nordic Accent</label></div>
+                <div class="color-swatch-grid" id="swatchGrid"></div>
+            </div>
+
+            <div class="ck-field">
+                <label class="ck-label">項目1 (ラベル / 内容)</label>
+                <input type="text" id="label1Input" class="ck-input" value="SWITCH" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val1Input" class="ck-input" value="Cherry MX Red">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目2 (ラベル / 内容)</label>
+                <input type="text" id="label2Input" class="ck-input" value="KEYCAPS" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val2Input" class="ck-input" value="PBT Double-shot">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目3 (ラベル / 内容)</label>
+                <input type="text" id="label3Input" class="ck-input" value="SPEC" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val3Input" class="ck-input" value="40% Split Ergonomic">
+            </div>
+            <div class="ck-field">
+                <label class="ck-label">項目4 (ラベル / 内容)</label>
+                <input type="text" id="label4Input" class="ck-input" value="CREATOR" style="font-size:10px;margin-bottom:4px">
+                <input type="text" id="val4Input" class="ck-input" value="@user">
+            </div>
+
+            <div style="margin-top:1.5rem">
+                <button id="btnExport" class="ck-btn ck-btn-primary" style="width:100%">高画質PNGで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportStatus"></div>
+
+    <script src="assets/cardkit.js"></script>
+    <script>
+        CardKit({
+            theme: 'NORDIC',
+            exportBg: '#f4f1ea',
+            nameSource: 'codeNameInput',
+            fields: [
+                { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
+                { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
+                { input: 'label1Input', target: 'displayLabel1', key: 'label1' },
+                { input: 'val1Input', target: 'displayVal1', key: 'val1' },
+                { input: 'label2Input', target: 'displayLabel2', key: 'label2' },
+                { input: 'val2Input', target: 'displayVal2', key: 'val2' },
+                { input: 'label3Input', target: 'displayLabel3', key: 'label3' },
+                { input: 'val3Input', target: 'displayVal3', key: 'val3' },
+                { input: 'label4Input', target: 'displayLabel4', key: 'label4' },
+                { input: 'val4Input', target: 'displayVal4', key: 'val4' }
+            ],
+            accent: {
+                cssVar: '--accent-color',
+                default: '#6b8e76',
+                swatches: [
+                    { hex: '#6b8e76', label: 'SAGE GREEN' }, { hex: '#d99b73', label: 'TERRACOTTA' },
+                    { hex: '#587b9c', label: 'FIORD BLUE' }, { hex: '#d4aa56', label: 'OCHRE' },
+                    { hex: '#7a6b7d', label: 'HEATHER VIOLET' }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

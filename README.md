@@ -8,7 +8,7 @@ https://razilyis.github.io/DisplayCard-Generator/
 
 2026年2月8日開催の天下一キーボードわいわい会 Vol.10に向けて作成し、2026年10月3日開催の Vol.12 に向けてマルチサイズ対応・新テーマ拡張（全22種類）を行いました。
 
-## テーマ（22種類）
+## テーマ（25種類）
 
 | ファイル | テーマ | 特徴 |
 | --- | --- | --- |
@@ -34,6 +34,9 @@ https://razilyis.github.io/DisplayCard-Generator/
 | `space.html` | Space | 宇宙・星空・星雲グラデーション |
 | `ocean.html` | Ocean | 海・深海・コバルト〜ターコイズ水光 |
 | `sky.html` | Sky | 空・黄昏・サンセットグラデーション |
+| `nordic.html` | Nordic | 北欧ナチュラル・スカンジナビアデザイン |
+| `chicago.html` | Chicago | 90年代レトロ GUI・System 7 風ウィンドウ |
+| `newyork.html` | New York | NYC 地下鉄サイン・路線アイコン |
 
 ## 印刷とサイズ選択について
 
