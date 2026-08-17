@@ -37,41 +37,56 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-.tool-container {
+.tool-container,
+.app-wrap {
     width: 100%;
-    max-width: 480px;
+    max-width: 640px;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 1.5rem;
+    box-sizing: border-box;
 }
 
-#captureArea {
+#captureArea,
+.preview-area {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
-    padding: 0.75rem 0;
+    padding: 1.5rem;
+    background: var(--ui-panel-2, rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
+    border-radius: var(--ui-radius, 12px);
     overflow: visible;
+    box-sizing: border-box;
+    min-height: 280px;
 }
 
-@media (min-width: 1024px) {
-    .tool-container {
-        max-width: 1500px;
+@media (min-width: 768px) {
+    body {
+        padding: 3rem 2rem 5rem;
+    }
+
+    .tool-container,
+    .app-wrap {
+        max-width: 1400px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 400px;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
         grid-template-areas:
             "preview filesystem"
             "preview editor";
-        gap: 1.5rem 2rem;
+        gap: 2rem;
         align-items: start;
     }
 
-    #captureArea {
+    #captureArea,
+    .preview-area {
         grid-area: preview;
         position: sticky;
         top: 2rem;
-        padding-top: 1rem;
+        padding: 2.5rem 1.5rem;
+        min-height: 420px;
     }
 
     .file-system-panel {
@@ -79,7 +94,8 @@ body {
         width: 100%;
     }
 
-    .editor-panel {
+    .editor-panel,
+    .ck-panel {
         grid-area: editor;
         width: 100%;
     }
