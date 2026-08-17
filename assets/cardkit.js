@@ -190,6 +190,7 @@
         });
         if (cfg.onSync) cfg.onSync(this);
         this.autofit();
+        this.fit();
     };
 
     /*
@@ -687,9 +688,19 @@
         this._buildSizeSelector();
 
         var syncHandler = function () { self.sync(); };
+        var panel = document.querySelector('.editor-panel') || document.querySelector('.ck-panel');
+        if (panel) {
+            ['input', 'change', 'keyup', 'compositionend'].forEach(function (evtType) {
+                panel.addEventListener(evtType, syncHandler);
+            });
+        }
         (cfg.fields || []).forEach(function (f) {
             var el = $(f.input);
-            if (el) el.addEventListener('input', syncHandler);
+            if (el) {
+                el.addEventListener('input', syncHandler);
+                el.addEventListener('change', syncHandler);
+                el.addEventListener('keyup', syncHandler);
+            }
         });
         (cfg.ranges || []).forEach(function (r) {
             var el = $(r.input);
