@@ -483,6 +483,38 @@
         self.fit();
     };
 
+    CardKit.prototype.setZoom = function (zoomMult) {
+        this.zoomFactor = parseFloat(zoomMult) || 1.0;
+        var self = this;
+        document.querySelectorAll('.ck-zoom-btn').forEach(function (btn) {
+            btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.zoom) - self.zoomFactor) < 0.05);
+        });
+        this.fit();
+    };
+
+    CardKit.prototype._buildZoomControl = function () {
+        var area = this.area;
+        if (!area || area.querySelector('.ck-zoom-bar')) return;
+        var bar = document.createElement('div');
+        bar.className = 'ck-zoom-bar';
+        bar.innerHTML = 
+            '<span>🔍 プレビュー倍率 / Zoom</span>' +
+            '<div style="display:flex;gap:4px">' +
+            '<button data-zoom="1.0" class="ck-zoom-btn active">標準</button>' +
+            '<button data-zoom="1.25" class="ck-zoom-btn">1.25× 大</button>' +
+            '<button data-zoom="1.5" class="ck-zoom-btn">1.5× 特大</button>' +
+            '<button data-zoom="2.0" class="ck-zoom-btn">2.0× 超大</button>' +
+            '</div>';
+        area.insertBefore(bar, area.firstChild);
+
+        var self = this;
+        bar.querySelectorAll('.ck-zoom-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                self.setZoom(btn.dataset.zoom);
+            });
+        });
+    };
+
     /* ---- レスポンシブ表示スケール ---- */
     CardKit.prototype.fit = function () {
         var card = this.card, area = this.area;
@@ -491,13 +523,18 @@
         var rect = card.getBoundingClientRect();
         var natW = rect.width, natH = rect.height;
         if (!natW) return;
-        var pad = this.cfg.fitPadding === undefined ? 24 : this.cfg.fitPadding;
+        var pad = this.cfg.fitPadding === undefined ? 16 : this.cfg.fitPadding;
         var avail = area.clientWidth - pad;
-        var scale = Math.min(avail / natW, this.cfg.maxScale || 2.5);
-        scale = Math.max(scale, 0.15);
+        var autoScale = Math.min(avail / natW, this.cfg.maxScale || 4.0);
+        autoScale = Math.max(autoScale, 0.2);
+
+        var userZoom = parseFloat(this.zoomFactor) || 1.0;
+        var scale = autoScale * userZoom;
+
         card.style.transformOrigin = 'top center';
         card.style.transform = 'scale(' + scale + ')';
-        area.style.height = Math.ceil(natH * scale + pad) + 'px';
+        var headerPad = area.querySelector('.ck-zoom-bar') ? 48 : 16;
+        area.style.height = Math.ceil(natH * scale + pad + headerPad) + 'px';
         this._scale = scale;
     };
 
@@ -632,6 +669,7 @@
     CardKit.prototype._init = function () {
         var self = this, cfg = this.cfg;
 
+        this._buildZoomControl();
         this._buildSizeSelector();
 
         var syncHandler = function () { self.sync(); };

@@ -51,28 +51,64 @@ body {
 #captureArea,
 .preview-area {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
-    padding: 1.5rem;
+    padding: 1rem;
     background: var(--ui-panel-2, rgba(0, 0, 0, 0.05));
     border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
     border-radius: var(--ui-radius, 12px);
     overflow: visible;
     box-sizing: border-box;
-    min-height: 280px;
+    min-height: 360px;
+}
+
+.ck-zoom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--ui-border, rgba(255, 255, 255, 0.1));
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.ck-zoom-btn {
+    background: var(--ui-panel, #ffffff);
+    border: 1px solid var(--ui-border, #cccccc);
+    color: var(--ui-text, #333333);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ck-zoom-btn:hover {
+    background: var(--ui-border, #e5e7eb);
+    transform: translateY(-1px);
+}
+
+.ck-zoom-btn.active {
+    background: var(--ui-accent, #111827);
+    color: var(--ui-accent-text, #ffffff);
+    border-color: var(--ui-accent, #111827);
 }
 
 @media (min-width: 768px) {
     body {
-        padding: 3rem 2rem 5rem;
+        padding: 2.5rem 2rem 5rem;
     }
 
     .tool-container,
     .app-wrap {
-        max-width: 1400px;
+        max-width: 1500px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
         grid-template-areas:
             "preview filesystem"
             "preview editor";
@@ -85,8 +121,8 @@ body {
         grid-area: preview;
         position: sticky;
         top: 2rem;
-        padding: 2.5rem 1.5rem;
-        min-height: 420px;
+        padding: 1.5rem 1.5rem 2.5rem;
+        min-height: 480px;
     }
 
     .file-system-panel {
