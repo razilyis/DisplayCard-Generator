@@ -4,9 +4,9 @@
  */
 
 :root {
-    /* 名刺サイズ。書き出し時の実寸もこの値から計算される */
-    --card-width: 91mm;
-    --card-height: 55mm;
+    /* L判相当の固定レイアウト基準。選択サイズでは縦横比だけを更新する */
+    --card-width: 127mm;
+    --card-height: 89mm;
 
     /* エディタ UI（カード本体ではなく操作パネル側）の配色 */
     --ui-bg: #f3f4f6;
@@ -59,9 +59,21 @@ body {
     background: var(--ui-panel-2, rgba(0, 0, 0, 0.05));
     border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
     border-radius: var(--ui-radius, 12px);
-    overflow: visible;
+    overflow: auto;
     box-sizing: border-box;
     min-height: 360px;
+}
+
+.ck-card-stage {
+    position: relative;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    margin-inline: auto;
+}
+
+.ck-card-stage > .card {
+    position: absolute;
+    inset: 0 auto auto 0;
 }
 
 .ck-zoom-bar {
@@ -99,7 +111,20 @@ body {
     border-color: var(--ui-accent, #111827);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) and (max-width: 1023px) {
+    .tool-container,
+    .app-wrap {
+        max-width: 920px;
+    }
+
+    #captureArea,
+    .preview-area {
+        min-height: 520px;
+        padding: 1.5rem 2rem 2.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
     body {
         padding: 2rem 2rem 5rem;
     }
@@ -139,8 +164,8 @@ body {
 
 /* ------------------------------------------------------------------ *
  * カード本体
- * 実寸 mm で組む。書き出しはこの要素をそのまま撮るので、
- * ここでのレイアウトが印刷結果と 1:1 で対応する。
+ * L判相当の固定基準幅で組む。印刷サイズを大きくしてもカードだけが広がらないため、
+ * 文字・余白・装飾の相対比率を維持できる。書き出しは同じ要素を高解像度化する。
  * ------------------------------------------------------------------ */
 .card {
     width: var(--card-width);
@@ -162,9 +187,7 @@ body {
  *   書き出し時にだけ内容が 1px ずつ広がっていた）
  */
 .ck-exporting {
-    box-shadow: none !important;
     outline: none !important;
-    filter: none !important;
 }
 
 /* ------------------------------------------------------------------ *
@@ -230,6 +253,74 @@ body {
     max-height: none;
     min-height: 0;
     /* overflow: hidden を付けない理由は .ck-fit-wrap と同じ */
+}
+
+/* 長いキーボード名・スイッチ名・キーキャップ名の共通調整 */
+.ck-product-name {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    box-sizing: border-box;
+}
+
+/* flex/gridの列自体が長い単語の幅まで広がるのを防ぐ */
+.ck-product-cell {
+    min-width: 0 !important;
+    max-width: 100%;
+}
+
+/*
+ * 全テーマ共通フリーコメント。
+ * テーマ固有の装飾を上書きせず、現在の文字色とフォントを継承する。
+ * プレビューとPNGはこの同じ要素を描画するため位置差が発生しない。
+ */
+.card > .ck-free-comment {
+    position: absolute;
+    z-index: 90;
+    width: min(72%, 120mm);
+    max-height: 24%;
+    padding-top: 0.8mm;
+    border-top: 0.25mm solid currentColor;
+    color: inherit;
+    font-family: inherit;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    opacity: 0.82;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.card > .ck-free-comment[hidden] {
+    display: none !important;
+}
+
+.card > .ck-free-comment[data-position="bottom-left"] {
+    left: 4%;
+    bottom: 4%;
+    text-align: left;
+}
+
+.card > .ck-free-comment[data-position="bottom-right"] {
+    right: 4%;
+    bottom: 4%;
+    text-align: right;
+}
+
+.card > .ck-free-comment[data-position="top-left"] {
+    left: 4%;
+    top: 4%;
+    text-align: left;
+}
+
+.card > .ck-free-comment[data-position="top-right"] {
+    right: 4%;
+    top: 4%;
+    text-align: right;
 }
 
 /* 中央に置く（回転させたスタンプなど）変種 */
@@ -422,6 +513,43 @@ body {
 
 .ck-field+.ck-field {
     margin-top: 0.75rem;
+}
+
+.ck-free-comment-controls {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--ui-border);
+    border-radius: 8px;
+    background: var(--ui-panel-2);
+}
+
+.ck-free-comment-controls textarea.ck-input {
+    display: block;
+    min-height: 5rem;
+    resize: vertical;
+}
+
+.ck-free-comment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    margin-top: 0.65rem;
+}
+
+.ck-free-comment-options label > span {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--ui-muted);
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.ck-help {
+    display: block;
+    margin-top: 0.55rem;
+    color: var(--ui-muted);
+    font-size: 9px;
+    line-height: 1.6;
 }
 
 .ck-btn {

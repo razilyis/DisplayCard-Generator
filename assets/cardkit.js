@@ -7,15 +7,17 @@
  * 印刷ズレ対策の要点:
  *   1. 書き出しはプレビュー中のカード要素そのものを撮る。表示用の transform: scale() は
  *      撮影の直前だけ外し、レイアウトを一切いじらない（= プレビューと出力が完全一致）。
- *   2. 出力ピクセル数は「実寸 mm × DPI」から決め打ちする。ウィンドウ幅で変動しない。
+ *   2. デザイン基準幅は固定し、印刷サイズ変更で文字や余白を相対的に小さくしない。
+ *      出力ピクセル数だけを「実寸 mm × DPI」から決め打ちする。
  *   3. PNG に pHYs チャンク（物理解像度）を書き込む。これにより Illustrator / Word /
- *      プレビュー.app などが必ず 91×55mm として配置する。
+ *      プレビュー.app などが選択した実寸で配置する。
  */
 (function (global) {
     'use strict';
 
     var MM_PER_INCH = 25.4;
     var CSS_DPI = 96; // CSS の 1in = 96px 固定
+    var DESIGN_WIDTH_MM = 127; // レイアウト基準幅。印刷サイズを変えても文字比率を維持する
 
     /* ------------------------------------------------------------------ *
      * 共通カラースウォッチ（DIC/CMYK 近似）
@@ -142,8 +144,8 @@
     function CardKit(cfg) {
         if (!(this instanceof CardKit)) return new CardKit(cfg);
         this.cfg = cfg;
-        this.widthMm = cfg.widthMm || 91;
-        this.heightMm = cfg.heightMm || 55;
+        this.widthMm = cfg.widthMm || 127;
+        this.heightMm = cfg.heightMm || 89;
         this.dpi = cfg.dpi || 600;
         this.card = $(cfg.card || 'productCard');
         this.area = $(cfg.captureArea || 'captureArea') || document.querySelector('.preview-area') || document.querySelector('#captureArea');
@@ -151,7 +153,7 @@
         this.accentColor = (cfg.accent && cfg.accent.default) || '#E60012';
         this.presetId = cfg.presets ? cfg.presets.list[0].id : null;
         this.imageData = '';
-        this.zoomFactor = 1.3;
+        this.zoomFactor = 1.0;
         this._init();
     }
 
@@ -190,7 +192,9 @@
             }
         });
         if (cfg.onSync) cfg.onSync(this);
+        this._placeFreeComment();
         this.autofit();
+        this._placeFreeComment();
         this.fit();
     };
 
@@ -242,7 +246,7 @@
                     el.style.fontSize = size + 'px';
                 }
                 if (soloFits) return;   // 1行で収まったのでここまで
-                el.style.whiteSpace = ''; // 収まらないので折り返しに戻す
+                el.style.whiteSpace = 'normal'; // テーマ側のnowrap指定より優先して折り返す
             }
 
             size = base;
@@ -343,17 +347,9 @@
         el.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + s + ')';
         if (img.multiply) {
             var chk = $(img.multiply);
+            el.style.mixBlendMode = (chk && chk.checked) ? 'multiply' : 'normal';
+        }
         this.fit();
-    };
-
-    CardKit.prototype.buildSizeSelector = function () {
-        var sel = $('cardSizeSelect');
-        var self = this;
-        if (!sel) return;
-        sel.onchange = function () {
-            var parts = sel.value.split('x');
-            self.setSize(parts[0], parts[1]);
-        };
     };
 
     CardKit.prototype.setImage = function (dataUrl) {
@@ -424,6 +420,9 @@
             if (img.multiply) data.imgM = ($(img.multiply) || {}).checked;
         }
         if (cfg.onCollect) cfg.onCollect(data, this);
+        data.freeComment = ($('freeCommentInput') || {}).value || '';
+        data.freeCommentPosition = ($('freeCommentPosition') || {}).value || 'auto';
+        data.freeCommentSize = ($('freeCommentSize') || {}).value || '8';
         data.exportedAt = new Date().toISOString();
         return data;
     };
@@ -481,12 +480,200 @@
             else self.applyImageTransform();
         }
         if (cfg.onApply) cfg.onApply(data, self);
+        if (data.widthMm && data.heightMm) self.setSize(data.widthMm, data.heightMm);
+        if ($('freeCommentInput') && data.freeComment !== undefined) $('freeCommentInput').value = data.freeComment;
+        if ($('freeCommentPosition') && data.freeCommentPosition) $('freeCommentPosition').value = data.freeCommentPosition;
+        if ($('freeCommentSize') && data.freeCommentSize) $('freeCommentSize').value = data.freeCommentSize;
+        self._syncFreeComment();
         self.sync();
         self.fit();
     };
 
+    /* ---- 印刷サイズ ---- */
+    CardKit.prototype.setSize = function (widthMm, heightMm) {
+        widthMm = parseFloat(widthMm);
+        heightMm = parseFloat(heightMm);
+        if (!(widthMm > 0 && heightMm > 0)) return;
+
+        this.widthMm = widthMm;
+        this.heightMm = heightMm;
+        // 印刷サイズをそのままCSS寸法へ入れると、A5などでカードだけが広がり、
+        // 固定ptの文字が相対的に小さくなる。レイアウト幅はL判相当へ固定し、
+        // 選択サイズの縦横比だけを反映する。実際の大きさはPNG画素数とpHYsで決める。
+        var designHeightMm = DESIGN_WIDTH_MM * heightMm / widthMm;
+        document.documentElement.style.setProperty('--card-width', DESIGN_WIDTH_MM + 'mm');
+        document.documentElement.style.setProperty('--card-height', designHeightMm + 'mm');
+
+        var select = $('cardSizeSelect');
+        if (select) select.value = widthMm + 'x' + heightMm;
+        var dim = $('cardSizeDimDisplay');
+        if (dim) dim.innerText = widthMm + ' × ' + heightMm + ' mm';
+        var dpi = this.dpi;
+        document.querySelectorAll('.ck-print-note').forEach(function (note) {
+            note.innerHTML = widthMm + '×' + heightMm + 'mm / ' + dpi + 'dpi・実寸情報つきPNG<br>印刷ソフトにそのまま置けば実寸で出ます';
+        });
+
+        this.autofit();
+        this.fit();
+    };
+
+    /* ---- 長い製品名をテーマ共通で読みやすく収める ---- */
+    CardKit.prototype._prepareLongTextFields = function () {
+        (this.cfg.fields || []).forEach(function (field) {
+            var semantic = [field.key, field.input, field.target].join(' ');
+            if (/label/i.test(semantic)) return;
+            if (!/(codeName|keyboard|keySwitch|switch|keyCaps|keycap|displayVal[123])/i.test(semantic)) return;
+            var target = $(field.target);
+            if (!target) return;
+            target.classList.add('ck-fit', 'ck-fit-wrap', 'ck-product-name');
+            if (target.parentElement && target.parentElement !== document.body) {
+                target.parentElement.classList.add('ck-product-cell');
+            }
+            if (!target.style.getPropertyValue('--fit-lines')) target.style.setProperty('--fit-lines', '3');
+            if (!target.dataset.fitMin) target.dataset.fitMin = '0.62';
+            if (!target.dataset.fitSolo) target.dataset.fitSolo = '0.86';
+        });
+    };
+
+    /* ---- 全テーマ共通のフリーコメント ---- */
+    CardKit.prototype._buildFreeComment = function () {
+        if (!this.card || $('displayFreeComment')) return;
+
+        var comment = document.createElement('div');
+        comment.id = 'displayFreeComment';
+        comment.className = 'ck-free-comment ck-fit ck-fit-box';
+        comment.dataset.position = 'auto';
+        comment.dataset.fitMin = '0.58';
+        comment.hidden = true;
+        this.card.appendChild(comment);
+
+        var panel = document.querySelector('.editor-panel') || document.querySelector('.ck-panel');
+        if (!panel || $('freeCommentInput')) return;
+
+        var field = document.createElement('section');
+        field.className = 'ck-field ck-free-comment-controls';
+        field.innerHTML =
+            '<label class="ck-label" for="freeCommentInput">💬 フリーコメント</label>' +
+            '<textarea id="freeCommentInput" class="ck-input" rows="3" maxlength="200" placeholder="展示物の補足、制作メモ、SNSなどを自由に入力"></textarea>' +
+            '<div class="ck-free-comment-options">' +
+            '<label><span>配置</span><select id="freeCommentPosition" class="ck-input">' +
+            '<option value="auto" selected>自動（おすすめ）</option>' +
+            '<option value="bottom-left">左下</option><option value="bottom-right">右下</option>' +
+            '<option value="top-left">左上</option><option value="top-right">右上</option>' +
+            '</select></label>' +
+            '<label><span>文字サイズ</span><select id="freeCommentSize" class="ck-input">' +
+            '<option value="6">小</option><option value="8" selected>標準</option><option value="10">大</option>' +
+            '</select></label></div>' +
+            '<small class="ck-help">空欄ならカードには表示されません。改行もそのまま反映されます。</small>';
+
+        var exportBlock = panel.querySelector('#btnExport');
+        while (exportBlock && exportBlock.parentElement !== panel) exportBlock = exportBlock.parentElement;
+        panel.insertBefore(field, exportBlock || null);
+    };
+
+    CardKit.prototype._syncFreeComment = function () {
+        var target = $('displayFreeComment');
+        var input = $('freeCommentInput');
+        if (!target || !input) return;
+        var value = input.value.trim();
+        target.innerText = value;
+        target.hidden = !value;
+        target.dataset.position = ($('freeCommentPosition') || {}).value || 'auto';
+        target.style.fontSize = (($('freeCommentSize') || {}).value || 8) + 'pt';
+        delete target.dataset.ckBase;
+    };
+
+    /*
+     * 自動配置では、テーマ内の文字・画像・情報パネルと重ならない空き領域を探す。
+     * 位置はカードに対する百分率で確定するため、そのままPNGへ引き継がれる。
+     */
+    CardKit.prototype._placeFreeComment = function () {
+        var target = $('displayFreeComment');
+        if (!target || target.hidden || !this.card) return;
+
+        ['left', 'right', 'top', 'bottom', 'width'].forEach(function (prop) {
+            target.style.removeProperty(prop);
+        });
+        if (target.dataset.position !== 'auto') return;
+
+        // 全面に情報が詰まったテーマは、単純な衝突判定だけでは空白と
+        // パネル内部の余白を区別できないため、デザイン済みの安全領域を使う。
+        var themePreset = {
+            RPG: { left: 8, top: 62, width: 84 },
+            SKETCH: { left: 4, top: 34, width: 26 },
+            TCG: { left: 38, top: 34, width: 58 }
+        }[String((this.cfg || {}).theme || '').toUpperCase()];
+        if (themePreset) {
+            target.style.left = themePreset.left + '%';
+            target.style.top = themePreset.top + '%';
+            target.style.right = 'auto';
+            target.style.bottom = 'auto';
+            target.style.width = themePreset.width + '%';
+            return;
+        }
+
+        var card = this.card;
+        var cardRect = card.getBoundingClientRect();
+        if (!cardRect.width || !cardRect.height) return;
+
+        var blockers = Array.prototype.filter.call(card.querySelectorAll('*'), function (el) {
+            if (el === target || target.contains(el) || el.closest('.ck-watermark')) return false;
+            var style = getComputedStyle(el);
+            if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return false;
+            var rect = el.getBoundingClientRect();
+            if (!rect.width || !rect.height) return false;
+            var areaRatio = rect.width * rect.height / (cardRect.width * cardRect.height);
+            if (areaRatio >= 0.55) return false; // カード全面の背景・レイアウト枠は除外
+
+            var leafText = el.children.length === 0 && el.textContent.trim();
+            var media = /^(IMG|SVG|CANVAS|VIDEO)$/.test(el.tagName);
+            var bg = style.backgroundColor;
+            var hasBg = bg && bg !== 'transparent' && !/rgba?\([^)]*,\s*0(?:\.0+)?\)$/.test(bg);
+            var hasBorder = ['Top', 'Right', 'Bottom', 'Left'].some(function (side) {
+                return parseFloat(style['border' + side + 'Width']) > 0;
+            });
+            return Boolean(leafText || media || hasBg || hasBorder);
+        });
+
+        var candidates = [];
+        [82, 72, 62, 52, 42, 32, 22, 12].forEach(function (top) {
+            candidates.push({ left: 4, top: top });
+            candidates.push({ left: 38, top: top });
+        });
+
+        var best = null;
+        candidates.forEach(function (candidate, index) {
+            target.style.left = candidate.left + '%';
+            target.style.top = candidate.top + '%';
+            target.style.right = 'auto';
+            target.style.bottom = 'auto';
+            target.style.width = '58%';
+
+            var rect = target.getBoundingClientRect();
+            var overflow = Math.max(0, cardRect.left - rect.left) + Math.max(0, rect.right - cardRect.right) +
+                Math.max(0, cardRect.top - rect.top) + Math.max(0, rect.bottom - cardRect.bottom);
+            var overlap = 0;
+            blockers.forEach(function (el) {
+                var other = el.getBoundingClientRect();
+                var w = Math.max(0, Math.min(rect.right, other.right) - Math.max(rect.left, other.left));
+                var h = Math.max(0, Math.min(rect.bottom, other.bottom) - Math.max(rect.top, other.top));
+                overlap += w * h;
+            });
+            var score = overlap + overflow * Math.max(rect.width, rect.height) + index * 0.001;
+            if (!best || score < best.score) best = { left: candidate.left, top: candidate.top, score: score };
+        });
+
+        if (best) {
+            target.style.left = best.left + '%';
+            target.style.top = best.top + '%';
+            target.style.right = 'auto';
+            target.style.bottom = 'auto';
+            target.style.width = '58%';
+        }
+    };
+
     CardKit.prototype.setZoom = function (zoomMult) {
-        this.zoomFactor = parseFloat(zoomMult) || 1.3;
+        this.zoomFactor = parseFloat(zoomMult) || 1.0;
         var self = this;
         document.querySelectorAll('.ck-zoom-btn').forEach(function (btn) {
             btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.zoom) - self.zoomFactor) < 0.05);
@@ -502,8 +689,8 @@
         bar.innerHTML = 
             '<span>🔍 プレビュー倍率 / Zoom</span>' +
             '<div style="display:flex;gap:4px">' +
-            '<button data-zoom="1.0" class="ck-zoom-btn">1.0× 中</button>' +
-            '<button data-zoom="1.3" class="ck-zoom-btn active">1.3× 大</button>' +
+            '<button data-zoom="1.0" class="ck-zoom-btn active">画面に合わせる</button>' +
+            '<button data-zoom="1.3" class="ck-zoom-btn">1.3× 大</button>' +
             '<button data-zoom="1.6" class="ck-zoom-btn">1.6× 特大</button>' +
             '<button data-zoom="2.0" class="ck-zoom-btn">2.0× 超大</button>' +
             '</div>';
@@ -515,6 +702,18 @@
                 self.setZoom(btn.dataset.zoom);
             });
         });
+    };
+
+    CardKit.prototype._buildPreviewStage = function () {
+        if (!this.card || this.card.parentElement.classList.contains('ck-card-stage')) {
+            this.stage = this.card && this.card.parentElement;
+            return;
+        }
+        var stage = document.createElement('div');
+        stage.className = 'ck-card-stage';
+        this.card.parentNode.insertBefore(stage, this.card);
+        stage.appendChild(this.card);
+        this.stage = stage;
     };
 
     /* ---- レスポンシブ表示スケール ---- */
@@ -547,8 +746,12 @@
         var userZoom = parseFloat(this.zoomFactor) || 1.0;
         var scale = autoScale * userZoom;
 
-        card.style.transformOrigin = 'top center';
+        card.style.transformOrigin = 'top left';
         card.style.transform = 'scale(' + scale + ')';
+        if (this.stage) {
+            this.stage.style.width = Math.ceil(natW * scale) + 'px';
+            this.stage.style.height = Math.ceil(natH * scale) + 'px';
+        }
         var headerPad = area.querySelector('.ck-zoom-bar') ? 48 : 16;
         area.style.height = Math.ceil(natH * scale + pad + headerPad) + 'px';
         this._scale = scale;
@@ -566,14 +769,16 @@
 
         try {
             if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            this._placeFreeComment();
             this.autofit(); // 実フォントが載った状態でもう一度詰め直す
 
-            // 表示用スケールと、プレビュー専用の飾り（影・外周ライン）だけを一時的に外す。
-            // レイアウトには一切触れないので、出力はプレビューと同じ絵になる。
+            // 表示用スケールだけを一時的に外す。テーマ固有の影やフィルターは
+            // PNGとの差を生まないよう、そのまま保持する。
             card.classList.add('ck-exporting');
             card.style.transform = 'none';
             card.style.transformOrigin = 'top left';
             await nextFrame();
+            this._placeFreeComment();
 
             var rect = card.getBoundingClientRect();
             var raw = await html2canvas(card, {
@@ -599,7 +804,7 @@
 
             var blob = await new Promise(function (res) { out.toBlob(res, 'image/png'); });
             var bytes = new Uint8Array(await blob.arrayBuffer());
-            // 「この画素数で 91×55mm」になる物理解像度を書き込む
+            // 「この画素数で選択した実寸」になる物理解像度を書き込む
             return {
                 bytes: injectPhys(bytes,
                     Math.round(outW / (this.widthMm / 1000)),
@@ -652,14 +857,14 @@
             field.innerHTML = 
                 '<label class="ck-label" for="cardSizeSelect" style="display:flex;align-items:center;justify-content:space-between;font-weight:700">' +
                 '<span>📐 印刷サイズ / Card Size</span>' +
-                '<span style="font-size:9.5px;opacity:0.85" id="cardSizeDimDisplay">91 × 55 mm</span>' +
+                '<span style="font-size:9.5px;opacity:0.85" id="cardSizeDimDisplay">127 × 89 mm</span>' +
                 '</label>' +
                 '<select id="cardSizeSelect" class="ck-input" style="width:100%;margin-top:4px;padding:6px;font-weight:700;cursor:pointer">' +
-                '<option value="91x55" selected>名刺サイズ (91 × 55 mm)</option>' +
-                '<option value="127x89">写真 L判 (127 × 89 mm)</option>' +
+                '<option value="127x89" selected>写真 L判 (127 × 89 mm) — 推奨</option>' +
                 '<option value="152x102">KGサイズ / はがき (152 × 102 mm) — L判より大きめ</option>' +
                 '<option value="178x127">写真 2L判 (178 × 127 mm)</option>' +
-                '<option value="210x148">A5サイズ (210 × 148 mm) — A4の半分</option>' +
+                '<option value="210x148">A5サイズ (210 × 148 mm) — 大きめ展示向け</option>' +
+                '<option value="91x55">名刺サイズ (91 × 55 mm) — コンパクト</option>' +
                 '<option value="297x210">A4サイズ (297 × 210 mm) — 全面</option>' +
                 '</select>';
             var firstLabel = panel.querySelector('.ck-label');
@@ -686,9 +891,13 @@
         var self = this, cfg = this.cfg;
 
         this._buildZoomControl();
+        this._buildPreviewStage();
         this._buildSizeSelector();
+        this._prepareLongTextFields();
+        this._buildFreeComment();
+        this.setSize(this.widthMm, this.heightMm);
 
-        var syncHandler = function () { self.sync(); };
+        var syncHandler = function () { self._syncFreeComment(); self.sync(); };
         var panel = document.querySelector('.editor-panel') || document.querySelector('.ck-panel');
         if (panel) {
             ['input', 'change', 'keyup', 'compositionend'].forEach(function (evtType) {
@@ -799,6 +1008,14 @@
         if (cfg.image) this.applyImageTransform();
         this.sync();
         this.fit();
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(function () {
+                self._placeFreeComment();
+                self.autofit();
+                self._placeFreeComment();
+                self.fit();
+            });
+        }
         global.cardKit = this; // デバッグ・自動検証用
         if (cfg.onReady) cfg.onReady(this);
     };
