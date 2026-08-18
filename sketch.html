@@ -292,7 +292,8 @@
                                 class="border border-gray-800 px-3 py-1 inline-flex flex-col items-center justify-center bg-white/80 min-w-[40px] shadow-sm">
                                 <span class="text-[5px] text-gray-500 uppercase leading-none mb-0.5 font-mono">REF
                                     NO.</span>
-                                <span class="text-[10px] font-bold leading-none font-mono text-gray-900">A-001</span>
+                                <span id="displayRefNo"
+                                    class="text-[10px] font-bold leading-none font-mono text-gray-900">A-001</span>
                             </div>
                         </div>
                     </div>
@@ -423,6 +424,14 @@
                     </div>
 
                     <div>
+                        <label for="refNoInput"
+                            class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">REF
+                            NO.</label>
+                        <input type="text" id="refNoInput" value="A-001" maxlength="20"
+                            class="w-full text-xs p-2 font-mono">
+                    </div>
+
+                    <div>
                         <label
                             class="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 font-mono">SLOGAN
                             (HANDWRITTEN)</label>
@@ -526,6 +535,7 @@ Precision Engineered.</textarea>
             nameSource: 'codeNameInput',
             fields: [
                 { input: 'brandNameInput', target: 'displayBrandName', key: 'brandName' },
+                { input: 'refNoInput', target: 'displayRefNo', key: 'refNo' },
                 { input: 'sloganInput', target: 'displaySlogan', key: 'slogan' },
                 { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
                 { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
