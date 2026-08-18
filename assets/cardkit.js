@@ -18,6 +18,11 @@
     var MM_PER_INCH = 25.4;
     var CSS_DPI = 96; // CSS の 1in = 96px 固定
     var DESIGN_WIDTH_MM = 127; // レイアウト基準幅。印刷サイズを変えても文字比率を維持する
+    var DEFAULT_FREE_COMMENT = [
+        'zmk firmware を採用した、トラックボール搭載の40％くらいの左右分割キーボードです。',
+        'ケースの組み立てにはねじを使わずスナップフィット構造になっています。',
+        'トラックボールケースの取り外しが可能になっています。'
+    ].join('\n');
 
     /* ------------------------------------------------------------------ *
      * 共通カラースウォッチ（DIC/CMYK 近似）
@@ -565,6 +570,8 @@
             '<option value="6">小</option><option value="8" selected>標準</option><option value="10">大</option>' +
             '</select></label></div>' +
             '<small class="ck-help">空欄ならカードには表示されません。改行もそのまま反映されます。</small>';
+
+        field.querySelector('#freeCommentInput').value = DEFAULT_FREE_COMMENT;
 
         var exportBlock = panel.querySelector('#btnExport');
         while (exportBlock && exportBlock.parentElement !== panel) exportBlock = exportBlock.parentElement;
