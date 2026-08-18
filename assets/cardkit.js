@@ -1013,6 +1013,7 @@
         }
 
         if (cfg.image) this.applyImageTransform();
+        this._syncFreeComment();
         this.sync();
         this.fit();
         if (document.fonts && document.fonts.ready) {
