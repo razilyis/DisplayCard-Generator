@@ -160,8 +160,18 @@
                         DESIGNED FOR THE MATURE MIND</div>
                 </div>
 
-                <div class="z-10 flex justify-end">
-                    <div class="flex flex-col text-right min-w-0 max-w-[55mm]">
+                <div class="z-10 grid grid-cols-3 gap-3 items-end">
+                    <div class="flex flex-col min-w-0">
+                        <span class="label-text" id="displayKeySwitchLabel">Switch</span>
+                        <span class="value-text text-[8.5pt] ck-fit ck-fit-wrap" style="--fit-lines:2"
+                            id="displayKeySwitch">CHERRY MX RED</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="label-text" id="displayKeyCapsLabel">Keycaps</span>
+                        <span class="value-text text-[8.5pt] ck-fit ck-fit-wrap" style="--fit-lines:2"
+                            id="displayKeyCaps">PBT DOUBLE-SHOT</span>
+                    </div>
+                    <div class="flex flex-col text-right min-w-0">
                         <span class="label-text" id="displayMfgCodeLabel">Manufacturing code</span>
                         <span class="value-text mono text-[8.5pt] uppercase ck-fit" id="displayMfgCode">02AFRB</span>
                     </div>
@@ -246,6 +256,24 @@
                             <input type="text" id="mfgCodeInput" value="02AFRB"
                                 class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black mono uppercase">
                         </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Switch
+                                Label</label>
+                            <input type="text" id="keySwitchLabelInput" value="Switch"
+                                class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Switch</label>
+                            <input type="text" id="keySwitchInput" value="CHERRY MX RED"
+                                class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-gray-300 uppercase tracking-widest mb-1">Keycaps
+                                Label</label>
+                            <input type="text" id="keyCapsLabelInput" value="Keycaps"
+                                class="w-full text-[10px] border border-gray-100 rounded px-2 py-1 focus:outline-none focus:border-gray-400 mb-1">
+                            <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Keycaps</label>
+                            <input type="text" id="keyCapsInput" value="PBT DOUBLE-SHOT"
+                                class="w-full text-xs border border-gray-200 rounded px-3 py-2 focus:outline-none focus:border-black">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -275,7 +303,11 @@
                 { input: 'codeNameLabelInput', target: 'displayCodeNameLabel', key: 'codeNameLabel' },
                 { input: 'codeNameInput', target: 'displayCodeName', key: 'codeName' },
                 { input: 'mfgCodeLabelInput', target: 'displayMfgCodeLabel', key: 'mfgCodeLabel' },
-                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' }
+                { input: 'mfgCodeInput', target: 'displayMfgCode', key: 'mfgCode' },
+                { input: 'keySwitchLabelInput', target: 'displayKeySwitchLabel', key: 'keySwitchLabel' },
+                { input: 'keySwitchInput', target: 'displayKeySwitch', key: 'keySwitch' },
+                { input: 'keyCapsLabelInput', target: 'displayKeyCapsLabel', key: 'keyCapsLabel' },
+                { input: 'keyCapsInput', target: 'displayKeyCaps', key: 'keyCaps' }
             ],
             ranges: [
                 { input: 'bgTextSizeInput', display: 'bgTextSizeDisplay', target: 'displayBgText', style: 'fontSize', unit: 'pt', key: 'bgTextSize' }

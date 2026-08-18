@@ -158,7 +158,13 @@
         this.accentColor = (cfg.accent && cfg.accent.default) || '#E60012';
         this.presetId = cfg.presets ? cfg.presets.list[0].id : null;
         this.imageData = '';
+        this.imageMonochrome = null;
+        this._imageColorToken = 0;
+        this._imageRenderPromise = null;
         this.zoomFactor = 1.0;
+        this.designMode = true;
+        this._designItems = {};
+        this._selectedDesignKey = '';
         this._init();
     }
 
@@ -197,6 +203,7 @@
             }
         });
         if (cfg.onSync) cfg.onSync(this);
+        this._syncFreeCommentFont();
         this._placeFreeComment();
         this.autofit();
         this._placeFreeComment();
@@ -221,6 +228,7 @@
      */
     CardKit.prototype.autofit = function () {
         document.querySelectorAll('.ck-fit').forEach(function (el) {
+            if (el.classList.contains('ck-design-box-only')) return;
             var base = parseFloat(el.dataset.ckBase);
             if (!base) {
                 base = parseFloat(getComputedStyle(el).fontSize);
@@ -341,7 +349,7 @@
     };
 
     /* ---- 画像（sketch / dq_pixel など） ---- */
-    CardKit.prototype.applyImageTransform = function () {
+    CardKit.prototype.applyImageTransform = function (preserveDimensions) {
         var img = this.cfg.image;
         if (!img) return;
         var el = $(img.target);
@@ -349,12 +357,91 @@
         var x = img.posX ? ($(img.posX) || {}).value || 0 : 0;
         var y = img.posY ? ($(img.posY) || {}).value || 0 : 0;
         var s = img.scale ? ($(img.scale) || {}).value || 1 : 1;
-        el.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + s + ')';
+        var designItem = this._designItems && this._designItems.image;
+        if (designItem) {
+            designItem.x = parseFloat(x) || 0;
+            designItem.y = parseFloat(y) || 0;
+            if (!preserveDimensions) {
+                designItem.scale = parseFloat(s) || 1;
+                designItem.scaleX = designItem.scale;
+                designItem.scaleY = designItem.scale;
+            }
+            designItem.scaleText = true;
+            this._renderDesignItem(designItem);
+            if (this._selectedDesignKey === 'image') this._selectDesignItem(designItem);
+        } else {
+            el.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + s + ')';
+        }
         if (img.multiply) {
             var chk = $(img.multiply);
             el.style.mixBlendMode = (chk && chk.checked) ? 'multiply' : 'normal';
         }
         this.fit();
+    };
+
+    CardKit.prototype._refreshImageColor = function () {
+        var self = this;
+        var image = this.cfg.image;
+        var target = image && $(image.target);
+        if (!target) return Promise.resolve();
+        target.style.filter = 'none';
+        var token = ++this._imageColorToken;
+        var waitForTarget = function () {
+            if (typeof target.decode !== 'function') return Promise.resolve();
+            return target.decode().catch(function () {});
+        };
+
+        if (!this.imageData) {
+            target.src = '';
+            this._imageRenderPromise = Promise.resolve();
+            return this._imageRenderPromise;
+        }
+        if (!this.imageMonochrome) {
+            target.src = this.imageData;
+            this._imageRenderPromise = waitForTarget();
+            return this._imageRenderPromise;
+        }
+
+        this._imageRenderPromise = new Promise(function (resolve) {
+            var source = new Image();
+            source.onload = function () {
+                if (token !== self._imageColorToken) { resolve(); return; }
+                try {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = source.naturalWidth || source.width;
+                    canvas.height = source.naturalHeight || source.height;
+                    var context = canvas.getContext('2d');
+                    context.drawImage(source, 0, 0);
+                    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+                    var data = pixels.data;
+                    for (var i = 0; i < data.length; i += 4) {
+                        var gray = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                        data[i] = gray;
+                        data[i + 1] = gray;
+                        data[i + 2] = gray;
+                    }
+                    context.putImageData(pixels, 0, 0);
+                    if (token === self._imageColorToken) target.src = canvas.toDataURL('image/png');
+                } catch (error) {
+                    console.error('[CardKit] monochrome conversion failed:', error);
+                    if (token === self._imageColorToken) target.src = self.imageData;
+                }
+                waitForTarget().then(resolve);
+            };
+            source.onerror = function () {
+                if (token === self._imageColorToken) target.src = self.imageData;
+                waitForTarget().then(resolve);
+            };
+            source.src = self.imageData;
+        });
+        return this._imageRenderPromise;
+    };
+
+    CardKit.prototype._setImageMonochrome = function (enabled) {
+        this.imageMonochrome = !!enabled;
+        var checkbox = $('ckImageMonochrome');
+        if (checkbox) checkbox.checked = this.imageMonochrome;
+        this._refreshImageColor();
     };
 
     CardKit.prototype.setImage = function (dataUrl) {
@@ -363,10 +450,10 @@
         this.imageData = dataUrl || '';
         var el = $(img.target), ph = $(img.placeholder);
         if (el) {
-            el.src = this.imageData;
             el.style.display = this.imageData ? '' : 'none';
         }
         if (ph) ph.style.display = this.imageData ? 'none' : '';
+        this._refreshImageColor();
         this.applyImageTransform();
     };
 
@@ -390,7 +477,7 @@
         var cfg = this.cfg, self = this;
         var data = { 
             theme: cfg.theme, 
-            version: 2,
+            version: 3,
             widthMm: this.widthMm,
             heightMm: this.heightMm
         };
@@ -419,6 +506,7 @@
         if (cfg.image) {
             var img = cfg.image;
             data[img.key || 'image'] = this.imageData; // 画像本体も base64 で保存する
+            data.imageMonochrome = !!this.imageMonochrome;
             if (img.posX) data.imgX = ($(img.posX) || {}).value;
             if (img.posY) data.imgY = ($(img.posY) || {}).value;
             if (img.scale) data.imgS = ($(img.scale) || {}).value;
@@ -428,6 +516,7 @@
         data.freeComment = ($('freeCommentInput') || {}).value || '';
         data.freeCommentPosition = ($('freeCommentPosition') || {}).value || 'auto';
         data.freeCommentSize = ($('freeCommentSize') || {}).value || '8';
+        data.designLayout = this._collectDesignLayout();
         data.exportedAt = new Date().toISOString();
         return data;
     };
@@ -473,6 +562,9 @@
         }
         if (cfg.image) {
             var src = pick(data, [cfg.image.key, 'image']);
+            if (data.imageMonochrome !== undefined) self.imageMonochrome = !!data.imageMonochrome;
+            var monochromeToggle = $('ckImageMonochrome');
+            if (monochromeToggle) monochromeToggle.checked = !!self.imageMonochrome;
             ['posX', 'posY', 'scale'].forEach(function (k, i) {
                 var id = cfg.image[k];
                 var v = data[['imgX', 'imgY', 'imgS'][i]];
@@ -491,6 +583,8 @@
         if ($('freeCommentSize') && data.freeCommentSize) $('freeCommentSize').value = data.freeCommentSize;
         self._syncFreeComment();
         self.sync();
+        self._applyDesignLayout(data.designLayout || {});
+        if (cfg.image && !(data.designLayout && data.designLayout.image)) self.applyImageTransform();
         self.fit();
     };
 
@@ -538,6 +632,489 @@
             if (!target.dataset.fitMin) target.dataset.fitMin = '0.62';
             if (!target.dataset.fitSolo) target.dataset.fitSolo = '0.86';
         });
+    };
+
+    /* ---- プレビュー上での直接編集 / ドラッグ / 拡大縮小 ---- */
+    CardKit.prototype._renderDesignItem = function (item) {
+        if (!item || !item.el) return;
+        var scaleX = item.scaleX === undefined ? item.scale : item.scaleX;
+        var scaleY = item.scaleY === undefined ? item.scale : item.scaleY;
+        var changed = item.x || item.y || Math.abs(scaleX - 1) > 0.001 || Math.abs(scaleY - 1) > 0.001;
+        var el = item.el;
+
+        if (!changed) {
+            el.classList.remove('ck-design-box-only');
+            el.style.transform = item.original.transform;
+            el.style.transformOrigin = item.original.transformOrigin;
+            if (item.key !== 'image') el.style.display = item.original.display;
+            el.style.width = item.original.width;
+            el.style.height = item.original.height;
+            el.style.boxSizing = item.original.boxSizing;
+            this._updateDesignOverlay();
+            return;
+        }
+
+        var transform = 'translate(' + item.x + 'px, ' + item.y + 'px)';
+        if (item.scaleText) transform += ' scale(' + scaleX + ', ' + scaleY + ')';
+        if (item.baseTransform) transform += ' ' + item.baseTransform;
+        el.style.transform = transform;
+        el.style.transformOrigin = 'top left';
+
+        if (!item.scaleText && (Math.abs(scaleX - 1) > 0.001 || Math.abs(scaleY - 1) > 0.001)) {
+            el.classList.add('ck-design-box-only');
+            if (item.computedDisplay === 'inline') el.style.display = 'inline-block';
+            el.style.boxSizing = 'border-box';
+            el.style.width = Math.max(1, item.baseWidth * scaleX) + 'px';
+            el.style.height = Math.max(1, item.baseHeight * scaleY) + 'px';
+        } else {
+            el.classList.remove('ck-design-box-only');
+            if (item.key !== 'image') el.style.display = item.original.display;
+            el.style.width = item.original.width;
+            el.style.height = item.original.height;
+            el.style.boxSizing = item.original.boxSizing;
+        }
+        this._updateDesignOverlay();
+    };
+
+    CardKit.prototype._setDesignOffset = function (item, x, y) {
+        if (!item) return;
+        item.x = Math.round((parseFloat(x) || 0) * 10) / 10;
+        item.y = Math.round((parseFloat(y) || 0) * 10) / 10;
+        this._renderDesignItem(item);
+        if (item.key === 'image') this._syncImageControlsFromDesign(item);
+    };
+
+    CardKit.prototype._setDesignScale = function (item, scale, scaleText) {
+        if (!item) return;
+        if (!(item.baseWidth > 1) || !(item.baseHeight > 1)) {
+            item.baseWidth = item.el.offsetWidth || item.el.getBoundingClientRect().width || 1;
+            item.baseHeight = item.el.offsetHeight || item.el.getBoundingClientRect().height || 1;
+        }
+        var minScale = item.key === 'image' ? 0.1 : 0.5;
+        var maxScale = item.key === 'image' ? 3 : 2;
+        scale = Math.max(minScale, Math.min(maxScale, parseFloat(scale) || 1));
+        scale = Math.round(scale * 100) / 100;
+        this._setDesignDimensions(item, scale, scale, scaleText);
+    };
+
+    CardKit.prototype._setDesignDimensions = function (item, scaleX, scaleY, scaleText) {
+        if (!item) return;
+        var minScale = item.key === 'image' ? 0.1 : 0.5;
+        var maxScale = item.key === 'image' ? 3 : 2;
+        item.scaleX = Math.round(Math.max(minScale, Math.min(maxScale, parseFloat(scaleX) || 1)) * 100) / 100;
+        item.scaleY = Math.round(Math.max(minScale, Math.min(maxScale, parseFloat(scaleY) || 1)) * 100) / 100;
+        item.scale = Math.round(((item.scaleX + item.scaleY) / 2) * 100) / 100;
+        if (item.key === 'image') item.scaleText = true;
+        else if (scaleText !== undefined) item.scaleText = !!scaleText;
+        this._renderDesignItem(item);
+        if (item.key === 'image') this._syncImageControlsFromDesign(item);
+    };
+
+    CardKit.prototype._syncImageControlsFromDesign = function (item) {
+        var image = this.cfg.image;
+        if (!image || !item) return;
+        if (image.posX && $(image.posX)) $(image.posX).value = item.x;
+        if (image.posY && $(image.posY)) $(image.posY).value = item.y;
+        if (image.scale && $(image.scale)) $(image.scale).value = item.scale;
+    };
+
+    CardKit.prototype._selectDesignItem = function (item) {
+        Object.keys(this._designItems).forEach(function (key) {
+            this._designItems[key].el.classList.toggle('ck-design-selected', this._designItems[key] === item);
+        }, this);
+        this._selectedDesignKey = item ? item.key : '';
+        var label = $('ckDesignSelection');
+        var scale = $('ckDesignScale');
+        var scaleValue = $('ckDesignScaleValue');
+        var scaleText = $('ckDesignScaleText');
+        if (label) label.textContent = item ? item.label : '要素を選択してください';
+        if (scale) {
+            scale.disabled = !item;
+            scale.min = item && item.key === 'image' ? 0.1 : 0.5;
+            scale.max = item && item.key === 'image' ? 3 : 2;
+            scale.value = item ? item.scale : 1;
+        }
+        if (scaleValue) {
+            if (!item) scaleValue.textContent = '100%';
+            else if (Math.abs(item.scaleX - item.scaleY) < 0.001) {
+                scaleValue.textContent = Math.round(item.scaleX * 100) + '%';
+            } else {
+                scaleValue.textContent = '幅' + Math.round(item.scaleX * 100) + '% / 高さ' +
+                    Math.round(item.scaleY * 100) + '%';
+            }
+        }
+        if (scaleText) {
+            scaleText.disabled = !item || item.key === 'image';
+            scaleText.checked = item ? item.scaleText : true;
+        }
+        this._updateDesignOverlay();
+    };
+
+    CardKit.prototype._updateDesignOverlay = function () {
+        var overlay = this._designOverlay;
+        var item = this._designItems[this._selectedDesignKey];
+        if (!overlay || !this.designMode || !item || !item.el || item.el.hidden) {
+            if (overlay) overlay.hidden = true;
+            return;
+        }
+        var rect = item.el.getBoundingClientRect();
+        var host = overlay.parentElement;
+        var hostRect = host && host.getBoundingClientRect();
+        if (!hostRect || !rect.width || !rect.height) {
+            overlay.hidden = true;
+            return;
+        }
+        overlay.hidden = false;
+        overlay.style.left = rect.left - hostRect.left + 'px';
+        overlay.style.top = rect.top - hostRect.top + 'px';
+        overlay.style.width = rect.width + 'px';
+        overlay.style.height = rect.height + 'px';
+    };
+
+    CardKit.prototype._resizeDesignItem = function (corner, event) {
+        var self = this;
+        var item = this._designItems[this._selectedDesignKey];
+        if (!item || !this.designMode) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        var handle = event.currentTarget;
+        var startClientX = event.clientX;
+        var startClientY = event.clientY;
+        var startScaleX = item.scaleX;
+        var startScaleY = item.scaleY;
+        var startX = item.x;
+        var startY = item.y;
+        var cardScale = this._scale || 1;
+        var startRect = item.el.getBoundingClientRect();
+        var startWidth = startRect.width / cardScale;
+        var startHeight = startRect.height / cardScale;
+        var fromLeft = corner.indexOf('l') !== -1;
+        var fromTop = corner.indexOf('t') !== -1;
+        var resizeWidth = corner.indexOf('l') !== -1 || corner.indexOf('r') !== -1;
+        var resizeHeight = corner.indexOf('t') !== -1 || corner.indexOf('b') !== -1;
+        handle.setPointerCapture(event.pointerId);
+
+        var move = function (moveEvent) {
+            moveEvent.preventDefault();
+            var dx = (moveEvent.clientX - startClientX) / cardScale;
+            var dy = (moveEvent.clientY - startClientY) / cardScale;
+            var widthRatio = Math.max(0.1, (startWidth + (fromLeft ? -dx : dx)) / startWidth);
+            var heightRatio = Math.max(0.1, (startHeight + (fromTop ? -dy : dy)) / startHeight);
+            var nextScaleX = resizeWidth ? startScaleX * widthRatio : startScaleX;
+            var nextScaleY = resizeHeight ? startScaleY * heightRatio : startScaleY;
+            if (resizeWidth && resizeHeight) {
+                var uniformRatio = (widthRatio + heightRatio) / 2;
+                nextScaleX = startScaleX * uniformRatio;
+                nextScaleY = startScaleY * uniformRatio;
+            }
+            self._setDesignDimensions(item, nextScaleX, nextScaleY, item.scaleText);
+            var actualRatioX = item.scaleX / startScaleX;
+            var actualRatioY = item.scaleY / startScaleY;
+            self._setDesignOffset(item,
+                startX + (fromLeft ? startWidth * (1 - actualRatioX) : 0),
+                startY + (fromTop ? startHeight * (1 - actualRatioY) : 0));
+            var scaleControl = $('ckDesignScale');
+            var scaleValue = $('ckDesignScaleValue');
+            if (scaleControl) scaleControl.value = item.scale;
+            if (scaleValue) {
+                scaleValue.textContent = Math.abs(item.scaleX - item.scaleY) < 0.001
+                    ? Math.round(item.scaleX * 100) + '%'
+                    : '幅' + Math.round(item.scaleX * 100) + '% / 高さ' + Math.round(item.scaleY * 100) + '%';
+            }
+        };
+        var stop = function (upEvent) {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', stop);
+            handle.removeEventListener('pointercancel', stop);
+            if (handle.hasPointerCapture(upEvent.pointerId)) handle.releasePointerCapture(upEvent.pointerId);
+        };
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', stop);
+        handle.addEventListener('pointercancel', stop);
+    };
+
+    CardKit.prototype._buildDesignOverlay = function () {
+        if (!this.stage || this._designOverlay) return;
+        var self = this;
+        var overlay = document.createElement('div');
+        overlay.className = 'ck-design-resize-overlay';
+        overlay.hidden = true;
+        overlay.innerHTML = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'].map(function (corner) {
+            return '<button type="button" class="ck-design-resize-handle ck-' + corner +
+                '" data-corner="' + corner + '" aria-label="サイズ変更"></button>';
+        }).join('');
+        this.stage.appendChild(overlay);
+        this._designOverlay = overlay;
+        overlay.querySelectorAll('.ck-design-resize-handle').forEach(function (handle) {
+            handle.addEventListener('pointerdown', function (event) {
+                self._resizeDesignItem(handle.dataset.corner, event);
+            });
+        });
+    };
+
+    CardKit.prototype._registerDesignItem = function (target, field, key) {
+        if (!target || !key || this._designItems[key]) return;
+        var self = this;
+        var computed = getComputedStyle(target);
+        var item = {
+            el: target,
+            field: field,
+            key: key,
+            label: (field && (field.key || field.input)) || key,
+            x: 0,
+            y: 0,
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            scaleText: true,
+            baseWidth: target.offsetWidth || target.getBoundingClientRect().width,
+            baseHeight: target.offsetHeight || target.getBoundingClientRect().height,
+            baseTransform: computed.transform && computed.transform !== 'none' ? computed.transform : '',
+            computedDisplay: computed.display,
+            original: {
+                transform: target.style.transform || '',
+                transformOrigin: target.style.transformOrigin || '',
+                display: target.style.display || '',
+                width: target.style.width || '',
+                height: target.style.height || '',
+                boxSizing: target.style.boxSizing || ''
+            }
+        };
+        this._designItems[key] = item;
+        target.classList.add('ck-design-item');
+        target.dataset.ckDesignKey = key;
+        if (key === 'image' || target.tagName === 'IMG') {
+            target.draggable = false;
+            target.addEventListener('dragstart', function (event) { event.preventDefault(); });
+        }
+
+        target.addEventListener('pointerdown', function (event) {
+            if (!self.designMode || target.isContentEditable || event.button !== 0) return;
+            if (item.key === 'image') event.preventDefault();
+            event.stopPropagation();
+            self._selectDesignItem(item);
+            var startX = event.clientX;
+            var startY = event.clientY;
+            var originX = item.x;
+            var originY = item.y;
+            var moved = false;
+            target.setPointerCapture(event.pointerId);
+            target.classList.add('ck-design-dragging');
+
+            var move = function (moveEvent) {
+                var dx = moveEvent.clientX - startX;
+                var dy = moveEvent.clientY - startY;
+                if (!moved && Math.hypot(dx, dy) < 3) return;
+                moved = true;
+                moveEvent.preventDefault();
+                var cardScale = self._scale || 1;
+                self._setDesignOffset(item, originX + dx / cardScale, originY + dy / cardScale);
+            };
+            var stop = function (upEvent) {
+                target.classList.remove('ck-design-dragging');
+                target.removeEventListener('pointermove', move);
+                target.removeEventListener('pointerup', stop);
+                target.removeEventListener('pointercancel', stop);
+                if (target.hasPointerCapture(upEvent.pointerId)) target.releasePointerCapture(upEvent.pointerId);
+            };
+            target.addEventListener('pointermove', move);
+            target.addEventListener('pointerup', stop);
+            target.addEventListener('pointercancel', stop);
+        });
+
+        target.addEventListener('dblclick', function (event) {
+            if (!self.designMode || !field) return;
+            var input = $(field.input);
+            if (!input) return;
+            event.preventDefault();
+            event.stopPropagation();
+            self._selectDesignItem(item);
+            var original = input.value;
+            target.contentEditable = 'true';
+            target.spellcheck = false;
+            target.classList.add('ck-design-editing');
+            target.focus();
+
+            var selection = global.getSelection && global.getSelection();
+            if (selection && document.createRange) {
+                var range = document.createRange();
+                range.selectNodeContents(target);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+
+            var finish = function (commit) {
+                if (!target.isContentEditable) return;
+                target.contentEditable = 'false';
+                target.classList.remove('ck-design-editing');
+                input.value = commit ? target.innerText.replace(/\r/g, '') : original;
+                self._syncFreeComment();
+                self.sync();
+                target.removeEventListener('keydown', onKey);
+            };
+            var onKey = function (keyEvent) {
+                if (keyEvent.key === 'Escape') {
+                    keyEvent.preventDefault();
+                    finish(false);
+                } else if (keyEvent.key === 'Enter' && (keyEvent.ctrlKey || keyEvent.metaKey)) {
+                    keyEvent.preventDefault();
+                    finish(true);
+                }
+            };
+            target.addEventListener('blur', function () { finish(true); }, { once: true });
+            target.addEventListener('keydown', onKey);
+        });
+    };
+
+    CardKit.prototype._setDesignMode = function (enabled) {
+        this.designMode = !!enabled;
+        if (this.card) this.card.classList.toggle('ck-design-mode', this.designMode);
+        var button = $('ckDesignModeBtn');
+        if (button) {
+            button.classList.toggle('active', this.designMode);
+            button.textContent = this.designMode ? '✥ 要素編集 ON' : '✥ 要素編集 OFF';
+        }
+        this._updateDesignOverlay();
+    };
+
+    CardKit.prototype._resetDesignLayout = function () {
+        Object.keys(this._designItems).forEach(function (key) {
+            var item = this._designItems[key];
+            item.x = 0;
+            item.y = 0;
+            item.scale = 1;
+            item.scaleX = 1;
+            item.scaleY = 1;
+            item.scaleText = true;
+            this._renderDesignItem(item);
+        }, this);
+        this._selectDesignItem(this._designItems[this._selectedDesignKey] || null);
+    };
+
+    CardKit.prototype._collectDesignLayout = function () {
+        var layout = {};
+        Object.keys(this._designItems).forEach(function (key) {
+            var item = this._designItems[key];
+            if (item.x || item.y || Math.abs(item.scaleX - 1) > 0.001 ||
+                Math.abs(item.scaleY - 1) > 0.001 || !item.scaleText) {
+                layout[key] = {
+                    x: item.x,
+                    y: item.y,
+                    scale: item.scale,
+                    scaleX: item.scaleX,
+                    scaleY: item.scaleY,
+                    scaleText: item.scaleText
+                };
+            }
+        }, this);
+        return layout;
+    };
+
+    CardKit.prototype._applyDesignLayout = function (layout) {
+        this._resetDesignLayout();
+        Object.keys(layout || {}).forEach(function (key) {
+            var item = this._designItems[key];
+            var saved = layout[key];
+            if (!item || !saved) return;
+            item.x = parseFloat(saved.x) || 0;
+            item.y = parseFloat(saved.y) || 0;
+            var minScale = item.key === 'image' ? 0.1 : 0.5;
+            var maxScale = item.key === 'image' ? 3 : 2;
+            var legacyScale = parseFloat(saved.scale) || 1;
+            item.scaleX = Math.max(minScale, Math.min(maxScale, parseFloat(saved.scaleX) || legacyScale));
+            item.scaleY = Math.max(minScale, Math.min(maxScale, parseFloat(saved.scaleY) || legacyScale));
+            item.scale = Math.round(((item.scaleX + item.scaleY) / 2) * 100) / 100;
+            item.scaleText = saved.scaleText !== false;
+            this._renderDesignItem(item);
+        }, this);
+        this._selectDesignItem(this._designItems[this._selectedDesignKey] || null);
+    };
+
+    CardKit.prototype._buildDesignEditor = function () {
+        if (!this.card || !this.area || $('ckDesignToolbar')) return;
+        var self = this;
+        (this.cfg.fields || []).forEach(function (field) {
+            self._registerDesignItem($(field.target), field, field.key || field.target);
+        });
+        var freeComment = $('displayFreeComment');
+        if (freeComment) {
+            this._registerDesignItem(freeComment,
+                { input: 'freeCommentInput', target: 'displayFreeComment', key: 'freeComment' }, 'freeComment');
+        }
+        if (this.cfg.image && $(this.cfg.image.target)) {
+            var imageTarget = $(this.cfg.image.target);
+            if (this.imageMonochrome === null) {
+                var imageStyle = getComputedStyle(imageTarget);
+                this.imageMonochrome = /grayscale/i.test(imageTarget.className + ' ' + imageStyle.filter);
+            }
+            imageTarget.style.filter = 'none';
+            this._registerDesignItem(imageTarget, null, 'image');
+            var imageItem = this._designItems.image;
+            imageItem.label = '画像';
+            imageItem.baseTransform = '';
+            imageItem.original.transform = '';
+            imageItem.x = this.cfg.image.posX ? parseFloat(($(this.cfg.image.posX) || {}).value) || 0 : 0;
+            imageItem.y = this.cfg.image.posY ? parseFloat(($(this.cfg.image.posY) || {}).value) || 0 : 0;
+            imageItem.scale = this.cfg.image.scale ? parseFloat(($(this.cfg.image.scale) || {}).value) || 1 : 1;
+            imageItem.scaleX = imageItem.scale;
+            imageItem.scaleY = imageItem.scale;
+            imageItem.scaleText = true;
+            this._renderDesignItem(imageItem);
+        }
+        this._buildDesignOverlay();
+
+        var toolbar = document.createElement('div');
+        toolbar.id = 'ckDesignToolbar';
+        toolbar.className = 'ck-design-toolbar';
+        toolbar.innerHTML =
+            '<div class="ck-design-toolbar-row">' +
+            '<button type="button" id="ckDesignModeBtn" class="ck-design-btn">✥ 要素編集 ON</button>' +
+            '<button type="button" id="ckDesignResetBtn" class="ck-design-btn">↺ 配置リセット</button>' +
+            '<span id="ckDesignSelection">要素を選択してください</span></div>' +
+            '<div class="ck-design-toolbar-row ck-design-scale-controls">' +
+            '<label for="ckDesignScale">サイズ</label>' +
+            '<input type="range" id="ckDesignScale" min="0.5" max="2" step="0.05" value="1" disabled>' +
+            '<output id="ckDesignScaleValue">100%</output>' +
+            '<label class="ck-design-check"><input type="checkbox" id="ckDesignScaleText" checked disabled>' +
+            '<span>文字も一緒に拡大</span></label></div>' +
+            '<small>要素をドラッグで移動・四隅/上下/左右のハンドルでサイズ変更・文字をダブルクリックで編集</small>';
+        var stage = this.stage || this.card.parentElement;
+        var toolbarHost = stage && stage.parentElement ? stage.parentElement : this.area;
+        toolbarHost.insertBefore(toolbar, stage || null);
+
+        if (this.cfg.image) {
+            var imageMode = document.createElement('label');
+            imageMode.className = 'ck-design-check ck-image-color-mode';
+            imageMode.innerHTML = '<input type="checkbox" id="ckImageMonochrome">' +
+                '<span>画像をモノクロで表示・出力</span>';
+            toolbar.querySelector('.ck-design-scale-controls').appendChild(imageMode);
+            $('ckImageMonochrome').checked = !!this.imageMonochrome;
+            $('ckImageMonochrome').addEventListener('change', function (event) {
+                self._setImageMonochrome(event.target.checked);
+            });
+            this._refreshImageColor();
+        }
+
+        $('ckDesignModeBtn').addEventListener('click', function () {
+            self._setDesignMode(!self.designMode);
+        });
+        $('ckDesignResetBtn').addEventListener('click', function () {
+            self._resetDesignLayout();
+            if (self._designItems.image) self._syncImageControlsFromDesign(self._designItems.image);
+        });
+        $('ckDesignScale').addEventListener('input', function (event) {
+            var item = self._designItems[self._selectedDesignKey];
+            if (!item) return;
+            self._setDesignScale(item, event.target.value, ($('ckDesignScaleText') || {}).checked);
+            $('ckDesignScaleValue').textContent = Math.round(item.scale * 100) + '%';
+        });
+        $('ckDesignScaleText').addEventListener('change', function (event) {
+            var item = self._designItems[self._selectedDesignKey];
+            if (!item) return;
+            self._setDesignScale(item, item.scale, event.target.checked);
+        });
+        this._setDesignMode(true);
     };
 
     /* ---- 全テーマ共通のフリーコメント ---- */
@@ -590,6 +1167,24 @@
         delete target.dataset.ckBase;
     };
 
+    CardKit.prototype._syncFreeCommentFont = function () {
+        var target = $('displayFreeComment');
+        if (!target) return;
+        var fontSelects = (this.cfg.selects || []).filter(function (select) {
+            return /font/i.test([select.cssVar, select.key, select.input].join(' '));
+        });
+        var selected = fontSelects.filter(function (select) {
+            return /main.?font|font.?main/i.test([select.cssVar, select.key, select.input].join(' '));
+        })[0] || fontSelects[0];
+        var input = selected && $(selected.input);
+        if (input && input.value) {
+            target.style.fontFamily = input.value;
+            delete target.dataset.ckBase;
+        } else {
+            target.style.removeProperty('font-family');
+        }
+    };
+
     /*
      * 自動配置では、テーマ内の文字・画像・情報パネルと重ならない空き領域を探す。
      * 位置はカードに対する百分率で確定するため、そのままPNGへ引き継がれる。
@@ -624,7 +1219,8 @@
         if (!cardRect.width || !cardRect.height) return;
 
         var blockers = Array.prototype.filter.call(card.querySelectorAll('*'), function (el) {
-            if (el === target || target.contains(el) || el.closest('.ck-watermark')) return false;
+            if (el === target || target.contains(el) || el.closest('.ck-watermark') ||
+                el.closest('.ck-design-resize-overlay')) return false;
             var style = getComputedStyle(el);
             if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return false;
             var rect = el.getBoundingClientRect();
@@ -762,6 +1358,7 @@
         var headerPad = area.querySelector('.ck-zoom-bar') ? 48 : 16;
         area.style.height = Math.ceil(natH * scale + pad + headerPad) + 'px';
         this._scale = scale;
+        this._updateDesignOverlay();
     };
 
     /* ---- PNG 描画（バイト列を返すところまで） ---- */
@@ -776,6 +1373,7 @@
 
         try {
             if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            if (this._imageRenderPromise) await this._imageRenderPromise;
             this._placeFreeComment();
             this.autofit(); // 実フォントが載った状態でもう一度詰め直す
 
@@ -955,12 +1553,14 @@
                     reader.readAsDataURL(file);
                 });
             }
-            [img.posX, img.posY, img.scale].forEach(function (id) {
+            [img.posX, img.posY].forEach(function (id) {
                 var el = $(id);
-                if (el) el.addEventListener('input', function () { self.applyImageTransform(); });
+                if (el) el.addEventListener('input', function () { self.applyImageTransform(true); });
             });
+            var imageScale = $(img.scale);
+            if (imageScale) imageScale.addEventListener('input', function () { self.applyImageTransform(false); });
             var mul = $(img.multiply);
-            if (mul) mul.addEventListener('change', function () { self.applyImageTransform(); });
+            if (mul) mul.addEventListener('change', function () { self.applyImageTransform(true); });
             var clear = $(img.clear);
             if (clear) clear.addEventListener('click', function () {
                 self.setImage('');
@@ -1012,6 +1612,8 @@
             } catch (err) {}
         }
 
+        if (cfg.image) this.applyImageTransform();
+        this._buildDesignEditor();
         if (cfg.image) this.applyImageTransform();
         this._syncFreeComment();
         this.sync();

@@ -111,6 +111,175 @@ body {
     border-color: var(--ui-accent, #111827);
 }
 
+.ck-design-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    margin: -0.35rem 0 0.85rem;
+    padding: 8px;
+    border: 1px dashed var(--ui-border, #cccccc);
+    border-radius: 6px;
+    box-sizing: border-box;
+    color: var(--ui-muted, #6b7280);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.ck-design-toolbar-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ck-design-btn {
+    border: 1px solid var(--ui-border, #cccccc);
+    border-radius: 4px;
+    padding: 4px 8px;
+    background: var(--ui-panel, #ffffff);
+    color: var(--ui-text, #333333);
+    font: inherit;
+    cursor: pointer;
+}
+
+.ck-design-btn:hover,
+.ck-design-btn.active {
+    border-color: var(--ui-accent, #111827);
+    background: var(--ui-accent, #111827);
+    color: var(--ui-accent-text, #ffffff);
+}
+
+.ck-design-scale-controls input[type="range"] {
+    flex: 1 1 130px;
+    min-width: 90px;
+}
+
+.ck-design-scale-controls output {
+    min-width: 34px;
+    color: var(--ui-text, #333333);
+    text-align: right;
+}
+
+.ck-design-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ui-text, #333333);
+    cursor: pointer;
+}
+
+.ck-image-color-mode {
+    margin-left: auto;
+}
+
+.card.ck-design-mode .ck-design-item {
+    pointer-events: auto !important;
+    cursor: move;
+    outline: 1px dashed transparent;
+    outline-offset: 1px;
+    touch-action: none;
+}
+
+.card.ck-design-mode .ck-design-item:hover,
+.card.ck-design-mode .ck-design-selected,
+.card.ck-design-mode .ck-design-dragging {
+    outline-color: currentColor;
+}
+
+.card.ck-design-mode .ck-design-editing {
+    cursor: text;
+    outline-style: solid;
+    user-select: text;
+}
+
+.ck-design-resize-overlay {
+    position: absolute;
+    z-index: 10000;
+    border: 1px solid var(--ui-accent, #2563eb);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.ck-design-resize-overlay[hidden] {
+    display: none !important;
+}
+
+.ck-design-resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ffffff;
+    border-radius: 50%;
+    background: var(--ui-accent, #2563eb);
+    box-shadow: 0 0 0 1px var(--ui-accent, #2563eb);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.ck-design-resize-handle.ck-tl {
+    left: 0;
+    top: 0;
+    cursor: nwse-resize;
+    transform: translate(-50%, -50%);
+}
+
+.ck-design-resize-handle.ck-tr {
+    right: 0;
+    top: 0;
+    cursor: nesw-resize;
+    transform: translate(50%, -50%);
+}
+
+.ck-design-resize-handle.ck-tm {
+    left: 50%;
+    top: 0;
+    cursor: ns-resize;
+    transform: translate(-50%, -50%);
+}
+
+.ck-design-resize-handle.ck-ml {
+    left: 0;
+    top: 50%;
+    cursor: ew-resize;
+    transform: translate(-50%, -50%);
+}
+
+.ck-design-resize-handle.ck-mr {
+    right: 0;
+    top: 50%;
+    cursor: ew-resize;
+    transform: translate(50%, -50%);
+}
+
+.ck-design-resize-handle.ck-bl {
+    left: 0;
+    bottom: 0;
+    cursor: nesw-resize;
+    transform: translate(-50%, 50%);
+}
+
+.ck-design-resize-handle.ck-br {
+    right: 0;
+    bottom: 0;
+    cursor: nwse-resize;
+    transform: translate(50%, 50%);
+}
+
+.ck-design-resize-handle.ck-bm {
+    left: 50%;
+    bottom: 0;
+    cursor: ns-resize;
+    transform: translate(-50%, 50%);
+}
+
+.ck-exporting .ck-design-item {
+    outline: none !important;
+}
+
 @media (min-width: 600px) and (max-width: 1023px) {
     .tool-container,
     .app-wrap {
